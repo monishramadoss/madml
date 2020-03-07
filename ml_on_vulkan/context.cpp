@@ -1,6 +1,10 @@
 #include "common.h"
 #include "context.h"
 
+struct tensorParam {
+	int total;
+};
+
 namespace kernel {
 	std::shared_ptr<context> kCtx;
 	bool enableValidationLayers = false;

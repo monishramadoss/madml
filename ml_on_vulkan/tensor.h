@@ -30,36 +30,35 @@ namespace kernel {
 		void copyTo(tensor& dst);
 		std::shared_ptr<buffer> getBuffer() { return m_buffer; }
 
-		tensor& operator + (const tensor& rhs);
-		tensor& operator - (const tensor& rhs);
-		tensor& operator * (const tensor& rhs);
-		tensor& operator / (const tensor& rhs);
-		tensor& operator + (const tensor& rhs);
-		tensor& operator % (const tensor& rhs);
+		std::shared_ptr<tensor> operator + (std::shared_ptr<tensor> rhs);
+		std::shared_ptr<tensor> operator - (std::shared_ptr<tensor> rhs);
+		std::shared_ptr<tensor> operator * (std::shared_ptr<tensor> rhs);
+		std::shared_ptr<tensor> operator / (std::shared_ptr<tensor> rhs);
+		std::shared_ptr<tensor> operator % (std::shared_ptr<tensor> rhs);
 
-		tensor& operator + (int rhs);
+		/*tensor& operator + (int rhs);
 		tensor& operator - (int rhs);
 		tensor& operator * (int rhs);
 		tensor& operator / (int rhs);
 		tensor& operator + (int rhs);
-		tensor& operator % (int rhs);
+		tensor& operator % (int rhs);*/
 
 
-//		tensor& operator == (const tensor& rhs);
-//		tensor& operator != (const tensor& rhs);
-//		tensor& operator > (const tensor& rhs);
-//		tensor& operator < (const tensor& rhs);
-//		tensor& operator >= (const tensor& rhs);
-//		tensor& operator <= (const tensor& rhs);
+		//		tensor& operator == (tensor& rhs);
+		//		tensor& operator != (tensor& rhs);
+		//		tensor& operator > (tensor& rhs);
+		//		tensor& operator < (tensor& rhs);
+		//		tensor& operator >= (tensor& rhs);
+		//		tensor& operator <= (tensor& rhs);
 
 
 	private:
 		VkDevice m_device;
 		std::vector<int> m_shape;
 		size_t size_in_byte;
+		const char* m_data;
 		std::shared_ptr<buffer> m_buffer;
 		Format format;
 	};
 }
-
 #endif

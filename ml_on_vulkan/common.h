@@ -12,7 +12,11 @@
 #include <memory>
 
 #include <vulkan/vulkan.h>
-#include "shaders/spv_shader.h"
+#ifndef SHADERS_H
+#define SHADERS_H
+#include "spv_shader.h"
+#endif
+
 #include "kernel.h"
 
 namespace kernel {

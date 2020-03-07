@@ -3,6 +3,7 @@
 #include "layer.h"
 
 namespace kernel {
+	
 	layer::layer() {
 		createContext();
 		m_device = kDevice;;
@@ -16,7 +17,6 @@ namespace kernel {
 		m_group_x = 1;
 		m_group_y = 1;
 		m_group_z = 1;
-
 	}
 
 	layer::~layer() {

@@ -1,17 +1,19 @@
 #include "common.h"
 #include "utils.h"
 
+
 namespace kernel {
 	
-
 	tensor::tensor(Format fmt) : size_in_byte(0), format(fmt) {
 		createContext();
 		m_device = kDevice;
+		m_data = nullptr;
 	}
 
 	tensor::tensor(const char* data, std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt) {
 		createContext();
 		m_device = kDevice;
+		m_data = data;
 		reshape(data, shape);
 	}
 
@@ -88,4 +90,46 @@ namespace kernel {
 		unMap();
 		return data;
 	}
+
+
+	std::shared_ptr<tensor> tensor::operator + (std::shared_ptr<tensor> rhs) {
+		std::shared_ptr<layers::operators> op (new layers::operators(0));
+		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
+		op->forward(*this, *rhs, *out);	
+		cmd_layer.push_back(op);
+		return out;
+	}
+
+	std::shared_ptr<tensor> tensor::operator - (std::shared_ptr<tensor> rhs) {
+		std::shared_ptr<layers::operators> op(new layers::operators(1));
+		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
+		op->forward(*this, *rhs, *out);
+		cmd_layer.push_back(op);
+		return out;
+	}
+
+	std::shared_ptr<tensor> tensor::operator * (std::shared_ptr<tensor> rhs) {
+		std::shared_ptr<layers::operators> op(new layers::operators(2));
+		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
+		op->forward(*this, *rhs, *out);
+		cmd_layer.push_back(op);
+		return out;
+	}
+
+	std::shared_ptr<tensor> tensor::operator / (std::shared_ptr<tensor> rhs) {
+		std::shared_ptr<layers::operators> op(new layers::operators(3));
+		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
+		op->forward(*this, *rhs, *out);
+		cmd_layer.push_back(op);
+		return out;
+	}
+
+	std::shared_ptr<tensor> tensor::operator % (std::shared_ptr<tensor> rhs) {
+		std::shared_ptr<layers::operators> op(new layers::operators(4));
+		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
+		op->forward(*this, *rhs, *out);
+		cmd_layer.push_back(op);
+		return out;
+	}
+
 }
