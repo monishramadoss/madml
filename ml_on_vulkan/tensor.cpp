@@ -77,6 +77,7 @@ namespace kernel {
 	}
 
 	int tensor::getFormat() const { return format; }
+
 	void tensor::copyTo(tensor& dst) {
 		void* p = map();
 		dst = dst.reshape((const char*)p, m_shape, format);
@@ -89,47 +90,6 @@ namespace kernel {
 		memcpy(data, p, size_in_byte);
 		unMap();
 		return data;
-	}
-
-
-	std::shared_ptr<tensor> tensor::operator + (std::shared_ptr<tensor> rhs) {
-		std::shared_ptr<layers::operators> op (new layers::operators(0));
-		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
-		op->forward(*this, *rhs, *out);	
-		cmd_layer.push_back(op);
-		return out;
-	}
-
-	std::shared_ptr<tensor> tensor::operator - (std::shared_ptr<tensor> rhs) {
-		std::shared_ptr<layers::operators> op(new layers::operators(1));
-		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
-		op->forward(*this, *rhs, *out);
-		cmd_layer.push_back(op);
-		return out;
-	}
-
-	std::shared_ptr<tensor> tensor::operator * (std::shared_ptr<tensor> rhs) {
-		std::shared_ptr<layers::operators> op(new layers::operators(2));
-		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
-		op->forward(*this, *rhs, *out);
-		cmd_layer.push_back(op);
-		return out;
-	}
-
-	std::shared_ptr<tensor> tensor::operator / (std::shared_ptr<tensor> rhs) {
-		std::shared_ptr<layers::operators> op(new layers::operators(3));
-		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
-		op->forward(*this, *rhs, *out);
-		cmd_layer.push_back(op);
-		return out;
-	}
-
-	std::shared_ptr<tensor> tensor::operator % (std::shared_ptr<tensor> rhs) {
-		std::shared_ptr<layers::operators> op(new layers::operators(4));
-		std::shared_ptr<tensor> out(new tensor(m_data, m_shape, format));
-		op->forward(*this, *rhs, *out);
-		cmd_layer.push_back(op);
-		return out;
 	}
 
 }

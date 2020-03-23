@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <memory>
 
 namespace kernel {
 	enum Format {
@@ -29,7 +30,7 @@ namespace kernel {
 
 
 namespace kernel {
-	static std::vector<std::shared_ptr<layer>> cmd_layer;
+	static std::vector<layer*> cmd_layer;
 	static void run() {
 		for (int i = 0; i < cmd_layer.size(); ++i) {
 			cmd_layer[i]->run();
@@ -38,3 +39,5 @@ namespace kernel {
 	typedef std::shared_ptr<tensor> Tensor;
 }
 #include "operators.h"
+//nn
+#include "convolution.h"

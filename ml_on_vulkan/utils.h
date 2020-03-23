@@ -25,6 +25,15 @@ namespace kernel {
 		if (fmt == kFormatFp32 || fmt == kFormatInt32) {
 			return 4;
 		}
+		else if (fmt == kFormatFp64 || fmt == kFormatInt64) {
+			return 8;
+		}
+		else if (fmt == kFormatFp16 || fmt == kFormatInt16) {
+			return 2;
+		}
+		else if (fmt == kFormatBool || fmt == kFormatInt8 || fmt == kFormatUInt8 ) {
+			return 1;
+		}
 		else if (fmt >= 0 && fmt < kFormatNum) {
 			printf("Unsupported format %d", fmt);
 		}

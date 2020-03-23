@@ -9,15 +9,15 @@ namespace kernel{
 		class operators : public layer
 		{
 		public:
-			operators(int op_id);
-			bool forward(tensor& in, tensor& in2, tensor& out);
-			void reshapeOutTensor(tensor& in, tensor& out);
+			operators(size_t op_id);
+			bool forward(tensor& x, tensor& y, tensor& z);
+			bool forward(tensor& x, tensor& y);
+			void reshapeOutTensor(tensor& x, tensor& z);
 			virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs);
-			virtual bool run();
 		private:
 			bool computeGroupCount();
-			int m_total;
-			int m_op;
+			size_t m_total;
+			size_t m_op;			
 		};	
 
 	}

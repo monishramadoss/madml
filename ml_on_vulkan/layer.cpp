@@ -134,12 +134,15 @@ namespace kernel {
 		vkCmdBindPipeline(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
 		vkCmdBindDescriptorSets(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_layout, 0, 1, &m_descriptor_set, 0, NULL);
 		vkCmdDispatch(m_cmd_buffer, m_group_x, m_group_y, m_group_z);
+		
+		
+		
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));
 		kContextMtx.unlock();
-	}
+	}	
 
-	void layer::runCommandBuffer() {
+	void layer::runCommandBuffer() {		
 		VkSubmitInfo submit_info = {};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
@@ -160,5 +163,4 @@ namespace kernel {
 		VK_CHECK_RESULT(vkWaitForFences(m_device, 1, &fence, VK_TRUE, 100000000000));
 		vkDestroyFence(m_device, fence, NULL);
 	}
-
 }

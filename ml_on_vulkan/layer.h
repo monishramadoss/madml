@@ -13,8 +13,11 @@ namespace kernel {
 	public:
 		layer();
 		virtual ~layer();
-		virtual bool run() = 0;
 		virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs) = 0;
+		bool run() {
+			runCommandBuffer();
+			return true;
+		}
 	protected:
 		void initVulkanThing(int buffer_num);
 		void createDescriptorSetLayout(int buffer_num);

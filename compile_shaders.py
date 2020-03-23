@@ -20,7 +20,7 @@ headfile = open('./ml_on_vulkan/spv_shader.h', 'w+')
 cpp_file = open('./ml_on_vulkan/spv_shader.cpp', 'w+')
 lst = os.listdir(dir)
 
-outfile_str = ["#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {"]
+outfile_str = ["#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n"]
 bin_code = list()
 
 for i in range(0, len(lst)):

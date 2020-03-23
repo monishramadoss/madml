@@ -30,28 +30,6 @@ namespace kernel {
 		void copyTo(tensor& dst);
 		std::shared_ptr<buffer> getBuffer() { return m_buffer; }
 
-		std::shared_ptr<tensor> operator + (std::shared_ptr<tensor> rhs);
-		std::shared_ptr<tensor> operator - (std::shared_ptr<tensor> rhs);
-		std::shared_ptr<tensor> operator * (std::shared_ptr<tensor> rhs);
-		std::shared_ptr<tensor> operator / (std::shared_ptr<tensor> rhs);
-		std::shared_ptr<tensor> operator % (std::shared_ptr<tensor> rhs);
-
-		/*tensor& operator + (int rhs);
-		tensor& operator - (int rhs);
-		tensor& operator * (int rhs);
-		tensor& operator / (int rhs);
-		tensor& operator + (int rhs);
-		tensor& operator % (int rhs);*/
-
-
-		//		tensor& operator == (tensor& rhs);
-		//		tensor& operator != (tensor& rhs);
-		//		tensor& operator > (tensor& rhs);
-		//		tensor& operator < (tensor& rhs);
-		//		tensor& operator >= (tensor& rhs);
-		//		tensor& operator <= (tensor& rhs);
-
-
 	private:
 		VkDevice m_device;
 		std::vector<int> m_shape;
@@ -59,6 +37,9 @@ namespace kernel {
 		const char* m_data;
 		std::shared_ptr<buffer> m_buffer;
 		Format format;
+
+		std::vector<tensor> input;
+		std::vector<tensor> output;
 	};
 }
 #endif
