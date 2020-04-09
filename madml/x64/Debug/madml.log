@@ -1,0 +1,11 @@
+﻿  buffer.cpp
+  context.cpp
+  convolution.cpp
+  layer.cpp
+  matmul.cpp
+  operators.cpp
+  spv_shader.cpp
+  tensor.cpp
+  utils.cpp
+  Generating Code...
+  madml.vcxproj -> C:\Users\monish\source\repos\ml_on_vulkan\x64\Debug\madml.lib
