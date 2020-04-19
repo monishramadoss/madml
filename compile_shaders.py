@@ -2,22 +2,26 @@ import os
 import re
 import sys
 
+os.chdir('/'.join(__file__.replace('\\', '/').split('/')[:-1]))
+print(os.getcwd())
 cmd_remove = ''
 null_out = ''
+
+
 if sys.platform.find('win32') != -1:
     cmd_remove = 'del'
     null_out = ' >>nul 2>nul'
-    dir = os.path.join('\\'.join(__file__.split('\\')[:-1]), 'madml', 'shaders')
+    dir = os.path.join('\\'.join(__file__.split('\\')[:-1]), 'madml_cpp', 'shaders')
     print(dir)
 
 elif sys.platform.find('linux') != -1:
     cmd_remove = 'rm'
     null_out = ' > /dev/null 2>&1'
-    dir = os.path.join('/'.join(__file__.split('/')[:-1]), 'madml', 'shaders')
+    dir = os.path.join('/'.join(__file__.split('/')[:-1]), 'madml_cpp', 'shaders')
     print(dir)
 
-headfile = open('./madml/spv_shader.h', 'w+')
-cpp_file = open('./madml/spv_shader.cpp', 'w+')
+headfile = open('./madml_cpp/spv_shader.h', 'w+')
+cpp_file = open('./madml_cpp/spv_shader.cpp', 'w+')
 lst = os.listdir(dir)
 
 outfile_str = ["#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n"]

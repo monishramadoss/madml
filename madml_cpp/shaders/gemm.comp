@@ -1,0 +1,34 @@
+#version 450
+layout(push_constant) uniform pushBlock {
+      int M;
+      int N;
+      int K;
+} p;
+
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout (binding = 0) readonly buffer ssbA {
+  float A[];
+};
+layout (binding = 1) readonly buffer ssbB {
+  float B[];
+};
+layout (binding = 2) writeonly buffer ssbC {
+  float C[];
+};
+
+void main() {
+    int M = p.M;
+    int N = p.N;
+    int K = p.K;
+    for(uint globalRow = gl_GlobalInvocationID.x; globalRow < p.M; globalRow += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x)){
+        for(uint globalCol = gl_GlobalInvocationID.y; globalCol < p.N; globalCol += int(gl_NumWorkGroups.y * gl_WorkGroupSize.y)){
+            float acc = 0.0;
+            for (uint k=0u; k < K; k++){
+                acc += A[k*M + globalRow] * B[globalCol*K + k]; 
+            } 
+            C[globalCol*M + globalRow] = acc;
+           
+        }
+    }
+}
