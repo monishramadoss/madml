@@ -1,0 +1,140 @@
+#version 450
+#define LOCAL_SZ_X 1024
+layout(push_constant) uniform pushBlock {
+    int dim;
+    int batch_size;
+    int input_channel;
+    int input_size_x;
+    int input_size_y;
+    int input_size_z;
+    int kernel_channel;
+    int kernel_size_x;
+    int kernel_size_y;
+    int kernel_size_z;
+    int stride_x;
+    int stride_y;
+    int stride_z;
+    int dilationx;
+    int dilationy;
+    int dilationz;
+    int padding_x;
+    int padding_y;
+    int padding_z;
+    int output_x;
+    int output_y;
+    int output_z;
+    int padding_type;
+} p;
+
+layout(binding = 0) readonly buffer buf1 {
+    float A[];
+};
+
+layout(binding = 1) readonly buffer buf2 {
+	float B[];	
+};
+
+layout(binding = 2) writeonly buffer buf3 {
+    float C[];
+};
+
+shared int shared_dilation[3];
+shared int shared_kernel_shape[3];
+shared int shared_pad[3];
+shared int shared_stride[3];
+shared int shared_col_shape[3 + 1];
+shared int shared_im_shape[3 + 1];
+
+void main(){
+    uint threadid = gl_GlobalInvocationID.x;
+    int d_temp[3];
+    int d_iter[3];
+
+    if(threadid == 0){
+        shared_dilation[0] = p.dilationx;   
+        shared_kernel_shape[0] = p.kernel_size_x;
+        shared_pad[0] = p.padding_x;
+        shared_stride[0] = p.stride_x;
+        shared_col_shape[0] = p.output_x;
+        shared_im_shape[0] = p.input_size_x;
+    }
+    if(threadid == 1 && p.dim > 1){
+        shared_dilation[1] = p.dilationy;   
+        shared_kernel_shape[1] = p.kernel_size_y;
+        shared_pad[1] = p.padding_y;
+        shared_stride[1] = p.stride_y;
+        shared_col_shape[1] = p.output_y;
+        shared_im_shape[1] = p.input_size_y;
+    }
+    if(threadid == 2 && p.dim > 2){
+        shared_dilation[2] = p.dilationz;   
+        shared_kernel_shape[2] = p.kernel_size_z;
+        shared_pad[2] = p.padding_z;
+        shared_stride[2] = p.stride_z;
+        shared_col_shape[2] = p.output_z;
+        shared_im_shape[2] = p.input_size_z;
+    }
+    if(threadid == p.dim){
+        shared_col_shape[threadid] = p.kernel_channel;
+        shared_im_shape[threadid] = p.input_channel;
+    }
+    memoryBarrierShared();
+
+    int num_axes = p.dim;
+    for(uint index = gl_GlobalInvocationID.x; index < p.input_channel; index += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x)){
+        uint channel_in = index;
+        uint channel_out = 1;
+        uint i;
+        for (i = num_axes - 1; i >= 0; --i) {
+            d_temp[i] = int(channel_in % shared_col_shape[i + 1]);
+            channel_in /= shared_col_shape[i + 1];
+            channel_out *= shared_kernel_shape[i];
+        }
+        channel_out *= channel_in;
+        int data_col_inc = 1;
+        for (i = 0; i < num_axes; ++i) {
+            channel_out *= shared_col_shape[i + 1];
+            channel_out += d_temp[i];
+            d_temp[i] = d_temp[i] * shared_stride[i] - shared_pad[i];
+            channel_in *= shared_im_shape[i + 1];
+            channel_in += d_temp[i];
+            data_col_inc *= shared_col_shape[i + 1];
+            d_iter[i] = 0;
+        }
+        
+        int data_im_ptr = int(channel_in);
+        int data_col_ptr = int(channel_out);
+        bool incremented;
+        do {
+            bool in_range = true;
+            for (i = 0; i < num_axes; ++i) {
+                int d_iter_im = d_iter[i] * shared_dilation[i] + d_temp[i];
+                in_range = in_range && bool(d_iter_im >= 0 && d_iter_im < shared_im_shape[i + 1]);
+                if (!in_range)  
+                    break; 
+            }
+            if (in_range) {
+                int data_im_offset = d_iter[0] * shared_dilation[0];
+                for (i = 1; i < num_axes; ++i) {
+                    data_im_offset += d_iter[i] * shared_dilation[i];
+                    data_im_offset *= shared_im_shape[i + 1];
+            }
+                data_col_ptr = data_im_ptr + data_im_offset; //write
+            } else {
+                data_col_ptr = 0; //write
+            }
+            data_col_ptr += data_col_inc;
+            for (i = num_axes - 1; i >= 0; --i) {
+                const int d_max = shared_kernel_shape[i];
+                if (d_iter[i] == d_max - 1) {
+                    d_iter[i] = 0;
+                } else {  // d_iter[i] < d_max - 1
+                    ++d_iter[i];
+                    incremented = true;
+                    break;
+                }
+            }
+            incremented = false;
+        } while(incremented); //loop is done
+    }
+}
