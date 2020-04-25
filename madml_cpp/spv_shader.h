@@ -19,9 +19,10 @@ namespace kernel {
 		extern const unsigned int equal_spv[476];
 		extern const unsigned int exp_spv[404];
 		extern const unsigned int floor_spv[404];
-		extern const unsigned int gemm_spv[828];
+		extern const unsigned int gemm_spv[1964];
 		extern const unsigned int greater_eq_spv[476];
 		extern const unsigned int greater_than_spv[476];
+		extern const unsigned int im2col_spv[2684];
 		extern const unsigned int less_eq_spv[476];
 		extern const unsigned int less_than_spv[476];
 		extern const unsigned int log_spv[404];

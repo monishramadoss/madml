@@ -162,7 +162,7 @@ namespace kernel {
 	
 			if (m_pipeline == VK_NULL_HANDLE) {
 				computeGroupCount();			
-				createShaderModule(shaders::conv_spv, sizeof(shaders::conv_spv));
+				createShaderModule(shaders::im2col_spv, sizeof(shaders::im2col_spv));
 				createPipeline(sizeof(convParam));
 			}
 

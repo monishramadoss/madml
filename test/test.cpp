@@ -58,7 +58,7 @@ int main()
 	
 	std::cout << "testing operators" << std::endl;
 	{
-		int size = (int)2097152;
+		int size = (int)1203;
 		float* x = new float[size];
 		float* y = new float[size];
 		float* w = new float[size];
@@ -137,6 +137,77 @@ int main()
 		delete t2;
 		delete t3;
 	}
+	std::cout << "testing gemm" << std::endl;
+	{		
+		int M = 128;
+		int N = 128;
+		int K = 128;
+		float* x = new float[X];
+		float* y = new float[Y];
+		float* z = new float[Z];
 
-	
+		for (int i = 0; i < X; ++i)
+			x[i] = 1.0;
+		for (int i = 0; i < Y; ++i)
+			y[i] = 2.0;
+		for (int i = 0; i < Z; ++i)
+			z[i] = 0;
+		
+		std::vector<int> shape_x{ M, K };
+		std::vector<int> shape_y{ K, N };
+		std::vector<int> shape_z{ M, N };
+
+		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp32);
+		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp32);
+		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp32);
+
+		kernel::layers::matmul* mm = new kernel::layers::matmul();
+		mm->forward(*t1, *t2, *t3);
+		mm->run();
+
+		PrintDiffer((float*)t3->toHost(), Z);
+		std::cout << std::endl;
+		delete mm;
+		delete[] x;
+		delete[] y;
+		delete[] z;
+
+		delete t1;
+		delete t2;
+		delete t3;
+		
+	}
+	std::cout << "teting conv" << std::endl;
+	{
+		int N = 10;
+		int IN = 128;
+		int C = 1;
+		int OC = 8;
+		float* x = new float[N * C *IN ];
+		float* y = new float[OC * C * 3];
+		float* z = new float[1024];
+
+		for (int i = 0; i < N * C * IN; ++i)
+			x[i] = 1.0;
+		for (int i = 0; i < OC * C * 3; ++i)
+			y[i] = 2.0;
+		for (int i = 0; i < 1024; ++i)
+			z[i] = 0;
+
+		std::vector<int> shape_x{ N, C, IN};
+		std::vector<int> shape_y{ OC, C, 3};
+		std::vector<int> shape_z{ 1024 };
+
+		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp32);
+		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp32);
+		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp32);
+
+		kernel::layers::convolution* conv = new kernel::layers::convolution(3, 1, 1, 0);
+		conv->forward(*t1, *t2, *t3);
+		conv->run();
+
+		PrintDiffer((float*)t3->toHost(), 1024);
+		std::cout << std::endl;
+
+	}
 }
