@@ -146,7 +146,7 @@
     <ClCompile Include="activation.cpp" />
     <ClCompile Include="buffer.cpp" />
     <ClCompile Include="context.cpp" />
-    <ClCompile Include="convolution.cpp" />
+    <ClCompile Include="im2col.cpp" />
     <ClCompile Include="layer.cpp" />
     <ClCompile Include="matmul.cpp" />
     <ClCompile Include="nn_layers.cpp" />
@@ -160,7 +160,7 @@
     <ClInclude Include="buffer.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="context.h" />
-    <ClInclude Include="convolution.h" />
+    <ClInclude Include="im2col.h" />
     <ClInclude Include="madml.h" />
     <ClInclude Include="layer.h" />
     <ClInclude Include="matmul.h" />

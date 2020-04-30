@@ -202,9 +202,9 @@ int main()
 		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp32);
 		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp32);
 
-		kernel::layers::convolution* conv = new kernel::layers::convolution(3, 1, 1, 0);
+		/*kernel::layers::convolution* conv = new kernel::layers::convolution(3, 1, 1, 0);
 		conv->forward(*t1, *t2, *t3);
-		conv->run();
+		conv->run();*/
 
 		PrintDiffer((float*)t3->toHost(), 1024);
 		std::cout << std::endl;

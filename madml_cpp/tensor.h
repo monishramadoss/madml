@@ -12,7 +12,7 @@ namespace kernel {
 	{
 	public:
 		tensor(Format fmt = kFormatFp32);
-		tensor(const char* data, std::vector<int>& shape, Format fmt = kFormatInvalid);
+		tensor(const char* data, std::vector<int> shape, Format fmt = kFormatInvalid);
 		void* map();
 		void unMap();
 		Shape getShape() const;

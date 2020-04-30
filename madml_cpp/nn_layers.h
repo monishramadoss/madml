@@ -30,7 +30,12 @@ namespace kernel {
 		};
 
 		class dense : public Module {
-
+			int size; bool bias;
+			tensor* dense_tensor;
+			tensor* bias_tensor;
+			tensor* output_tensor;
+			layers::matmul* mul_op;
+			layers::operators* add_op;
 		public:
 			dense(int size, bool bias);
 			std::vector<tensor*> forward(std::vector<tensor*> x);

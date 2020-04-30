@@ -10,7 +10,7 @@ namespace kernel {
 		m_data = nullptr;
 	}
 
-	tensor::tensor(const char* data, std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt) {
+	tensor::tensor(const char* data, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt) {
 		createContext();
 		m_device = kDevice;
 		m_data = data;

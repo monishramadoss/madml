@@ -21,9 +21,6 @@
     <ClCompile Include="context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="convolution.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,6 +45,9 @@
     <ClCompile Include="activation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="im2col.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="buffer.h">
@@ -57,9 +57,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="convolution.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="layer.h">
@@ -87,6 +84,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="activation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="im2col.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
