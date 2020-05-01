@@ -15,11 +15,9 @@ worker_data_frame = {
 }
 
 client_data_frame = {
-     "user_id": -1,
-     "model_structure": [],
-     "weights": [],
-     "progress": "",
-     "worker_id": -1
+    "user_id": 321,
+    "progress": "new",
+    "worker_id": -1
 }
 
 requests.post(HOST_NAME + '/ready_worker', data=worker_data_frame)
