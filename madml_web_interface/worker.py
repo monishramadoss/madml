@@ -2,11 +2,10 @@ import requests
 import platform
 import multiprocessing
 import psutil
+import time
 
 HOST_NAME = 'http://127.0.0.1:5000'
-worker_id = 456
 worker_data_frame = {
-    "worker_id": worker_id,
     "assembly": platform.machine(),
     "os": platform.processor(),
     "cpu_info": platform.processor(),
@@ -20,9 +19,26 @@ client_data_frame = {
     "worker_id": -1
 }
 
-requests.post(HOST_NAME + '/ready_worker', data=worker_data_frame)
-res = requests.get(HOST_NAME + '/ready_worker').json()
-client_data_frame = dict([(k, res[k]) for k in client_data_frame.keys()])
-client_data_frame['worker_id'] = worker_id
-client_data_frame['progress'] = 'working'
-res = requests.put(HOST_NAME + "/ready_worker", data=client_data_frame)
+
+header = {'Content-Type': 'application/json', 'Accept': 'application/json'}
+res = requests.get(HOST_NAME + '/worker_request/-1', headers=header, json=worker_data_frame)
+WORKER_ID = res.text
+
+while True:
+    res = requests.get(HOST_NAME + "/worker_request/pull_layers/" + WORKER_ID, headers=header)
+    model_json = res.json()
+    client_id = model_json['client_id']
+    if client_id != '-1':
+        res = requests.get(HOST_NAME + "/worker_request/pull_weight/" + client_id, headers=header)
+        weights = res.json()
+        for layer in model_json['layers']:
+            print(layer)
+        for weight in weights['tensor_names']:
+            res = requests.get(HOST_NAME + "/worker_request/get_weight/" + weight['weight'], headers=header)
+            w = res.json()['weight']
+            weight['weight'] = [float(x) for x in w] if w != [''] else 0
+            print(weight)
+        break
+    time.sleep(10)
+    break
+requests.delete(HOST_NAME + '/worker_request/' + WORKER_ID, headers=header, json=worker_data_frame)

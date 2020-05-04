@@ -1,5 +1,6 @@
 import requests
 import json
+import tempfile
 
 import onnx
 from google.protobuf.json_format import MessageToJson
@@ -7,32 +8,31 @@ from google.protobuf.json_format import MessageToJson
 HOST_NAME = 'http://127.0.0.1:5000'
 SUCCESS_FULL_CONNECTION = False
 TEST_ONNX = True
+CLIENT_ID = 321
+
 client_data_frame = {
-    "user_id": 321,
     "progress": "new",
     "worker_id": -1
 }
 
 weight_payload = {
-    'user_id': -1,
     'weight': [],
-    'parameters': [],
+    'dims': [],
     'layer': '',
 }
 
 layer_payload = {
-    'user_id': -1,
-    'op': '',
+    'opType': '',
     'attributes': '',
     'input': [],
     'output': [],
     'name': '',
 }
 
-res = requests.get(HOST_NAME + '/client_request', data=client_data_frame)
+header = {'Content-Type': 'application/json'}
+res = requests.get(HOST_NAME + '/client_request/' + str(CLIENT_ID), headers=header, json=client_data_frame)
+print(res)
 SUCCESS_FULL_CONNECTION = res.status_code == 200
-weight_payload['user_id'] = client_data_frame['user_id']
-layer_payload['user_id'] = client_data_frame['user_id']
 
 if TEST_ONNX:
     model_path = "./tests/mobilenetv2-1.0.onnx"
@@ -42,26 +42,32 @@ if TEST_ONNX:
 
     weight_payloads = list()
     for x in graph['initializer']:
+        tmp = weight_payload.copy()
         if x['dataType'] == 1:
-            weight_payload['weight'] = x['floatData']
-        weight_payload['layer'] = x['name']
-        weight_payload['parameters'] = x['dims']
-        weight_payloads.append(weight_payload)
+            tmp['weight'] = x['floatData']
+        tmp['layer'] = x['name']
+        tmp['dims'] = x['dims']
+        weight_payloads.append(tmp)
 
     layer_payloads = list()
     for x in graph['node']:
-        layer_payload['input'] = x['input']
-        layer_payload['output'] = x['output']
-        layer_payload['name'] = x['name']
+        tmp = layer_payload.copy()
+        tmp['input'] = x['input']
+        tmp['output'] = x['output']
+        tmp['name'] = x['name']
         if 'attribute' in x.keys():
-            layer_payload['attributes'] = x['attribute']
-        layer_payload['op'] = x['opType']
-        layer_payloads.append(layer_payload)
+            tmp['attributes'] = x['attribute']
+        tmp['opType'] = x['opType']
+        layer_payloads.append(tmp)
 
     for x in graph['input']:
         pass
     for x in graph['output']:
         pass
 
-    res = requests.post(HOST_NAME + '/client_request', data=graph)
+    for layer_payload in layer_payloads:
+        requests.post(HOST_NAME + '/client_request_worker/push_model/' + str(CLIENT_ID), headers=header, json=layer_payload)
+    for weight_payload in weight_payloads:
+        requests.post(HOST_NAME + '/client_request_worker/push_weight/' + str(CLIENT_ID), headers=header, json=weight_payload)
 
+    #requests.delete(HOST_NAME + '/client_request/' + str(CLIENT_ID))
