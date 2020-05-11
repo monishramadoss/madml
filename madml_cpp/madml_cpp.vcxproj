@@ -156,7 +156,6 @@
     <ClCompile Include="operators.cpp" />
     <ClCompile Include="spv_shader.cpp" />
     <ClCompile Include="tensor.cpp" />
-    <ClCompile Include="transform.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -171,7 +170,6 @@
     <ClInclude Include="operators.h" />
     <ClInclude Include="spv_shader.h" />
     <ClInclude Include="tensor.h" />
-    <ClInclude Include="transform.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>

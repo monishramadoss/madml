@@ -1,12 +1,1 @@
-﻿  activation.cpp
-  buffer.cpp
-  context.cpp
-  layer.cpp
-  matmul.cpp
-  nn_layers.cpp
-  operators.cpp
-  spv_shader.cpp
-  tensor.cpp
-  transform.cpp
-  utils.cpp
-  madml_cpp.vcxproj -> C:\Users\MonishRamadoss\Source\Repos\monishramadoss\ml_on_vulkan\x64\Debug\madml_cpp.lib
+﻿  madml_cpp.vcxproj -> C:\Users\monish\source\repos\ml_on_vulkan\x64\Debug\madml_cpp.lib
