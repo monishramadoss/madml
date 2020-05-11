@@ -1,18 +1,4 @@
 #version 450
-#define WIDTH 4u                     // The vector-width (in number of floats)
-#define TSM 128u                     // The tile-size in dimension M
-#define TSN 128u                     // The tile-size in dimension N
-#define TSK 16u                      // The tile-size in dimension K
-#define WPTM 8u                      // The amount of work-per-thread in dimension M
-#define WPTN 8u                      // The amount of work-per-thread in dimension N
-#define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
-#define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
-#define RTSM 16u    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
-#define RTSN 16u    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
-#define MOD2(x,y) ((x) % (y))
-#define DIV2(x,y) ((x) / (y))
-
-
 
 layout(push_constant) uniform pushBlock {
       int M;
@@ -20,7 +6,7 @@ layout(push_constant) uniform pushBlock {
       int K;
 } p;
 
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
   float A[];
@@ -32,73 +18,19 @@ layout (binding = 2) writeonly buffer ssbC {
   float C[];
 };
 
-shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
-shared float Bsub[TSK][TSN];
-
-
 void main() {
     int M = p.M;
     int N = p.N;
     int K = p.K;
+    uint globalRow = gl_GlobalInvocationID.x; // Row ID of C (0..M)
+    uint globalCol = gl_GlobalInvocationID.y; // Col ID of C (0..N)
+    if(globalRow > M || globalCol > N)
+	return;
+    // Compute a single element (loop over K)
+    float acc = 0.0;
+    for (uint k=0u; k < K; k++)
+        acc += A[k*M + globalRow] * B[globalCol*K + k];
 
-    uint tidm = gl_LocalInvocationID.x; // Local row ID (max: TSM/WPTM == RTSM)
-    uint tidn = gl_LocalInvocationID.y; // Local col ID (max: TSN/WPTN == RTSN)
-    uint offsetM = TSM*gl_WorkGroupID.x; // Work-group offset
-    uint offsetN = TSN*gl_WorkGroupID.y; // Work-group offset
-    
-    float Areg;
-    float Breg[WPTN];
-    float acc[WPTM][WPTN];
-    uint numTiles = K/TSK;
-    uint t=0u;
-    
-    for (uint wm=0u; wm < WPTM; wm++) { 
-        for (uint wn=0u; wn < WPTN; wn++) {
-            acc[wm][wn] = 0.0;
-        }
-    }
-
-    do {
-        // Load one tile of A and B into local memory
-        for (int la=0; la < LPTA; la++) {
-            uint tid = tidn*RTSM + tidm;
-            uint id = la*RTSN*RTSM + tid;
-            uint row = MOD2(id,TSM);
-            uint col = DIV2(id,TSM);
-            uint tiledIndex = TSK*t + col;
-            Asub[col][row] = A[tiledIndex*M + offsetM + row];
-            Bsub[row][col] = B[tiledIndex*N + offsetN + row];
-        }
-        memoryBarrierShared();
-        for (uint k=0u; k < TSK; k++) {
-            // Cache the values of Bsub in registers
-            for (uint wn=0u; wn < WPTN; wn++) {
-                uint col = tidn + wn*RTSN;
-                Breg[wn] = Bsub[k][col];
-            }
-
-            // Perform the computation
-            for (uint wm=0u; wm < WPTM; wm++) {
-                uint row = tidm + wm*RTSM;
-                Areg = Asub[k][row];
-                for (uint wn=0u; wn < WPTN; wn++) {
-                    acc[wm][wn] += Areg * Breg[wn];
-                }
-            }
-        }
-        barrier();
-        t++;
-    } while(t < numTiles);
-      
-    //wokring set
-    for(uint globalRow = gl_GlobalInvocationID.x; globalRow < p.M; globalRow += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x)){
-        for(uint globalCol = gl_GlobalInvocationID.y; globalCol < p.N; globalCol += int(gl_NumWorkGroups.y * gl_WorkGroupSize.y)){
-            float acc = 0.0;
-            for (uint k=0u; k < K; k++){
-                acc += A[k*M + globalRow] * B[globalCol*K + k]; 
-            } 
-            C[globalCol*M + globalRow] = acc;
-           
-        }
-    }
+    // Store the result
+    C[globalCol*M + globalRow] = acc;
 }

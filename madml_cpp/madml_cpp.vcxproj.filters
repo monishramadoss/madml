@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{3ca6eb6f-357d-4e0d-b289-93a6d8c8616e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="buffer.cpp">
@@ -45,7 +48,7 @@
     <ClCompile Include="activation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="im2col.cpp">
+    <ClCompile Include="transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -86,8 +89,124 @@
     <ClInclude Include="activation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="im2col.h">
+    <ClInclude Include="transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\abs.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\acos.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\acosh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\add.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\asin.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\asinh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\atan.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\atanh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\ceil.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\clip.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\conv.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\cos.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\cosh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\div.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\equal.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\exp.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\floor.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\gemm.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\greater_eq.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\greater_than.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\im2col.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\less_eq.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\less_than.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\log.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\max.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\min.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\mod.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\mul.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\nequal.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\pow.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\round.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\sin.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\sinh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\sqrt.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\sub.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\tan.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\tanh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\xor.comp">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -38,7 +38,7 @@ namespace kernel {
 { \
         if (f != VK_SUCCESS) \
         { \
-			std::cout << "VULKAN KERNEL ERROR: " << (int)f; \
+			std::cout << "VULKAN KERNEL ERROR: " << f; \
 		} \
 }
 	   	 

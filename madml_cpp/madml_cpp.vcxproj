@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -44,6 +44,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
+    <VCToolsVersion>14.25.28610</VCToolsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -51,6 +52,7 @@
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
+    <VCToolsVersion>14.25.28610</VCToolsVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -83,6 +85,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,6 +132,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.131.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,13 +150,13 @@
     <ClCompile Include="activation.cpp" />
     <ClCompile Include="buffer.cpp" />
     <ClCompile Include="context.cpp" />
-    <ClCompile Include="im2col.cpp" />
     <ClCompile Include="layer.cpp" />
     <ClCompile Include="matmul.cpp" />
     <ClCompile Include="nn_layers.cpp" />
     <ClCompile Include="operators.cpp" />
     <ClCompile Include="spv_shader.cpp" />
     <ClCompile Include="tensor.cpp" />
+    <ClCompile Include="transform.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -160,7 +164,6 @@
     <ClInclude Include="buffer.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="context.h" />
-    <ClInclude Include="im2col.h" />
     <ClInclude Include="madml.h" />
     <ClInclude Include="layer.h" />
     <ClInclude Include="matmul.h" />
@@ -168,7 +171,48 @@
     <ClInclude Include="operators.h" />
     <ClInclude Include="spv_shader.h" />
     <ClInclude Include="tensor.h" />
+    <ClInclude Include="transform.h" />
     <ClInclude Include="utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\abs.comp" />
+    <None Include="shaders\acos.comp" />
+    <None Include="shaders\acosh.comp" />
+    <None Include="shaders\add.comp" />
+    <None Include="shaders\asin.comp" />
+    <None Include="shaders\asinh.comp" />
+    <None Include="shaders\atan.comp" />
+    <None Include="shaders\atanh.comp" />
+    <None Include="shaders\ceil.comp" />
+    <None Include="shaders\clip.comp" />
+    <None Include="shaders\conv.comp" />
+    <None Include="shaders\cos.comp" />
+    <None Include="shaders\cosh.comp" />
+    <None Include="shaders\div.comp" />
+    <None Include="shaders\equal.comp" />
+    <None Include="shaders\exp.comp" />
+    <None Include="shaders\floor.comp" />
+    <None Include="shaders\gemm.comp" />
+    <None Include="shaders\greater_eq.comp" />
+    <None Include="shaders\greater_than.comp" />
+    <None Include="shaders\im2col.comp" />
+    <None Include="shaders\less_eq.comp" />
+    <None Include="shaders\less_than.comp" />
+    <None Include="shaders\log.comp" />
+    <None Include="shaders\max.comp" />
+    <None Include="shaders\min.comp" />
+    <None Include="shaders\mod.comp" />
+    <None Include="shaders\mul.comp" />
+    <None Include="shaders\nequal.comp" />
+    <None Include="shaders\pow.comp" />
+    <None Include="shaders\round.comp" />
+    <None Include="shaders\sin.comp" />
+    <None Include="shaders\sinh.comp" />
+    <None Include="shaders\sqrt.comp" />
+    <None Include="shaders\sub.comp" />
+    <None Include="shaders\tan.comp" />
+    <None Include="shaders\tanh.comp" />
+    <None Include="shaders\xor.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

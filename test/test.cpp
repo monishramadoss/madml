@@ -7,6 +7,10 @@
 #include <vector>
 #include <map>
 
+#include <chrono> 
+using namespace std::chrono;
+
+
 #define X M*K
 #define Y K*N
 #define Z M*N
@@ -58,7 +62,8 @@ int main()
 	
 	std::cout << "testing operators" << std::endl;
 	{
-		int size = (int)1203;
+		int size = (int)654123;
+
 		float* x = new float[size];
 		float* y = new float[size];
 		float* w = new float[size];
@@ -85,9 +90,13 @@ int main()
 			std::vector<kernel::tensor> input { *t1, *t2 };
 			std::vector<kernel::tensor> output{ *t4 };
 			k1->forward(input, output);
-			k1->run();
-
-		    std::cout << i << std::endl;
+			{
+				auto start = high_resolution_clock::now();
+				k1->run();
+				auto stop = high_resolution_clock::now();
+				auto duration = duration_cast<microseconds>(stop - start);
+				std::cout << i << " " << duration.count() / size << " microseconds" << std::endl;
+			}
 			PrintDiffer((float*)t1->toHost(), size);
 			std::cout << std::endl;
 			PrintDiffer((float*)t2->toHost(), size);
@@ -102,9 +111,14 @@ int main()
 			std::vector<kernel::tensor> input{ *t1, *t2 };
 			std::vector<kernel::tensor> output{ *t3 };
 			k1->forward(input, output);
-			k1->run();
-			
-			std::cout << i << std::endl;
+			{
+				auto start = high_resolution_clock::now();
+				k1->run();
+				auto stop = high_resolution_clock::now();
+				auto duration = duration_cast<microseconds>(stop - start);
+				std::cout << i << " " << duration.count() / size << " microseconds" << std::endl;
+			}
+
 			PrintDiffer((float*)t1->toHost(), size);
 			std::cout << std::endl;
 			PrintDiffer((float*)t2->toHost(), size);
@@ -119,9 +133,13 @@ int main()
 			std::vector<kernel::tensor> input{ *t2 };
 			std::vector<kernel::tensor> output{ *t4 };
 			k1->forward(input, output);
-			k1->run();
-
-			std::cout << i << std::endl;
+			{
+				auto start = high_resolution_clock::now();
+				k1->run();
+				auto stop = high_resolution_clock::now();
+				auto duration = duration_cast<microseconds>(stop - start);
+				std::cout << i << " " << duration.count() / size << " microseconds" << std::endl;
+			}
 			PrintDiffer((float*)t2->toHost(), size);
 			std::cout << std::endl;
 			PrintDiffer((float*)t4->toHost(), size);
@@ -137,11 +155,13 @@ int main()
 		delete t2;
 		delete t3;
 	}
+
+
 	std::cout << "testing gemm" << std::endl;
 	{		
-		int M = 128;
-		int N = 128;
-		int K = 128;
+		int M = 4096;
+		int N = 4096;
+		int K = 4096;
 		float* x = new float[X];
 		float* y = new float[Y];
 		float* z = new float[Z];
@@ -163,7 +183,14 @@ int main()
 
 		kernel::layers::matmul* mm = new kernel::layers::matmul();
 		mm->forward(*t1, *t2, *t3);
-		mm->run();
+		
+		{
+			auto start = high_resolution_clock::now();
+			mm->run();
+			auto stop = high_resolution_clock::now();
+			auto duration = duration_cast<microseconds>(stop - start);
+			std::cout << std::endl << duration.count() << " microseconds" << std::endl;
+		}
 
 		PrintDiffer((float*)t3->toHost(), Z);
 		std::cout << std::endl;
@@ -177,6 +204,8 @@ int main()
 		delete t3;
 		
 	}
+
+
 	std::cout << "teting conv" << std::endl;
 	{
 		int N = 10;

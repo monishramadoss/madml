@@ -1,6 +1,12 @@
-﻿  im2col.cpp
+﻿  activation.cpp
+  buffer.cpp
+  context.cpp
   layer.cpp
+  matmul.cpp
+  nn_layers.cpp
+  operators.cpp
+  spv_shader.cpp
+  tensor.cpp
+  transform.cpp
   utils.cpp
-  Generating Code...
-C:\Users\monish\source\repos\ml_on_vulkan\madml_cpp\im2col.cpp(44): error C4716: 'kernel::layers::im2col::forward': must return a value
-C:\Users\monish\source\repos\ml_on_vulkan\madml_cpp\im2col.cpp(102): error C4716: 'kernel::layers::col2im::forward': must return a value
+  madml_cpp.vcxproj -> C:\Users\MonishRamadoss\Source\Repos\monishramadoss\ml_on_vulkan\x64\Debug\madml_cpp.lib

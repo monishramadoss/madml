@@ -1,2 +1,2 @@
-﻿test.obj : error LNK2019: unresolved external symbol "public: __cdecl kernel::tensor::tensor(char const *,class std::vector<int,class std::allocator<int> >,enum kernel::Format)" (??0tensor@kernel@@QEAA@PEBDV?$vector@HV?$allocator@H@std@@@std@@W4Format@1@@Z) referenced in function main
-C:\Users\monish\source\repos\ml_on_vulkan\x64\Debug\test.exe : fatal error LNK1120: 1 unresolved externals
+﻿  test.cpp
+  test.vcxproj -> C:\Users\MonishRamadoss\Source\Repos\monishramadoss\ml_on_vulkan\x64\Debug\test.exe
