@@ -5,6 +5,11 @@ layout(push_constant) uniform pushBlock {
     int n;
     int data_im;
     int data_col;
+    int num_axes;
+
+    int kernel_shape_h;
+    int kernel_shape_w;
+    int kernel_shape_d;
 
     int pad_h;
     int pad_w;
@@ -26,7 +31,7 @@ layout(push_constant) uniform pushBlock {
     int input_h;
     int input_w;
     int input_d;
-    int input_c
+    int input_c;
 };
 
 layout(binding = 0) buffer buf1 {
@@ -39,7 +44,7 @@ layout(binding = 1) buffer buf2 {
 
 layout(binding = 2) buffer buf3 {
     float C[];
-}
+};
 
 layout (local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
@@ -92,8 +97,8 @@ void im2col_nd(){
             channel_in /= shared_col_shape[i + 1];
             channel_out *= shared_kernel_shape[i];
         }
-        channel_out *= channel_in
-        int data_col_inc = 1
+        channel_out *= channel_in;
+        int data_col_inc = 1;
         for (i = 0; i < num_axes; ++i) {
             channel_out *= shared_col_shape[i + 1];
             channel_out += d_temp[i];
@@ -189,7 +194,7 @@ void col2im_nd(){
             d_col_start[i] = d_col_iter[i] = (d_im[i] < kernel_extent) ? 0 : (d_im[i] - kernel_extent) / shared_stride[i] + 1;
             d_col_end[i] = min(d_im[i] / shared_stride[i] + 1, shared_col_shape[i + 1]);
             if (d_col_start[i] >= d_col_end[i]) {
-                data_im[index] = 0;
+                C[data_im + index] = 0;
                 done = true;
                 break;
             }
@@ -207,7 +212,7 @@ void col2im_nd(){
             int kernel_index;
             for (int i = num_axes - 1; i >= 0; --i) {
                 kernel_index = d_im[i] - d_col_iter[i] * shared_stride[i];
-                if (kernel_index % shared_dialate[i]) {
+                if (kernel_index % shared_dialate[i] != 0) {
                     skip = true;
                     break;
                 } else {

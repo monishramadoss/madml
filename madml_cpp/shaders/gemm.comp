@@ -23,14 +23,14 @@ void main() {
     int N = p.N;
     int K = p.K;
     uint globalRow = gl_GlobalInvocationID.x; // Row ID of C (0..M)
-    uint globalCol = gl_GlobalInvocationID.y; // Col ID of C (0..N)
-    if(globalRow > M || globalCol > N)
-	return;
-    // Compute a single element (loop over K)
+    uint globalK = gl_GlobalInvocationID.y; // Col ID of C (0..K)
+    if(globalRow > M || globalK > K)
+	    return;
+    // Compute a single element (loop over N)
     float acc = 0.0;
-    for (uint k=0u; k < K; k++)
-        acc += A[k*M + globalRow] * B[globalCol*K + k];
-
+    for (uint n=0u; n < N; n++){
+        acc += A[globalK*M + globalRow] * B[n*K + globalK];
+        C[n*M + globalRow] = acc;
+    }
     // Store the result
-    C[globalCol*M + globalRow] = acc;
 }

@@ -202,5 +202,50 @@
     <None Include="shaders\xor.comp">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shaders\celu.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\elu.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\hardshrink.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\hardtanh.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\leakyrelu.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\logsigmoid.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\prelu.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\relu.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\relu6.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\selu.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\sigmoid.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\softplus.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\softshrink.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\softsign.comp">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\tanhshrink.comp">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
