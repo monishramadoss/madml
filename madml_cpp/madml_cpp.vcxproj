@@ -184,7 +184,6 @@
     <None Include="shaders\ceil.comp" />
     <None Include="shaders\celu.comp" />
     <None Include="shaders\clip.comp" />
-    <None Include="shaders\conv.comp" />
     <None Include="shaders\cos.comp" />
     <None Include="shaders\cosh.comp" />
     <None Include="shaders\div.comp" />

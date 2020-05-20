@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\madml_cpp",
+    "\\madml_cpp\\shaders"
   ],
+  "SelectedNode": "\\madml_cpp\\shaders\\im2col.comp",
   "PreviewInSolutionExplorer": false
 }

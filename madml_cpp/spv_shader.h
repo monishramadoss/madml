@@ -13,7 +13,7 @@ namespace kernel {
 		extern const unsigned int ceil_spv[404];
 		extern const unsigned int celu_spv[497];
 		extern const unsigned int clip_spv[456];
-		extern const unsigned int conv_spv[998];
+		extern const unsigned int col2im_spv[1537];
 		extern const unsigned int cos_spv[404];
 		extern const unsigned int cosh_spv[404];
 		extern const unsigned int div_spv[466];
@@ -21,11 +21,12 @@ namespace kernel {
 		extern const unsigned int equal_spv[476];
 		extern const unsigned int exp_spv[404];
 		extern const unsigned int floor_spv[404];
-		extern const unsigned int gemm_spv[718];
+		extern const unsigned int gemm_spv[714];
 		extern const unsigned int greater_eq_spv[476];
 		extern const unsigned int greater_than_spv[476];
 		extern const unsigned int hardshrink_spv[535];
 		extern const unsigned int hardtanh_spv[556];
+		extern const unsigned int im2col_spv[1619];
 		extern const unsigned int leakyrelu_spv[470];
 		extern const unsigned int less_eq_spv[476];
 		extern const unsigned int less_than_spv[476];
