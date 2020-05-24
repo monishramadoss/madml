@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import glob
 
 os.chdir('/'.join(__file__.replace('\\', '/').split('/')[:-1]))
 print(os.getcwd())
@@ -11,27 +12,29 @@ null_out = ''
 if sys.platform.find('win32') != -1:
     cmd_remove = 'del'
     null_out = ' >>nul 2>nul'
-    dir = os.path.join('\\'.join(__file__.split('\\')[:-1]), 'madml_cpp', 'shaders')
+    dir = os.path.join('\\'.join(__file__.split('\\')[:-1]), 'include', 'shaders')
     print(dir)
 
 elif sys.platform.find('linux') != -1:
     cmd_remove = 'rm'
     null_out = ' > /dev/null 2>&1'
-    dir = os.path.join('/'.join(__file__.split('/')[:-1]), 'madml_cpp', 'shaders')
+    dir = os.path.join('/'.join(__file__.split('/')[:-1]), 'include', 'shaders')
     print(dir)
 
-headfile = open('./madml_cpp/spv_shader.h', 'w+')
-cpp_file = open('./madml_cpp/spv_shader.cpp', 'w+')
-lst = os.listdir(dir)
+headfile = open('./include/spv_shader.h', 'w+')
+cpp_file = open('./src/spv_shader.cpp', 'w+')
+lst = list()
+for root, dirs, files in os.walk("./"):
+    for file in files:
+        if file.endswith(".comp"):
+             lst.append(os.path.join(root, file))
 
 outfile_str = ["#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n"]
 bin_code = list()
 
 for i in range(0, len(lst)):
-    if (os.path.splitext(lst[i])[-1] != '.comp'):
-        continue
-    prefix = os.path.splitext(lst[i])[0];
-    path = os.path.join(dir, lst[i])
+    prefix = os.path.splitext(os.path.split(lst[i])[-1])[0]
+    path = lst[i]
 
     bin_file = prefix + '.tmp'
     cmd = ' glslangValidator -V ' + path + ' -S comp -o ' + bin_file

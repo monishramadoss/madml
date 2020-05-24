@@ -159,11 +159,6 @@
   <ItemGroup>
     <ClCompile Include="test.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\madml_cpp\madml_cpp.vcxproj">
-      <Project>{c43d8c70-b500-4ed8-a545-d380e8c247dd}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

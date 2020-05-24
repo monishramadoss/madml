@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "test", "test\test.vcxproj", "{734E493D-7077-4A49-BBD0-A2C1C0D0A457}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "madml_cpp", "madml_cpp\madml_cpp.vcxproj", "{C43D8C70-B500-4ED8-A545-D380E8C247DD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -23,14 +21,6 @@ Global
 		{734E493D-7077-4A49-BBD0-A2C1C0D0A457}.Release|x64.Build.0 = Release|x64
 		{734E493D-7077-4A49-BBD0-A2C1C0D0A457}.Release|x86.ActiveCfg = Release|Win32
 		{734E493D-7077-4A49-BBD0-A2C1C0D0A457}.Release|x86.Build.0 = Release|Win32
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Debug|x64.ActiveCfg = Debug|x64
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Debug|x64.Build.0 = Debug|x64
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Debug|x86.ActiveCfg = Debug|Win32
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Debug|x86.Build.0 = Debug|Win32
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Release|x64.ActiveCfg = Release|x64
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Release|x64.Build.0 = Release|x64
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Release|x86.ActiveCfg = Release|Win32
-		{C43D8C70-B500-4ED8-A545-D380E8C247DD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
