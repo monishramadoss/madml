@@ -1,10 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\CMake",
     "\\include",
     "\\src"
   ],
-  "SelectedNode": "\\src\\spv_shader.cpp",
+  "SelectedNode": "\\ml_on_vulkan.sln",
   "PreviewInSolutionExplorer": false
 }

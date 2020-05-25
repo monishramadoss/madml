@@ -1,21 +1,16 @@
 ﻿# CMakeList.txt : Top-level CMake project file, do global configuration
 # and include sub-projects here.
 #
-
-cmake_minimum_required (VERSION 3.8 FATAL_ERROR)
-
-project(CMake)
-find_package(pybind11 REQUIRED)  
-find_package(Vulkan REQUIRED FATAL_ERROR)
-
-set(${VULKAN_LIB_LIST} "vulkan-1")
-
-# Add source to this project's executable.
-include_directories(AFTER ${VULKAN_PATH}/Include)
-link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
+cmake_minimum_required (VERSION 3.8)
 
 project ("ml_on_vulkan")
+include_directories(ext)
+find_package(Vulkan)
+IF (NOT Vulkan_FOUND)
+	find_library(Vulkan_LIBRARY NAMES vulkan-1 vulkan PATHS ${CMAKE_SOURCE_DIR}/libs/vulkan)
+ENDIF()
+
 
 # Include sub-projects.
-add_subdirectory ("ext")
-add_subdirectory ("CMake")
+add_subdirectory("ext")
+add_subdirectory ("cmake")
