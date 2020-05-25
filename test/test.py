@@ -11,8 +11,8 @@ filename = [
 ["test_labels","t10k-labels-idx1-ubyte.gz"]
 ]
 
-if not os.path.exists('./test/data'):
-    os.makedirs('./test/data')
+if not os.path.exists('./data'):
+    os.makedirs('./data')
 
 def download_mnist():
     base_url = "http://yann.lecun.com/exdb/mnist/"
@@ -24,22 +24,22 @@ def download_mnist():
 def save_mnist():
     mnist = {}
     for name in filename[:2]:
-        with gzip.open('./test/data/' + name[1], 'rb') as f:
+        with gzip.open('./data/' + name[1], 'rb') as f:
             mnist[name[0]] = np.frombuffer(f.read(), np.uint8, offset=16).reshape(-1,28*28)
     for name in filename[-2:]:
-        with gzip.open('./test/data/' + name[1], 'rb') as f:
+        with gzip.open('./data/' + name[1], 'rb') as f:
             mnist[name[0]] = np.frombuffer(f.read(), np.uint8, offset=8)
-    with open("./test/data/mnist.pkl", 'wb') as f:
+    with open("./data/mnist.pkl", 'wb') as f:
         pickle.dump(mnist,f)
     print("Save complete.")
 
 def init():
-    if not os.path.exists('./test/data/mnist.pkl'):
+    if not os.path.exists('./data/mnist.pkl'):
         download_mnist()
         save_mnist()
 
 def load():
-    with open("./test/data/mnist.pkl",'rb') as f:
+    with open("./data/mnist.pkl",'rb') as f:
         mnist = pickle.load(f)
     print('training_images:', mnist["training_images"].shape)
     print('training_labels:', mnist["training_labels"].shape)
