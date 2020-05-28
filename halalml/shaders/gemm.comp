@@ -1,0 +1,36 @@
+#version 450
+
+layout(push_constant) uniform pushBlock {
+      int M;
+      int N;
+      int K;
+} p;
+
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+layout (binding = 0) readonly buffer ssbA {
+  float A[];
+};
+layout (binding = 1) readonly buffer ssbB {
+  float B[];
+};
+layout (binding = 2) writeonly buffer ssbC {
+  float C[];
+};
+
+void main() {
+    int M = p.M;
+    int N = p.N;
+    int K = p.K;
+    uint globalRow = gl_GlobalInvocationID.x; // Row ID of C (0..M)
+    uint globalCol = gl_GlobalInvocationID.y; // Col ID of C (0..N)
+    if(globalRow > M || globalCol > N)
+	    return;
+    float acc = 0.0;
+    // Compute a single element (loop over N)
+    for (uint k=0u; k < k; k++){
+       acc += A[k*M + globalRow] * B[globalCol*K + k];   
+    }
+    C[globalCol*M + globalRow] = acc;
+   // Store the result
+}

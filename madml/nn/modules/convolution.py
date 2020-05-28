@@ -97,6 +97,8 @@ def col2im(A, channels, height, width, kernel, pad, stride, dilation):
 BATCH_SIZE = 2
 Height = 224
 Width = 224
+
+
 kernel = np.ones(shape=(8,3,3,3)).reshape((27,8))
 if __name__ == "__main__":
     inpt = np.ones(shape=(BATCH_SIZE, 3, Height, Width))
@@ -132,9 +134,11 @@ class _ConvNd(Module):
         self.output_padding = output_padding
         self.groups = groups
         self.padding_mode = padding_mode
+    def forward(self, x):
+        pass
 
 class _ConvTransposeNd(_ConvNd):
-     def __init__(self, in_channels, out_channels, kernel_size, stride,
+    def __init__(self, in_channels, out_channels, kernel_size, stride,
                  padding, dilation, transposed, output_padding,
                  groups, bias, padding_mode):
         if padding_mode != 'zeros':
@@ -144,4 +148,7 @@ class _ConvTransposeNd(_ConvNd):
             in_channels, out_channels, kernel_size, stride,
             padding, dilation, transposed, output_padding,
             groups, bias, padding_mode)
-
+    
+    def forward(self, x):
+        pass
+    

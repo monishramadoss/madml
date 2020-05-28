@@ -1,0 +1,54 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>18dde651-13ef-4633-bde8-c6aa2f1f5eb3</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>test.py</StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>madml</Name>
+    <RootNamespace>madml</RootNamespace>
+    <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="madml.py" />
+    <Compile Include="nn\init.py" />
+    <Compile Include="nn\modules\activation.py" />
+    <Compile Include="nn\modules\convolution.py" />
+    <Compile Include="nn\modules\linear.py" />
+    <Compile Include="nn\modules\loss.py" />
+    <Compile Include="nn\modules\modules.py" />
+    <Compile Include="nn\modules\__init__.py" />
+    <Compile Include="nn\__init__.py" />
+    <Compile Include="tensor.py" />
+    <Compile Include="test.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="nn\" />
+    <Folder Include="nn\modules\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="nn\modules\optimizer.py" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

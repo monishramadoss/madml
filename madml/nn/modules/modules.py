@@ -5,6 +5,7 @@ class Parameter:
     def __new__ (self, data=None):
         if data is None:
             pass
+
 class Module(object):
     dump_patches = False
 
@@ -23,3 +24,5 @@ class Module(object):
     def forward(self, *x):
         raise NotImplementedError
 
+    def __call__(self, x):
+        pass

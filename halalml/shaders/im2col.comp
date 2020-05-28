@@ -1,0 +1,67 @@
+#version 450
+#define LOCAL_SZ_X 1024
+
+layout(push_constant) uniform pushBlock {
+    int batchsize;
+    int channels;
+    int kernel_h;
+    int kernel_w;
+    int pad_h;
+    int pad_w;
+    int stride_h;
+    int stride_w;
+    int dilation_h;
+    int dilation_w;
+    
+    int height_col; // height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
+    int width_col;  // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
+    int height_im;
+    int width_im;
+};
+
+layout(binding = 0) buffer buf1 {
+    float A[];
+};
+
+layout(binding = 1) buffer buf2 {
+    float B[];
+};
+
+layout (local_size_x = 16, local_size_y = 64, local_size_z = 1) in;
+
+
+void im2col(){
+    uint n_output_plane = channels * kernel_h * kernel_w;
+    uint output_length = height_col * width_col;
+    uint channels_col = channels * kernel_h * kernel_w;
+
+    uint elt = gl_GlobalInvocationID.x;
+    if(elt >= batchsize)
+        return;
+    uint data_im = elt * channels * height_im * width_im;
+    uint data_col = elt * n_output_plane * output_length;
+    uint c_col = gl_GlobalInvocationID.y;
+    if(c_col >= channels_col)
+        return;
+    uint w_offset = c_col % kernel_w;
+    uint h_offset = (c_col / kernel_w) % kernel_h;
+    uint c_im = c_col / kernel_w / kernel_h;
+
+    for (uint h_col = 0; h_col < height_col; ++h_col){
+        uint h_im = h_col * stride_h - pad_h + h_offset * dilation_h;
+        for (uint w_col = 0; w_col < width_col; ++w_col){
+            uint w_im = w_col * stride_w - pad_w + w_offset * dilation_w;
+
+            if (0 <= h_im && h_im < height_im && 0 <= w_im && w_im < width_im){
+                B[data_col + (c_col * height_col + h_col) * width_col + w_col] = 
+                    A[data_im + (c_im * height_im + h_im) * width_im + w_im];
+            } else {
+                B[data_col + (c_col * height_col + h_col) * width_col + w_col] = 0;
+            }
+        }    
+    } 
+}
+
+void main(){
+   im2col();
+}
