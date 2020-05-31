@@ -5,7 +5,6 @@ C:\Users\monish\source\repos\ml_on_vulkan\halaml\activation.cpp(84,23): warning 
 C:\Users\monish\source\repos\ml_on_vulkan\halaml\activation.cpp(84,31): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   buffer.cpp
   context.cpp
-  halaml.cpp
   layer.cpp
   matmul.cpp
   nn_layers.cpp
@@ -15,5 +14,4 @@ C:\Users\monish\source\repos\ml_on_vulkan\halaml\activation.cpp(84,31): warning 
   transform.cpp
   utils.cpp
   Generating Code...
-     Creating library C:\Users\monish\source\repos\ml_on_vulkan\x64\Debug\halaml.lib and object C:\Users\monish\source\repos\ml_on_vulkan\x64\Debug\halaml.exp
   halaml.vcxproj -> C:\Users\monish\source\repos\ml_on_vulkan\x64\Debug\halaml.pyd
