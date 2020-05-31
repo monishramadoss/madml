@@ -213,18 +213,18 @@ void test_fn() {
 		int OC = 8;
 		float* x = new float[N * C * IN];
 		float* y = new float[OC * C * 3];
-		float* z = new float[1024];
+		float* z = new float[32];
 
 		for (int i = 0; i < N * C * IN; ++i)
 			x[i] = 1.0;
 		for (int i = 0; i < OC * C * 3; ++i)
 			y[i] = 2.0;
-		for (int i = 0; i < 1024; ++i)
+		for (int i = 0; i < 32; ++i)
 			z[i] = 0;
 
 		std::vector<int> shape_x{ N, C, IN };
 		std::vector<int> shape_y{ OC, C, 3 };
-		std::vector<int> shape_z{ 1024 };
+		std::vector<int> shape_z{ 32 };
 
 		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp32);
 		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp32);
@@ -234,7 +234,7 @@ void test_fn() {
 		conv->forward(*t1, *t2, *t3);
 		conv->run();*/
 
-		PrintDiffer((float*)t3->toHost(), 1024);
+		PrintDiffer((float*)t3->toHost(), 32);
 		std::cout << std::endl;
 
 	}

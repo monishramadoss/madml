@@ -1,7 +1,7 @@
 #include "common.h"
 #include "utils.h"
 #include "activation.h"
-#define LOCAL_SZ_X 1024
+#define LOCAL_SZ_X 32
 #define maxComputeWorkGroupCount 65535
 
 struct noParam {

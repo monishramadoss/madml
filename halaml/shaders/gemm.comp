@@ -28,7 +28,7 @@ void main() {
 	    return;
     float acc = 0.0;
     // Compute a single element (loop over N)
-    for (uint k=0u; k < k; k++){
+    for (uint k=0u; k < K; k++){
        acc += A[k*M + globalRow] * B[globalCol*K + k];   
     }
     C[globalCol*M + globalRow] = acc;

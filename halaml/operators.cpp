@@ -3,7 +3,7 @@
 #include "operators.h"
 #include <algorithm>
 
-#define LOCAL_SZ_X 1024
+#define LOCAL_SZ_X 32
 #define maxComputeWorkGroupCount 65535
 
 namespace kernel {
