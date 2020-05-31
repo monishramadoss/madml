@@ -56,8 +56,7 @@ tr_x, tr_y, te_x, te_y = load()
 
 import madml
 #import madml.nn as nn
-import halalml
+import halaml
 
-halalml.test()
-
+halaml.test()
 input()

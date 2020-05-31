@@ -45,8 +45,8 @@
     <Content Include="nn\modules\optimizer.py" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\halalml\halalml.vcxproj">
-      <Name>halalml</Name>
+    <ProjectReference Include="..\halaml\halaml.vcxproj">
+      <Name>halaml</Name>
       <Project>{6b0875f4-a651-4318-aaba-e48bf5505ef9}</Project>
       <Private>True</Private>
     </ProjectReference>
