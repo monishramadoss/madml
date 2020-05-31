@@ -19,7 +19,7 @@ def download_mnist():
     base_url = "http://yann.lecun.com/exdb/mnist/"
     for name in filename:
         print("Downloading "+name[1]+"...")
-        request.urlretrieve(base_url+name[1], './test/data/'+ name[1])
+        request.urlretrieve(base_url+name[1], './data/'+ name[1])
     print("Download complete.")
 
 def save_mnist():
@@ -54,15 +54,10 @@ init()
 tr_x, tr_y, te_x, te_y = load()
 
 
-
 import madml
-import madml.nn as nn
+#import madml.nn as nn
+import halalml
 
-class myModel(nn.Module):
-    def __init__(self):
-        self.layer1 = 1
-        self.layer2 = 1
+halalml.test()
 
-    def forward(self, x):
-        pass
-
+input()

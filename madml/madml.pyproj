@@ -12,6 +12,8 @@
     <Name>madml</Name>
     <RootNamespace>madml</RootNamespace>
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,6 +43,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="nn\modules\optimizer.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\halalml\halalml.vcxproj">
+      <Name>halalml</Name>
+      <Project>{6b0875f4-a651-4318-aaba-e48bf5505ef9}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
