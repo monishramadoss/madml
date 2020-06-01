@@ -23,7 +23,7 @@ namespace kernel {
 	inline bool checkFormat(Format fmt) { return fmt > -1 && fmt < kFormatNum; }
 	inline size_t elementSize(Format fmt)
 	{
-		if (fmt == kFormatFp32 || fmt == kFormatInt32 || fmt == kFormatBool) {
+		if (fmt == kFormatFp1024 || fmt == kFormatInt1024 || fmt == kFormatBool) {
 			return 4;
 		}
 		else if (fmt == kFormatFp64 || fmt == kFormatInt64) {

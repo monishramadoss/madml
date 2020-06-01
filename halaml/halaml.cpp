@@ -77,10 +77,10 @@ void test_fn() {
 		std::vector<int> shape;
 		shape.push_back(size);
 
-		auto t1 = new kernel::tensor((char*)x, shape, kernel::kFormatFp32);
-		auto t2 = new kernel::tensor((char*)y, shape, kernel::kFormatFp32);
+		auto t1 = new kernel::tensor((char*)x, shape, kernel::kFormatFp1024);
+		auto t2 = new kernel::tensor((char*)y, shape, kernel::kFormatFp1024);
 		auto t3 = new kernel::tensor((char*)z, shape, kernel::kFormatBool);
-		auto t4 = new kernel::tensor((char*)w, shape, kernel::kFormatFp32);
+		auto t4 = new kernel::tensor((char*)w, shape, kernel::kFormatFp1024);
 
 		for (int i = 0; i < 15; ++i) {
 			if (i == 5)
@@ -176,9 +176,9 @@ void test_fn() {
 		std::vector<int> shape_y{ K, N };
 		std::vector<int> shape_z{ M, N };
 
-		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp32);
-		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp32);
-		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp32);
+		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp1024);
+		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp1024);
+		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp1024);
 
 		kernel::layers::matmul* mm = new kernel::layers::matmul();
 		mm->forward(*t1, *t2, *t3);
@@ -213,28 +213,28 @@ void test_fn() {
 		int OC = 8;
 		float* x = new float[N * C * IN];
 		float* y = new float[OC * C * 3];
-		float* z = new float[32];
+		float* z = new float[1024];
 
 		for (int i = 0; i < N * C * IN; ++i)
 			x[i] = 1.0;
 		for (int i = 0; i < OC * C * 3; ++i)
 			y[i] = 2.0;
-		for (int i = 0; i < 32; ++i)
+		for (int i = 0; i < 1024; ++i)
 			z[i] = 0;
 
 		std::vector<int> shape_x{ N, C, IN };
 		std::vector<int> shape_y{ OC, C, 3 };
-		std::vector<int> shape_z{ 32 };
+		std::vector<int> shape_z{ 1024 };
 
-		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp32);
-		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp32);
-		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp32);
+		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp1024);
+		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp1024);
+		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp1024);
 
 		/*kernel::layers::convolution* conv = new kernel::layers::convolution(3, 1, 1, 0);
 		conv->forward(*t1, *t2, *t3);
 		conv->run();*/
 
-		PrintDiffer((float*)t3->toHost(), 32);
+		PrintDiffer((float*)t3->toHost(), 1024);
 		std::cout << std::endl;
 
 	}

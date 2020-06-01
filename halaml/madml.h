@@ -6,11 +6,11 @@ namespace kernel {
 	enum Format {
 		kFormatInvalid = -1,
 		kFormatFp16,
-		kFormatFp32,
+		kFormatFp1024,
 		kFormatFp64,
 		kFormatInt8,
 		kFormatInt16,
-		kFormatInt32,
+		kFormatInt1024,
 		kFormatInt64,
 		kFormatUInt8,
 		kFormatBool,

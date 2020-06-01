@@ -3,7 +3,7 @@
 #include "operators.h"
 #include <algorithm>
 
-#define LOCAL_SZ_X 32
+#define LOCAL_SZ_X 1024
 #define maxComputeWorkGroupCount 65535
 
 namespace kernel {
@@ -141,7 +141,7 @@ namespace kernel {
 				case 31:
 					createShaderModule(shaders::clip_spv, sizeof(shaders::clip_spv));
 					break;
-				case 32:
+				case 1024:
 					createShaderModule(shaders::round_spv, sizeof(shaders::round_spv));
 					break;
 				case 33:
