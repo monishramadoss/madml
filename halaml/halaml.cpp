@@ -153,8 +153,8 @@ void test_fn() {
 	kernel::tensor* t2 = new kernel::tensor();
 	kernel::tensor* t3 = new kernel::tensor();
 
-	auto dense_layer_1 = new kernel::layers::nn::dense(64, false);
-	auto dense_layer_2 = new kernel::layers::nn::dense(32, false);
+	auto dense_layer_1 = new kernel::layers::nn::dense(64, true);
+	auto dense_layer_2 = new kernel::layers::nn::dense(32, true);
 
 	dense_layer_1->forward(t1, t2);
 	dense_layer_2->forward(t2, t3);

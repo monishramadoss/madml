@@ -1,7 +1,16 @@
 #version 450
-#define TS 32u
-#define WPT 8u
-#define RTS 4u  // TS/WPT
+#define TSM 128                     // The tile-size in dimension M
+#define TSN 128                     // The tile-size in dimension N
+#define TSK 16                      // The tile-size in dimension K
+#define WPTM 8                      // The amount of work-per-thread in dimension M
+#define WPTN 8                      // The amount of work-per-thread in dimension N
+#define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
+#define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
+#define RTSM 16    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
+#define RTSN 16    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
+#define MOD2(x,y) ((x) % (y))
+#define DIV2(x,y) ((x) / (y))
+
 
 layout(push_constant) uniform pushBlock {
       int M;
@@ -9,7 +18,7 @@ layout(push_constant) uniform pushBlock {
       int K;
 } p;
 
-layout (local_size_x = 32, local_size_y = 4, local_size_z = 1) in;
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
   float A[];
@@ -21,53 +30,80 @@ layout (binding = 2) writeonly buffer ssbC {
   float C[];
 };
 
-shared float Asub[TS][TS];  // Local memory to fit a tile of
-shared float Bsub[TS][TS];  // TS*TS elements of A and B
+shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
+shared float Bsub[TSN][TSK+2];
 
 void main() {
     int M = p.M;
     int N = p.N;
     int K = p.K;
 
-   uint row = gl_LocalInvocationID.x; // Local row ID (max: TS)
-    uint col = gl_LocalInvocationID.y; // Local col ID (max: TS/WPT == RTS)
-    uint globalRow = TS*gl_WorkGroupID.x + row; // Row ID of C (0..M)
-    uint globalCol = TS*gl_WorkGroupID.y + col; // Col ID of C (0..N)
+    // Thread identifiers
+    int tidm = int(gl_LocalInvocationID.x);  // Local row ID (max: TSM/WPTM == RTSM)
+    int tidn = int(gl_LocalInvocationID.y);  // Local col ID (max: TSN/WPTN == RTSN)
+    int offsetM = TSM*int(gl_WorkGroupID.x); // Work-group offset
+    int offsetN = TSN*int(gl_WorkGroupID.y); // Work-group offset
+
+    // Allocate register space
+    float Areg;
+    float Breg[WPTN];
+    float acc[WPTM][WPTN];
 
     // Initialise the accumulation registers
-    float acc[WPT];
-    for (uint w=0u; w < WPT; w++) {
-        acc[w] = 0.0;
-    }
-
-    // Loop over all tiles
-    uint numTiles = uint(K/TS);
-    for (uint t=0u; t < numTiles; t++) {
-
-        // Load one tile of A and B into local memory
-        for (uint w=0u; w < WPT; w++) {
-            uint tiledRow = TS*t + row;
-            uint tiledCol = TS*t + col;
-            Asub[col + w*RTS][row] = A[(tiledCol + w*RTS)*M + globalRow];
-            Bsub[col + w*RTS][row] = B[(globalCol + w*RTS)*K + tiledRow];
+    for (int wm=0; wm < WPTM; wm++) {
+        for (int wn=0; wn < WPTN; wn++) {
+            acc[wm][wn] = 0.0;
         }
-
+    }
+    // Loop over all tiles
+    int numTiles = int(K/TSK);
+    int t=0;
+    do {
+        // Load one tile of A and B into local memory
+        for (int la=0; la < LPTA; la++) {
+            int tid = tidn*RTSM + tidm;
+            int id = la*RTSN*RTSM + tid;
+            int row = MOD2(id,TSM);
+            int col = DIV2(id,TSM);
+            int tiledIndex = TSK*t + col;
+            Asub[col][row] = A[tiledIndex*M + offsetM + row];
+            Bsub[row][col] = B[tiledIndex*N + offsetN + row];
+        }
         // Synchronise to make sure the tile is loaded
-        memoryBarrierShared();
         barrier();
 
-        // Perform the computation for a single tile
-        for (uint k=0u; k < TS; k++) {
-            for (uint w=0u; w < WPT; w++) {
-                acc[w] += Asub[k][row] * Bsub[col + w*RTS][k];
+        // Loop over the values of a single tile
+        for (int k=0; k < TSK; k++) {
+
+            // Cache the values of Bsub in registers
+            for (int wn=0; wn < WPTN; wn++) {
+                int col = tidn + wn*RTSN;
+                Breg[wn] = Bsub[col][k];
+            }
+
+            // Perform the computation
+            for (int wm=0; wm < WPTM; wm++) {
+                int row = tidm + wm*RTSM;
+                Areg = Asub[k][row];
+                for (int wn=0; wn < WPTN; wn++) {
+                    acc[wm][wn] += Areg * Breg[wn];
+                }
             }
         }
-
         // Synchronise before loading the next tile
         barrier();
-    }
+
+        // Next tile
+        t++;
+    } while (t < numTiles);
+
     // Store the final result in C
-    for (uint w=0u; w < WPT; w++) {
-        C[(globalCol + w*RTS)*M + globalRow] = acc[w];
+    for (int wm=0; wm < WPTM; wm++) {
+        int globalRow = offsetM + tidm + wm*RTSM;
+        for (int wn=0; wn < WPTN; wn++) {
+            int globalCol = offsetN + tidn + wn*RTSN;
+            C[globalCol*M + globalRow] = acc[wm][wn];
+        }
     }
+  
 }
