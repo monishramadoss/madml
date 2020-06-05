@@ -10,9 +10,9 @@ namespace kernel {
 		class im2col : public layer {
 		public:
             im2col(int batchsize, int channels, int kernel[2], int pad[2], int stride[2], int dilation[2]);
-            virtual bool forward(tensor& x, tensor& y) = 0;
-            virtual void reshapeOutTensor(tensor& x, tensor& z);
-            virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs);
+            virtual bool forward(tensor* x, tensor* y) = 0;
+            virtual void reshapeOutTensor(tensor* x, tensor* z);
+            virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
 		private:
             virtual bool computeGroupCount();
             int batchsize;
@@ -35,9 +35,9 @@ namespace kernel {
         class col2im : public layer {
         public:
             col2im(int batchsize, int channels, int kernel[2], int pad[2], int stride[2], int dilation[2]);
-            virtual bool forward(tensor& x, tensor& y) = 0;
-            virtual void reshapeOutTensor(tensor& x, tensor& z);
-            virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs);
+            virtual bool forward(tensor* x, tensor* y) = 0;
+            virtual void reshapeOutTensor(tensor* x, tensor* z);
+            virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
         private:
             virtual bool computeGroupCount();
             int batchsize;

@@ -1,4 +1,7 @@
 #version 450
+#define TS 32u
+#define WPT 8u
+#define RTS 4u  // TS/WPT
 
 layout(push_constant) uniform pushBlock {
       int M;
@@ -6,7 +9,7 @@ layout(push_constant) uniform pushBlock {
       int K;
 } p;
 
-layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+layout (local_size_x = 32, local_size_y = 4, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
   float A[];
@@ -18,23 +21,53 @@ layout (binding = 2) writeonly buffer ssbC {
   float C[];
 };
 
+shared float Asub[TS][TS];  // Local memory to fit a tile of
+shared float Bsub[TS][TS];  // TS*TS elements of A and B
+
 void main() {
     int M = p.M;
     int N = p.N;
     int K = p.K;
-  
-    for (int i = int(gl_GlobalInvocationID.x); i < p.M; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
-    {
-        for (int j = int(gl_GlobalInvocationID.y); j < p.N; j += int(gl_NumWorkGroups.y * gl_WorkGroupSize.y)){
-            float acc = 0.0;
-            
-            for (uint k=0u; k < K; k++){
-               acc += A[k*M + i] * B[j*K + k];   
-            }
 
-            C[j*M + i] = acc;
+   uint row = gl_LocalInvocationID.x; // Local row ID (max: TS)
+    uint col = gl_LocalInvocationID.y; // Local col ID (max: TS/WPT == RTS)
+    uint globalRow = TS*gl_WorkGroupID.x + row; // Row ID of C (0..M)
+    uint globalCol = TS*gl_WorkGroupID.y + col; // Col ID of C (0..N)
 
-        }
+    // Initialise the accumulation registers
+    float acc[WPT];
+    for (uint w=0u; w < WPT; w++) {
+        acc[w] = 0.0;
     }
-       // Store the result
+
+    // Loop over all tiles
+    uint numTiles = uint(K/TS);
+    for (uint t=0u; t < numTiles; t++) {
+
+        // Load one tile of A and B into local memory
+        for (uint w=0u; w < WPT; w++) {
+            uint tiledRow = TS*t + row;
+            uint tiledCol = TS*t + col;
+            Asub[col + w*RTS][row] = A[(tiledCol + w*RTS)*M + globalRow];
+            Bsub[col + w*RTS][row] = B[(globalCol + w*RTS)*K + tiledRow];
+        }
+
+        // Synchronise to make sure the tile is loaded
+        memoryBarrierShared();
+        barrier();
+
+        // Perform the computation for a single tile
+        for (uint k=0u; k < TS; k++) {
+            for (uint w=0u; w < WPT; w++) {
+                acc[w] += Asub[k][row] * Bsub[col + w*RTS][k];
+            }
+        }
+
+        // Synchronise before loading the next tile
+        barrier();
+    }
+    // Store the final result in C
+    for (uint w=0u; w < WPT; w++) {
+        C[(globalCol + w*RTS)*M + globalRow] = acc[w];
+    }
 }

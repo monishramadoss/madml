@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+
 #include <float.h>
 #ifdef USE_SHADERC
 #include "shaderc/shaderc.h"
@@ -18,12 +19,12 @@ namespace kernel {
 	}
 	
 	std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind, const std::string& data);
-	void bindTensor(VkDevice& device, tensor& tensor, int binding, VkDescriptorSet descriptor_set); 
+	void bindTensor(VkDevice& device, tensor* tensor, int binding, VkDescriptorSet descriptor_set); 
 	
 	inline bool checkFormat(Format fmt) { return fmt > -1 && fmt < kFormatNum; }
 	inline size_t elementSize(Format fmt)
 	{
-		if (fmt == kFormatFp1024 || fmt == kFormatInt1024 || fmt == kFormatBool) {
+		if (fmt == kFormatFp32 || fmt == kFormatInt32 || fmt == kFormatBool) {
 			return 4;
 		}
 		else if (fmt == kFormatFp64 || fmt == kFormatInt64) {

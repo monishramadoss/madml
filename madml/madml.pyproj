@@ -13,7 +13,7 @@
     <RootNamespace>madml</RootNamespace>
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,6 +31,7 @@
     <Compile Include="nn\modules\linear.py" />
     <Compile Include="nn\modules\loss.py" />
     <Compile Include="nn\modules\modules.py" />
+    <Compile Include="nn\modules\optimizer.py" />
     <Compile Include="nn\modules\__init__.py" />
     <Compile Include="nn\__init__.py" />
     <Compile Include="tensor.py" />
@@ -38,18 +39,22 @@
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="nn\" />
-    <Folder Include="nn\modules\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="nn\modules\optimizer.py" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\halaml\halaml.vcxproj">
       <Name>halaml</Name>
       <Project>{6b0875f4-a651-4318-aaba-e48bf5505ef9}</Project>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="nn\" />
+    <Folder Include="nn\modules\" />
+    <Folder Include="nn\modules\__pycache__\" />
+    <Folder Include="nn\__pycache__\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="nn\modules\__pycache__\__init__.cpython-37.pyc" />
+    <Content Include="nn\__pycache__\init.cpython-37.pyc" />
+    <Content Include="nn\__pycache__\__init__.cpython-37.pyc" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

@@ -35,15 +35,15 @@ namespace kernel {
 
         }
 
-        void im2col::reshapeOutTensor(tensor& x, tensor& z) {
-            Shape shape = x.getShape();
-            z = z.reshape(nullptr, shape);
+        void im2col::reshapeOutTensor(tensor* x, tensor* z) {
+            Shape shape = x->getShape();
+            z = &(z->reshape(nullptr, shape));
         }
 
-        bool im2col::forward(tensor& x, tensor& y) {
+        bool im2col::forward(tensor* x, tensor* y) {
             if (m_pipeline == VK_NULL_HANDLE) {
-                height_im = x.getShape()[x.getShape().size() - 1];
-                width_im = x.getShape()[x.getShape().size() - 2];
+                height_im = x->getShape()[x->getShape().size() - 1];
+                width_im = x->getShape()[x->getShape().size() - 2];
                 height_col = (height_im + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
                 width_col = (width_im + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
                 computeGroupCount();
@@ -58,7 +58,7 @@ namespace kernel {
             return true;
         }
 
-        bool im2col::forward(std::vector<tensor>& ins, std::vector<tensor>& outs) {
+        bool im2col::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
             return forward(ins[0], outs[0]);
         }
 
@@ -80,15 +80,15 @@ namespace kernel {
             m_type = "col2im";
         }
 
-        void col2im::reshapeOutTensor(tensor& x, tensor& z) {
-            Shape shape = x.getShape();
-            z = z.reshape(nullptr, shape);
+        void col2im::reshapeOutTensor(tensor* x, tensor* z) {
+            Shape shape = x->getShape();
+            z = &(z->reshape(nullptr, shape));
         }
 
-        bool col2im::forward(tensor& x, tensor& y) {
+        bool col2im::forward(tensor* x, tensor* y) {
             if (m_pipeline == VK_NULL_HANDLE) {
-                height_im = x.getShape()[x.getShape().size() - 1];
-                width_im = x.getShape()[x.getShape().size() - 2];
+                height_im = x->getShape()[x->getShape().size() - 1];
+                width_im = x->getShape()[x->getShape().size() - 2];
                 height_col = (height_im + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
                 width_col = (width_im + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
                 computeGroupCount();
@@ -103,7 +103,7 @@ namespace kernel {
             return true;
         }
 
-        bool col2im::forward(std::vector<tensor>& ins, std::vector<tensor>& outs) {
+        bool col2im::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
             return forward(ins[0], outs[0]);
         }
 
@@ -111,7 +111,7 @@ namespace kernel {
             m_group_x = (int)alignSize(batchsize, LOCAL_SZ_X) / LOCAL_SZ_X;
             if (m_group_x > maxComputeWorkGroupCount)
                 m_group_x = maxComputeWorkGroupCount;
-            m_group_x = (int)alignSize(channels * kernel_h * kernel_w, LOCAL_SZ_X) / LOCAL_SZ_X;
+            m_group_x = (int)alignSize((int)(channels * kernel_h * kernel_w), LOCAL_SZ_X) / LOCAL_SZ_X;
             if (m_group_x > maxComputeWorkGroupCount)
                 m_group_x = maxComputeWorkGroupCount;
             m_group_z = 1;

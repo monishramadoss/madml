@@ -12,9 +12,9 @@ namespace kernel {
 			class Activationfn : public layer {
 			public :
 				Activationfn();
-				virtual bool forward(tensor& x, tensor& y) = 0;
-				virtual void reshapeOutTensor(tensor& x, tensor& z);
-				virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs);
+				virtual bool forward(tensor* x, tensor* y) = 0;
+				void reshapeOutTensor(tensor* x, tensor* z);
+				bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
 			protected:
 				virtual bool computeGroupCount();
 				size_t m_total;
@@ -24,7 +24,7 @@ namespace kernel {
 			class elu : public Activationfn { 
 			public:
 				elu(float alpha);
-				bool forward(tensor& x, tensor& y);
+				bool forward(tensor* x, tensor* y);
 			private:
 				float m_const;
 			};
@@ -32,8 +32,7 @@ namespace kernel {
 			class relu : public Activationfn {
 			public:
 				relu();
-				bool forward(tensor& x, tensor& y);
-			
+				bool forward(tensor* x, tensor* y);
 			};
 
 

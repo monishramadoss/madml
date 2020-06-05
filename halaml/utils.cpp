@@ -2,11 +2,11 @@
 #include "utils.h"
 
 namespace kernel {
-	void bindTensor(VkDevice& device, tensor& tensor, int binding, VkDescriptorSet descriptor_set) {
+	void bindTensor(VkDevice& device, tensor* tensor, int binding, VkDescriptorSet descriptor_set) {
 		VkDescriptorBufferInfo desc_buffer_info = {};
-		desc_buffer_info.buffer = tensor.getBuffer()->getVkBuffer();
+		desc_buffer_info.buffer = tensor->getBuffer()->getVkBuffer();
 		desc_buffer_info.offset = 0;
-		desc_buffer_info.range = tensor.size();
+		desc_buffer_info.range = tensor->size();
 
 		VkWriteDescriptorSet write_descriptor_set = {};
 		write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

@@ -13,7 +13,7 @@ namespace kernel {
 	public:
 		layer();
 		virtual ~layer();
-		virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs) = 0;
+		virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 		bool run() {
 			runCommandBuffer();
 			return true;

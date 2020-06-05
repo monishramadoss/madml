@@ -9,11 +9,10 @@ namespace kernel {
 		class matmul : public layer
 		{
 		public:
-
 			matmul();
-			bool forward(tensor& x, tensor& y, tensor& z);
-			void reshapeOutTensor(tensor& x, tensor& z);
-			virtual bool forward(std::vector<tensor>& ins, std::vector<tensor>& outs);
+			virtual bool forward(tensor* x, tensor* y, tensor* z);
+			virtual void reshapeOutTensor(tensor* x, tensor* z);
+			virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
 		private:
 			bool computeGroupCount();
 			int m_m;

@@ -21,12 +21,12 @@ namespace kernel {
 				m_type = "Activation";
 			}
 
-			void Activationfn::reshapeOutTensor(tensor& x, tensor& z) {
-				Shape shape = x.getShape();
-				z = z.reshape(nullptr, shape);
+			void Activationfn::reshapeOutTensor(tensor* x, tensor* z) {
+				Shape shape = x->getShape();
+				z = &(z->reshape(nullptr, shape));
 			}
 
-			bool Activationfn::forward(std::vector<tensor>& ins, std::vector<tensor>& outs) {
+			bool Activationfn::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
 				return forward(ins[0], outs[0]);
 			}
 			
@@ -51,9 +51,9 @@ namespace kernel {
 				m_type = "elu";
 			}
 
-			bool elu::forward(tensor& x, tensor& y) {
+			bool elu::forward(tensor* x, tensor* y) {
 				if (m_pipeline == VK_NULL_HANDLE) {
-					m_total = x.count();
+					m_total = x->count();
 					computeGroupCount();
 					createShaderModule(shaders::elu_spv, sizeof(shaders::elu_spv));
 					createPipeline(sizeof(singleParam));
@@ -61,7 +61,7 @@ namespace kernel {
 
 				bindTensor(m_device, x, 0, m_descriptor_set);
 				bindTensor(m_device, y, 1, m_descriptor_set);
-				singleParam param = { m_total, m_const };
+				singleParam param = { (int)m_total, m_const };
 				recordCommandBuffer((void*)&param, sizeof(singleParam));
 				return true;
 			}
@@ -71,9 +71,9 @@ namespace kernel {
 				m_type = "relu";
 			}
 
-			bool relu::forward(tensor& x, tensor& y) {
+			bool relu::forward(tensor* x, tensor* y) {
 				if (m_pipeline == VK_NULL_HANDLE) {
-					m_total = x.count();
+					m_total = x->count();
 					computeGroupCount();
 					createShaderModule(shaders::elu_spv, sizeof(shaders::elu_spv));
 					createPipeline(sizeof(noParam));
@@ -81,7 +81,7 @@ namespace kernel {
 
 				bindTensor(m_device, x, 0, m_descriptor_set);
 				bindTensor(m_device, y, 1, m_descriptor_set);
-				noParam param = { m_total };
+				noParam param = { (int)m_total };
 				recordCommandBuffer((void*)&param, sizeof(noParam));
 				return true;
 			}

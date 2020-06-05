@@ -59,36 +59,28 @@ void PrintMatrix(float* data, std::vector<int> shape) {
 
 void test_fn() {
 
-	std::cout << "testing operators" << std::endl;
-	{
+	if( false ){
+		std::cout << "testing operators" << std::endl;
 		int size = (int)654123;
-
-		float* x = new float[size];
-		float* y = new float[size];
-		float* w = new float[size];
-		int* z = new int[size];
-
-		for (int i = 0; i < size; ++i) {
-			x[i] = 10.0f;
-			y[i] = 5.5f;
-			z[i] = 0;
-		}
 
 		std::vector<int> shape;
 		shape.push_back(size);
 
-		auto t1 = new kernel::tensor((char*)x, shape, kernel::kFormatFp1024);
-		auto t2 = new kernel::tensor((char*)y, shape, kernel::kFormatFp1024);
-		auto t3 = new kernel::tensor((char*)z, shape, kernel::kFormatBool);
-		auto t4 = new kernel::tensor((char*)w, shape, kernel::kFormatFp1024);
+		auto x = fill_memory_shape<float>(shape, 10);
+		auto y = fill_memory_shape<float>(shape, 5);
+		auto w = fill_memory_shape<float>(shape, 0);
+		auto z = fill_memory_shape<int>(shape, 0);
+
+		auto t1 = new kernel::tensor(x, shape, kernel::kFormatFp32);
+		auto t2 = new kernel::tensor(y, shape, kernel::kFormatFp32);
+		auto t3 = new kernel::tensor(z, shape, kernel::kFormatBool);
+		auto t4 = new kernel::tensor(w, shape, kernel::kFormatFp32);
 
 		for (int i = 0; i < 15; ++i) {
 			if (i == 5)
 				i = 12;
-			kernel::layer* k1 = new kernel::layers::operators(i);
-			std::vector<kernel::tensor> input{ *t1, *t2 };
-			std::vector<kernel::tensor> output{ *t4 };
-			k1->forward(input, output);
+			kernel::layers::operators* k1 = new kernel::layers::operators(i);
+			k1->forward(t1, t2, t4);
 			{
 				auto start = high_resolution_clock::now();
 				k1->run();
@@ -106,10 +98,8 @@ void test_fn() {
 		}
 
 		for (int i = 5; i < 11; ++i) {
-			kernel::layer* k1 = new kernel::layers::operators(i);
-			std::vector<kernel::tensor> input{ *t1, *t2 };
-			std::vector<kernel::tensor> output{ *t3 };
-			k1->forward(input, output);
+			kernel::layers::operators* k1 = new kernel::layers::operators(i);
+			k1->forward(t1, t2, t3);
 			{
 				auto start = high_resolution_clock::now();
 				k1->run();
@@ -128,10 +118,8 @@ void test_fn() {
 		}
 
 		for (int i = 15; i < 35; ++i) {
-			kernel::layer* k1 = new kernel::layers::operators(i);
-			std::vector<kernel::tensor> input{ *t2 };
-			std::vector<kernel::tensor> output{ *t4 };
-			k1->forward(input, output);
+			kernel::layers::operators* k1 = new kernel::layers::operators(i);
+			k1->forward(t2, t4);
 			{
 				auto start = high_resolution_clock::now();
 				k1->run();
@@ -149,95 +137,41 @@ void test_fn() {
 		delete[] x;
 		delete[] y;
 		delete[] z;
+		delete[] w;
 
 		delete t1;
 		delete t2;
 		delete t3;
+		delete t4;
 	}
 
+	int M = 2;
+	int K = 128;
+	std::vector<int> shape_x{ M, K };
+	auto x = fill_memory_shape(shape_x, 1);
+	kernel::tensor* t1 = new kernel::tensor(x, shape_x, kernel::kFormatFp32);
+	kernel::tensor* t2 = new kernel::tensor();
+	kernel::tensor* t3 = new kernel::tensor();
 
-	std::cout << "testing gemm" << std::endl;
-	{
-		int M = 4096;
-		int N = 4096;
-		int K = 4096;
-		float* x = new float[X];
-		float* y = new float[Y];
-		float* z = new float[Z];
+	auto dense_layer_1 = new kernel::layers::nn::dense(64, false);
+	auto dense_layer_2 = new kernel::layers::nn::dense(32, false);
 
-		for (int i = 0; i < X; ++i)
-			x[i] = 1.0;
-		for (int i = 0; i < Y; ++i)
-			y[i] = 2.0;
-		for (int i = 0; i < Z; ++i)
-			z[i] = 0;
+	dense_layer_1->forward(t1, t2);
+	dense_layer_2->forward(t2, t3);
 
-		std::vector<int> shape_x{ M, K };
-		std::vector<int> shape_y{ K, N };
-		std::vector<int> shape_z{ M, N };
+	dense_layer_1->run();
+	dense_layer_2->run();
 
-		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp1024);
-		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp1024);
-		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp1024);
+	
+	PrintDiffer((float*)t2->toHost(), M * 64);
+	std::cout << std::endl << std::endl;
+	PrintDiffer((float*)t3->toHost(), M * 32);
 
-		kernel::layers::matmul* mm = new kernel::layers::matmul();
-		mm->forward(*t1, *t2, *t3);
+	delete dense_layer_1;
+	delete dense_layer_2;
+	delete t2;
+	delete t1;
 
-		{
-			auto start = high_resolution_clock::now();
-			mm->run();
-			auto stop = high_resolution_clock::now();
-			auto duration = duration_cast<microseconds>(stop - start);
-			std::cout << std::endl << duration.count() << " microseconds" << std::endl;
-		}
-
-		PrintDiffer((float*)t3->toHost(), Z);
-		std::cout << std::endl;
-		delete mm;
-		delete[] x;
-		delete[] y;
-		delete[] z;
-
-		delete t1;
-		delete t2;
-		delete t3;
-
-	}
-
-
-	std::cout << "teting conv" << std::endl;
-	{
-		int N = 10;
-		int IN = 128;
-		int C = 1;
-		int OC = 8;
-		float* x = new float[N * C * IN];
-		float* y = new float[OC * C * 3];
-		float* z = new float[1024];
-
-		for (int i = 0; i < N * C * IN; ++i)
-			x[i] = 1.0;
-		for (int i = 0; i < OC * C * 3; ++i)
-			y[i] = 2.0;
-		for (int i = 0; i < 1024; ++i)
-			z[i] = 0;
-
-		std::vector<int> shape_x{ N, C, IN };
-		std::vector<int> shape_y{ OC, C, 3 };
-		std::vector<int> shape_z{ 1024 };
-
-		auto t1 = new kernel::tensor((char*)x, shape_x, kernel::kFormatFp1024);
-		auto t2 = new kernel::tensor((char*)y, shape_y, kernel::kFormatFp1024);
-		auto t3 = new kernel::tensor((char*)z, shape_z, kernel::kFormatFp1024);
-
-		/*kernel::layers::convolution* conv = new kernel::layers::convolution(3, 1, 1, 0);
-		conv->forward(*t1, *t2, *t3);
-		conv->run();*/
-
-		PrintDiffer((float*)t3->toHost(), 1024);
-		std::cout << std::endl;
-
-	}
 }
 
 PYBIND11_MODULE(halaml, m) {

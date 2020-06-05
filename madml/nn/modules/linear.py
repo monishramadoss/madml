@@ -10,8 +10,7 @@ class Linear(Module):
         self.weight =np.zeros((out_features, in_features))
         if bias:
             self.bias = np.zeros(out_features)
-        else:
-            self.register_parameter('bias', None)
+        
         self.reset_parameters()
 
     def forward(self, x):

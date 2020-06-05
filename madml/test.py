@@ -53,9 +53,12 @@ def load():
 init()    
 tr_x, tr_y, te_x, te_y = load()
 
+for x, y in zip(tr_x, tr_y):
+    pass
 
 import madml
 #import madml.nn as nn
+
 import halaml
 
 halaml.test()

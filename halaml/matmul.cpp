@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "matmul.h"
 #include <algorithm>
-#define maxComputeWorkGroupCount 65535
+#define maxComputeWorkGroupCount 1024
 
 #define TSM 128                     // The tile-size in dimension M
 #define TSN 128                     // The tile-size in dimension N
@@ -12,7 +12,7 @@
 #define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
 #define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
 #define LOCAL_SZ_X 32    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
-#define LOCAL_SZ_Y 32    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
+#define LOCAL_SZ_Y 4    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
 
 
 namespace kernel {
@@ -28,22 +28,23 @@ namespace kernel {
 			m_type = "matmul";			
 		}
 
-		void matmul::reshapeOutTensor(tensor& x, tensor& z) {
-			Shape shape = x.getShape();
-			z = z.reshape(nullptr, shape);
+		void matmul::reshapeOutTensor(tensor* x, tensor* z) {
+			Shape shape = x->getShape();
+			z = &(z->reshape(nullptr, shape));
 		}
 
-		bool matmul::forward(std::vector<tensor>& ins, std::vector<tensor>& outs) {
+		bool matmul::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
 			return forward(ins[0], ins[1], outs[0]);
 		}
 
-		bool matmul::forward(tensor& x, tensor& y, tensor& z) {
+		bool matmul::forward(tensor* x, tensor* y, tensor* z) {
 			if (m_pipeline == VK_NULL_HANDLE) {
-				
-				m_m = x.getShape()[0];
-				m_n = y.getShape()[1];
-				m_k = x.getShape()[1];
 
+				m_m = x->getShape()[0];
+				m_n = y->getShape()[1];
+				m_k = x->getShape()[1];
+				if (m_k != y->getShape()[0])
+					std::cout << "MATML ERROR" << std::endl;
 				computeGroupCount();
 				createShaderModule(shaders::gemm_spv, sizeof(shaders::gemm_spv));
 				createPipeline(sizeof(matmulParams));

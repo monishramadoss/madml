@@ -18,21 +18,21 @@ namespace kernel {
 			m_op = op_id;
 		}
 
-		void operators::reshapeOutTensor(tensor& x, tensor& z) {
-			Shape shape = x.getShape();
-			z = z.reshape(nullptr, shape);
+		void operators::reshapeOutTensor(tensor* x, tensor* z) {
+			Shape shape = x->getShape();
+			z = &(z->reshape(nullptr, shape));
 		}
 
-		bool operators::forward(std::vector<tensor>& ins, std::vector<tensor>& outs) {
+		bool operators::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
 			if(ins.size() == 2)
 				return forward(ins[0], ins[1], outs[0]);
 			else
 				return forward(ins[0], outs[0]);
 		}
 
-		bool operators::forward(tensor& x, tensor& y) {
+		bool operators::forward(tensor* x, tensor* y) {
 			if (m_pipeline == VK_NULL_HANDLE) {
-				m_total = x.count();
+				m_total = x->count();
 				computeGroupCount();
 				switch (m_op) {
 					//arithmetic
@@ -141,7 +141,7 @@ namespace kernel {
 				case 31:
 					createShaderModule(shaders::clip_spv, sizeof(shaders::clip_spv));
 					break;
-				case 1024:
+				case 32:
 					createShaderModule(shaders::round_spv, sizeof(shaders::round_spv));
 					break;
 				case 33:
@@ -164,9 +164,9 @@ namespace kernel {
 			return true;
 		}
 
-		bool operators::forward(tensor& x, tensor& y, tensor& z) {
+		bool operators::forward(tensor* x, tensor* y, tensor* z) {
 			if (m_pipeline == VK_NULL_HANDLE) {
-				m_total = x.count();
+				m_total = x->count();
 				computeGroupCount();
 				switch (m_op) { //34
 					//arithmetic

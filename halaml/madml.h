@@ -6,11 +6,11 @@ namespace kernel {
 	enum Format {
 		kFormatInvalid = -1,
 		kFormatFp16,
-		kFormatFp1024,
+		kFormatFp32,
 		kFormatFp64,
 		kFormatInt8,
 		kFormatInt16,
-		kFormatInt1024,
+		kFormatInt32,
 		kFormatInt64,
 		kFormatUInt8,
 		kFormatBool,
@@ -24,14 +24,11 @@ namespace kernel {
 }
 
 
+
 #include "tensor.h"
 #include "buffer.h"
 #include "layer.h"
 
-
-namespace kernel {
-	typedef std::shared_ptr<tensor> Tensor;
-}
 
 #include "operators.h"
 #include "matmul.h"

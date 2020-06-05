@@ -10,7 +10,7 @@ namespace kernel {
 		m_data = nullptr;
 	}
 
-	tensor::tensor(const char* data, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt) {
+	tensor::tensor(char* data, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt) {
 		createContext();
 		m_device = kDevice;
 		m_data = data;
@@ -78,7 +78,7 @@ namespace kernel {
 
 	int tensor::getFormat() const { return format; }
 
-	void tensor::copyTo(tensor& dst) {
+	void tensor::copyTo(tensor dst) {
 		void* p = map();
 		dst = dst.reshape((const char*)p, m_shape, format);
 		unMap();

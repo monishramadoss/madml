@@ -1,13 +1,7 @@
 from collections import OrderedDict, namedtuple
 
-
-class Parameter:
-    def __new__ (self, data=None):
-        if data is None:
-            pass
-
 class Module(object):
-    dump_patches = False
+    
 
     def __init__ (self):
         self.training = True

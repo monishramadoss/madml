@@ -1,8 +1,11 @@
 #ifndef TENSOR_H
 #define TENSOR_H
 #include <memory>
+#include <algorithm>
+#include <numeric>
 #include <vulkan/vulkan.h>
 #include "madml.h"
+
 
 
 namespace kernel {
@@ -11,8 +14,8 @@ namespace kernel {
 	class tensor
 	{
 	public:
-		tensor(Format fmt = kFormatFp1024);
-		tensor(const char* data, std::vector<int> shape, Format fmt = kFormatInvalid);
+		tensor(Format fmt = kFormatFp32);
+		tensor(char* data, std::vector<int> shape, Format fmt = kFormatInvalid);
 		void* map();
 		void unMap();
 		Shape getShape() const;
@@ -27,19 +30,34 @@ namespace kernel {
 		int getFormat() const;
 		size_t size() const { return size_in_byte; }
 		bool isEmpty() { return size_in_byte == 0; }
-		void copyTo(tensor& dst);
-		std::shared_ptr<buffer> getBuffer() { return m_buffer; }
+		void copyTo(tensor dst);
+		std::shared_ptr<buffer> getBuffer() { return m_buffer; }		
+		//fill types
 
+		
 	private:
 		VkDevice m_device;
 		std::vector<int> m_shape;
 		size_t size_in_byte;
-		const char* m_data;
+		char* m_data;
 		std::shared_ptr<buffer> m_buffer;
 		Format format;
 
-		std::vector<tensor> input;
-		std::vector<tensor> output;
 	};
 }
+
+template<typename dType>
+char* fill_memory_shape(std::vector<int> shape, dType c) {
+	size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
+	dType* ret = new dType[_shape];
+	for (int i = 0; i < _shape; ++i)
+		ret[i] = c;
+	std::cout << _shape << " " << sizeof(dType) << std::endl;
+	return (char*)ret;
+}
+
+
+
+
+
 #endif
