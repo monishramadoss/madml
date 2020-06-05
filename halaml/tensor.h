@@ -27,11 +27,15 @@ namespace kernel {
 		tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false, Format fmt = kFormatInvalid);
 
 		void setTo(float val);
-		int getFormat() const;
+		Format getFormat() const;
 		size_t size() const { return size_in_byte; }
 		bool isEmpty() { return size_in_byte == 0; }
 		void copyTo(tensor dst);
-		std::shared_ptr<buffer> getBuffer() { return m_buffer; }		
+		std::shared_ptr<buffer> getBuffer() { return m_buffer; }	
+		~tensor() {
+			//if (m_data != nullptr)
+				//delete m_data;
+		}
 		//fill types
 
 		
@@ -46,13 +50,12 @@ namespace kernel {
 	};
 }
 
-template<typename dType>
+template<typename dType = float>
 char* fill_memory_shape(std::vector<int> shape, dType c) {
 	size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 	dType* ret = new dType[_shape];
 	for (int i = 0; i < _shape; ++i)
-		ret[i] = c;
-	std::cout << _shape << " " << sizeof(dType) << std::endl;
+		ret[i] = reinterpret_cast<dType&>(c);
 	return (char*)ret;
 }
 

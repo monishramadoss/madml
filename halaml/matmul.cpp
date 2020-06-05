@@ -11,8 +11,8 @@
 #define WPTN 4                      // The amount of work-per-thread in dimension N
 #define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
 #define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
-#define LOCAL_SZ_X 32    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
-#define LOCAL_SZ_Y 4    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
+#define LOCAL_SZ_X 16    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
+#define LOCAL_SZ_Y 16    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
 
 
 namespace kernel {

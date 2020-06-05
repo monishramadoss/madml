@@ -7,7 +7,7 @@ struct tensorParam {
 
 namespace kernel {
 	std::shared_ptr<context> kCtx;
-	bool enableValidationLayers = false;
+	bool enableValidationLayers = true;
 	VkInstance kInstance;
 	VkPhysicalDevice kPhysicalDevice;
 	VkDevice kDevice;
@@ -18,6 +18,7 @@ namespace kernel {
 	std::vector<const char*> kEnabledLayers;
 	std::map<std::string, std::vector<uint32_t>> kShaders;
 	std::mutex kContextMtx;
+	
 
 	static uint32_t getComputeQueueFamilyIndex() {
 		uint32_t queueFamilyCount;
@@ -188,6 +189,9 @@ namespace kernel {
 		commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 		commandPoolCreateInfo.queueFamilyIndex = kQueueFamilyIndex;
 		VK_CHECK_RESULT(vkCreateCommandPool(kDevice, &commandPoolCreateInfo, NULL, &kCmdPool));
+
+
+		
 	}
 
 	context::~context() {

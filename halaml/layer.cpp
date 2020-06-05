@@ -3,6 +3,7 @@
 #include "layer.h"
 
 namespace kernel {
+
 	
 	layer::layer() {
 		createContext();

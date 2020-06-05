@@ -3,7 +3,7 @@
 namespace kernel { 
 	namespace shaders {
 		extern const unsigned int col2im_spv[1537];
-		extern const unsigned int gemm_spv[1784];
+		extern const unsigned int gemm_spv[850];
 		extern const unsigned int im2col_spv[1619];
 		extern const unsigned int celu_spv[497];
 		extern const unsigned int elu_spv[483];

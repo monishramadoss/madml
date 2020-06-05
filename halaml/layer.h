@@ -7,7 +7,6 @@
 
 namespace kernel {
 	class context;
-
 	class layer
 	{
 	public:
@@ -41,6 +40,36 @@ namespace kernel {
 		int m_group_z;
 		std::string m_type;
 	};
+
+	namespace layers {
+
+		class Module {
+		protected:
+			std::vector<layer*> layers;
+			std::vector<tensor*> tensors;
+			
+
+		public:
+			Module() {
+
+			}
+			virtual bool forward(std::vector<tensor*>& x, std::vector<tensor*>& z) {
+				return true;
+			}
+			virtual bool operator()(tensor* x, tensor* y) = 0;
+			virtual void backward() = 0;
+			
+			void execute() {
+				for (auto layer : layers) {
+					layer->run();
+				}
+			}
+			
+		};
+		
+	}
+
+
 }
 
 

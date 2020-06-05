@@ -25,7 +25,9 @@ namespace kernel {
 	extern VkQueue kQueue;
 	extern VkCommandPool kCmdPool;
 	extern std::mutex kContextMtx;
+	extern std::vector<layers::Module*> model_layers;
 
+	
 	/*enum ShapeIdx
 	{
 		kShapeIdxBatch = 0,

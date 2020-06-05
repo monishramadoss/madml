@@ -3,51 +3,63 @@
 
 #include <vector>
 #include "madml.h"
+#include "layer.h"
 
 namespace kernel {
 	namespace layers{
 		namespace nn {
 			
-			class Module {
-			protected:
-				std::vector<layer*> layers;
-				std::vector<tensor*> tensors;
-			public:
-				virtual bool forward(tensor* x, tensor* y) = 0;
-				virtual void backward() = 0;
-			};
-
 			class conv : public Module {
 				int kernel_size, num_filters, stride, padding, dialation, padding_type;
 			public:
 				conv(int kernel_size, int num_filters, bool bias, int stride, int padding, int dialation, int padding_type);
 
-				bool forward(std::vector<tensor*>& x, std::vector<tensor*>& y);
-					void backward() {};
+				bool operator()(tensor* x, tensor* y);
+				void backward();
 			};
 
 			class dense : public Module {
 				int size; bool bias;
+				bool m_debug;
 				char* m_weight;
 				char* m_bias;
 				char* m_output;
+				tensor* input_tensor;
 				tensor* weight_tensor;
 				tensor* bias_tensor;
 				tensor* output_tensor;
 				layers::matmul* mul_op;
 				layers::operators* add_op;
+				static std::vector<Module*> model_layers;
+
 			public:
-				dense(int size, bool bias);
-				bool forward(tensor* x, tensor* y);
-				void run();
+				dense(int size, bool bias, bool debug=false);
+				bool operator()(tensor* x, tensor* y);
 				void backward();
+				~dense() {
+					if (m_weight != nullptr)
+						delete[] m_weight;
+					if (m_bias != nullptr)
+						delete[] m_bias;
+					
+					if (weight_tensor != nullptr)
+						delete weight_tensor;
+					if (bias_tensor != nullptr)
+						delete bias_tensor;
+
+					layers.clear();
+					tensors.clear();
+
+					delete mul_op;
+					delete add_op;
+				}
 			};
 
 			class RNN : public Module {
 
 			public:
 				RNN(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool forward(tensor* x, tensor* y);
+				bool operator()(tensor* x, tensor* y);
 				void backward();
 			};
 
@@ -55,7 +67,7 @@ namespace kernel {
 
 			public:
 				LSTM(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool forward(tensor* x, tensor* y);
+				bool operator()(tensor* x, tensor* y);
 				void backward();
 			};
 
@@ -63,7 +75,7 @@ namespace kernel {
 
 			public:
 				GRU(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool forward(tensor* x, tensor* y);
+				bool operator()(tensor* x, tensor* y);
 				void backward();
 			};
 		}

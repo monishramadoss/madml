@@ -59,6 +59,7 @@ void PrintMatrix(float* data, std::vector<int> shape) {
 
 void test_fn() {
 
+
 	if( false ){
 		std::cout << "testing operators" << std::endl;
 		int size = (int)654123;
@@ -146,29 +147,30 @@ void test_fn() {
 	}
 
 	int M = 2;
-	int K = 128;
+	int K = 2;
 	std::vector<int> shape_x{ M, K };
-	auto x = fill_memory_shape(shape_x, 1);
+	auto x = fill_memory_shape<float>(shape_x, 1);
 	kernel::tensor* t1 = new kernel::tensor(x, shape_x, kernel::kFormatFp32);
 	kernel::tensor* t2 = new kernel::tensor();
 	kernel::tensor* t3 = new kernel::tensor();
 
-	auto dense_layer_1 = new kernel::layers::nn::dense(64, true);
-	auto dense_layer_2 = new kernel::layers::nn::dense(32, true);
+	auto dense_layer_1 = kernel::layers::nn::dense(8, true);
+	auto dense_layer_2 = kernel::layers::nn::dense(4, true);
 
-	dense_layer_1->forward(t1, t2);
-	dense_layer_2->forward(t2, t3);
-
-	dense_layer_1->run();
-	dense_layer_2->run();
-
+	dense_layer_1(t1, t2);
+	dense_layer_2(t2, t3);
 	
-	PrintDiffer((float*)t2->toHost(), M * 64);
+	std::cout << "OUTPUT" << std::endl;
+	
+	dense_layer_1.execute();
+	dense_layer_2.execute();
+	
+	PrintDiffer((float*)t2->toHost(), M * 2);
 	std::cout << std::endl << std::endl;
-	PrintDiffer((float*)t3->toHost(), M * 32);
-
-	delete dense_layer_1;
-	delete dense_layer_2;
+	PrintDiffer((float*)t3->toHost(), M * 2);
+	std::cout << std::endl << std::endl << std::endl;	
+	
+	delete t3;
 	delete t2;
 	delete t1;
 

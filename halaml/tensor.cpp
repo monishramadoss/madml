@@ -76,7 +76,7 @@ namespace kernel {
 		unMap();
 	}
 
-	int tensor::getFormat() const { return format; }
+	Format tensor::getFormat() const { return format; }
 
 	void tensor::copyTo(tensor dst) {
 		void* p = map();

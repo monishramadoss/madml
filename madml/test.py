@@ -1,9 +1,8 @@
-import numpy as np
+'''import numpy as np
 from urllib import request
 import gzip
 import pickle
 import os
-import madml
 
 filename = [
 ["training_images","train-images-idx3-ubyte.gz"],
@@ -55,6 +54,7 @@ tr_x, tr_y, te_x, te_y = load()
 
 for x, y in zip(tr_x, tr_y):
     pass
+'''
 
 import madml
 #import madml.nn as nn

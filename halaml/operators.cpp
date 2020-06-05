@@ -240,5 +240,25 @@ namespace kernel {
 			m_group_z = 1;
 			return true;
 		}		
+
+		bool operators::operator()(tensor* x, tensor* y){
+			if (m_op > 15) {
+				if (out == nullptr && y->count() == 0) {
+					char* tmp = fill_memory_shape<float>(x->getShape(), 0);
+					out = new tensor(tmp, x->getShape(), x->getFormat());
+					*y = *out;
+				}
+				else if (out == nullptr) {
+					out = y;
+				}
+			}
+				
+			forward(x, y);
+			return false;
+		}
+
+		void operators::backward() {
+
+		}
 	}
 }

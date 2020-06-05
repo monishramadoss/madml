@@ -6,13 +6,17 @@
 
 namespace kernel {
 	namespace layers {
-		class matmul : public layer
+		class matmul : public layer, public Module
 		{
 		public:
-			matmul();
-			virtual bool forward(tensor* x, tensor* y, tensor* z);
-			virtual void reshapeOutTensor(tensor* x, tensor* z);
-			virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
+			matmul();			
+			bool forward(tensor* x, tensor* y, tensor* z);
+			void reshapeOutTensor(tensor* x, tensor* z);
+			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
+			void backward(){}
+			
+			bool operator()(tensor* x, tensor* y) { return false; };
+
 		private:
 			bool computeGroupCount();
 			int m_m;
