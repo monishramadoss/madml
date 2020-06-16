@@ -113,6 +113,36 @@ if __name__ == "__main__":
     print(tmp)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class _ConvNd(Module):
 
     __constants__ = ['stride', 'padding', 'dilation', 'groups',

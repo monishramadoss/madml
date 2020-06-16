@@ -14,14 +14,18 @@ namespace kernel {
 			void reshapeOutTensor(tensor* x, tensor* z);
 			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
 			void backward(){}
-			
+			void update_weight() {};
 			bool operator()(tensor* x, tensor* y) { return false; };
 
+		
 		private:
 			bool computeGroupCount();
 			int m_m;
 			int m_n;
 			int m_k;
+
+			static std::vector<Module*> module_list;
+			virtual std::vector<Module*>* get_module();
 		};
 
 	}

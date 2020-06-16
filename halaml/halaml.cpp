@@ -59,15 +59,14 @@ void PrintMatrix(float* data, std::vector<int> shape) {
 
 void test_fn() {
 
-
-	if( false ){
+	if( true ){
 		std::cout << "testing operators" << std::endl;
-		int size = (int)654123;
+		int size = (int)2654123;
 
 		std::vector<int> shape;
 		shape.push_back(size);
 
-		auto x = fill_memory_shape<float>(shape, 10);
+		auto x = fill_memory_shape<float>(shape, 2);
 		auto y = fill_memory_shape<float>(shape, 5);
 		auto w = fill_memory_shape<float>(shape, 0);
 		auto z = fill_memory_shape<int>(shape, 0);
@@ -80,59 +79,21 @@ void test_fn() {
 		for (int i = 0; i < 15; ++i) {
 			if (i == 5)
 				i = 12;
-			kernel::layers::operators* k1 = new kernel::layers::operators(i);
-			k1->forward(t1, t2, t4);
-			{
-				auto start = high_resolution_clock::now();
-				k1->run();
-				auto stop = high_resolution_clock::now();
-				auto duration = duration_cast<microseconds>(stop - start);
-				std::cout << i << " " << duration.count() / size << " microseconds" << std::endl;
-			}
-			PrintDiffer((float*)t1->toHost(), size);
-			std::cout << std::endl;
-			PrintDiffer((float*)t2->toHost(), size);
-			std::cout << std::endl;
-			PrintDiffer((float*)t4->toHost(), size);
-			std::cout << std::endl;
-			delete k1;
+			kernel::layers::operators k1 = kernel::layers::operators(i);
+			k1(t1, t2, t4);
+			k1.run();			
 		}
 
 		for (int i = 5; i < 11; ++i) {
-			kernel::layers::operators* k1 = new kernel::layers::operators(i);
-			k1->forward(t1, t2, t3);
-			{
-				auto start = high_resolution_clock::now();
-				k1->run();
-				auto stop = high_resolution_clock::now();
-				auto duration = duration_cast<microseconds>(stop - start);
-				std::cout << i << " " << duration.count() / size << " microseconds" << std::endl;
-			}
-
-			PrintDiffer((float*)t1->toHost(), size);
-			std::cout << std::endl;
-			PrintDiffer((float*)t2->toHost(), size);
-			std::cout << std::endl;
-			PrintDiffer((int*)t3->toHost(), size);
-			std::cout << std::endl;
-			delete k1;
+			kernel::layers::operators k1 = kernel::layers::operators(i);
+			k1(t1, t2, t3);
+			k1.run();
 		}
 
 		for (int i = 15; i < 35; ++i) {
-			kernel::layers::operators* k1 = new kernel::layers::operators(i);
-			k1->forward(t2, t4);
-			{
-				auto start = high_resolution_clock::now();
-				k1->run();
-				auto stop = high_resolution_clock::now();
-				auto duration = duration_cast<microseconds>(stop - start);
-				std::cout << i << " " << duration.count() / size << " microseconds" << std::endl;
-			}
-			PrintDiffer((float*)t2->toHost(), size);
-			std::cout << std::endl;
-			PrintDiffer((float*)t4->toHost(), size);
-			std::cout << std::endl;
-			delete k1;
+			kernel::layers::operators k1 = kernel::layers::operators(i);
+			k1(t2, t4);
+			k1.run();			
 		}
 
 		delete[] x;
@@ -162,8 +123,8 @@ void test_fn() {
 	
 	std::cout << "OUTPUT" << std::endl;
 	
-	dense_layer_1.execute();
-	dense_layer_2.execute();
+	
+	dense_layer_2.super_run();
 	
 	PrintDiffer((float*)t2->toHost(), M * 2);
 	std::cout << std::endl << std::endl;

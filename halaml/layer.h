@@ -47,24 +47,34 @@ namespace kernel {
 		protected:
 			std::vector<layer*> layers;
 			std::vector<tensor*> tensors;
+
 			
-
 		public:
-			Module() {
-
-			}
 			virtual bool forward(std::vector<tensor*>& x, std::vector<tensor*>& z) {
 				return true;
 			}
 			virtual bool operator()(tensor* x, tensor* y) = 0;
 			virtual void backward() = 0;
-			
+			virtual void update_weight() = 0;
 			void execute() {
 				for (auto layer : layers) {
 					layer->run();
 				}
 			}
+
+			static std::vector<Module*> module_list;
+			virtual std::vector<Module*> *get_module() = 0;
+			void add_layer(Module* obj) {
+				get_module()->push_back(obj);
 			
+			}
+
+			void super_run() {
+				auto tmp = *get_module();
+				for (Module* m : tmp) {
+					m->execute();
+				}
+			}
 		};
 		
 	}

@@ -6,7 +6,13 @@
 namespace kernel {
 	namespace layers {
 		namespace nn {
+			
+			std::vector<Module*>* dense::get_module() {
+				return &Module::module_list;
+			}
+
 			dense::dense(int size, bool bias, bool debug) : size(size), bias(bias) {
+				
 				mul_op = new matmul();
 				layers.push_back(mul_op);
 				if (bias) {
@@ -24,6 +30,7 @@ namespace kernel {
 				m_debug = debug;
 
 			}
+
 			bool dense::operator()(tensor* x, tensor* y) {
 				std::vector<layer*> layers;
 				std::vector<tensor*> tensors;
@@ -51,6 +58,7 @@ namespace kernel {
 					tensors.push_back(output_tensor);
 					*y = *output_tensor;
 				}
+
 				mul_op->forward(x, weight_tensor, y);
 				if (bias) {
 					add_op->forward(output_tensor, bias_tensor, output_tensor);
@@ -62,17 +70,46 @@ namespace kernel {
 						add_op->run();
 					for(int i = 0; i < y->count(); ++i)
 						std::cout << ((float*)y->toHost())[i] << " ";
-					std::cout << std::endl;
+					std::cout << std::endl;				
+				}	
 
-				
-				}				
+				add_layer(this);
 				return true;
 			}
+					
+			void dense::update_weight() {
+				tensor* d_input = new tensor();
+				tensor* weight_gradient = new tensor();
+				tensor* bias_gradient = new tensor();
 
-		
+				tensor* lr = new tensor();
 
+				// w = w-lr*d_w
+				auto* d_sub_op = new operators(1);
+				auto* d_mul_op = new operators(2);
+
+
+				d_mul_op->forward(d_input, lr, weight_gradient);
+				d_sub_op->forward(weight_tensor, weight_gradient, weight_tensor);
+
+
+				if (bias) {
+					d_mul_op->forward(d_input, lr, bias_gradient);
+					d_sub_op->forward(bias_tensor, bias_gradient, bias_tensor);
+
+				}
+				std::cout << "Backward Dense Layer" << std::endl;
+			}
 			void dense::backward() {
+				/* 
+					d_C, A, B, d_A, d_B
 
+					d_A += d_C * B.T
+					d_B += A.T * d_C
+
+					deltaoutput, inputArray, nnWeights, deltainput, deltaweights 
+
+				*/
 			}
 
 		}

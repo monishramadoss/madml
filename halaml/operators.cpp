@@ -12,6 +12,10 @@ namespace kernel {
 			size_t total;
 		};
 
+		std::vector<Module*>* operators::get_module() {			
+			return &Module::module_list;
+		}
+
 		operators::operators(size_t op_id) {
 			layer::initVulkanThing(3);
 			m_type = "operators";
@@ -20,7 +24,7 @@ namespace kernel {
 
 		void operators::reshapeOutTensor(tensor* x, tensor* z) {
 			Shape shape = x->getShape();
-			z = &(z->reshape(nullptr, shape));
+			*z = z->reshape(nullptr, shape);
 		}
 
 		bool operators::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
@@ -241,24 +245,27 @@ namespace kernel {
 			return true;
 		}		
 
+
 		bool operators::operator()(tensor* x, tensor* y){
-			if (m_op > 15) {
-				if (out == nullptr && y->count() == 0) {
-					char* tmp = fill_memory_shape<float>(x->getShape(), 0);
-					out = new tensor(tmp, x->getShape(), x->getFormat());
-					*y = *out;
-				}
-				else if (out == nullptr) {
-					out = y;
-				}
+			if (y->count() == 0) {
+				char* tmp = fill_memory_shape<float>(x->getShape(), 0);				
+				*y = tensor(tmp, x->getShape(), x->getFormat());
 			}
-				
 			forward(x, y);
-			return false;
+			return true;
+		}
+
+		bool operators::operator()(tensor* x, tensor* y, tensor* z) {
+			if (z->count() == 0) {
+				char* tmp = fill_memory_shape<float>(x->getShape(), 0);
+				*z = tensor(tmp, x->getShape(), x->getFormat());
+			}
+			forward(x, y, z);
+			return true;
 		}
 
 		void operators::backward() {
-
+			std::cout << "BackWard Operator: " << m_op << std::endl;
 		}
 	}
 }

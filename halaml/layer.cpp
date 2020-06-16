@@ -3,7 +3,9 @@
 #include "layer.h"
 
 namespace kernel {
-
+	namespace layers {
+		std::vector<Module*> Module::module_list;
+	}
 	
 	layer::layer() {
 		createContext();

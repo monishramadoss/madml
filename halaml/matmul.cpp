@@ -23,6 +23,10 @@ namespace kernel {
 			int k;
 		};
 
+		std::vector<Module*>* matmul::get_module() {
+			return &Module::module_list;
+		}
+
 		matmul::matmul() {
 			layer::initVulkanThing(3);
 			m_type = "matmul";			
@@ -30,7 +34,8 @@ namespace kernel {
 
 		void matmul::reshapeOutTensor(tensor* x, tensor* z) {
 			Shape shape = x->getShape();
-			z = &(z->reshape(nullptr, shape));
+			*z = z->reshape(nullptr, shape);
+
 		}
 
 		bool matmul::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
