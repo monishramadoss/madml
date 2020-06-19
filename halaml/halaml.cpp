@@ -59,7 +59,7 @@ void PrintMatrix(float* data, std::vector<int> shape) {
 
 void test_fn() {
 
-	if( true ){
+	if( false ){
 		std::cout << "testing operators" << std::endl;
 		int size = (int)2654123;
 
@@ -130,7 +130,10 @@ void test_fn() {
 	std::cout << std::endl << std::endl;
 	PrintDiffer((float*)t3->toHost(), M * 2);
 	std::cout << std::endl << std::endl << std::endl;	
-	
+	for(int i = 0; i < 100; ++i){
+		dense_layer_2.super_run();
+	}
+
 	delete t3;
 	delete t2;
 	delete t1;

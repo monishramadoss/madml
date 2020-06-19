@@ -45,17 +45,28 @@ namespace kernel {
 
 		class Module {
 		protected:
-			std::vector<layer*> layers;
-			std::vector<tensor*> tensors;
-
+			std::vector<layer*> forward_layers;
+			std::vector<layer*> gradient_layers;
+			std::vector<layer*> backward_layers;
 			
 		public:
 			virtual bool forward(std::vector<tensor*>& x, std::vector<tensor*>& z) {
 				return true;
 			}
 			virtual bool operator()(tensor* x, tensor* y) = 0;
-			virtual void backward() = 0;
+
+			virtual void backward() {
+				for (int l = 0; l < module_list.size(); ++l) {
+					module_list.at(l)->backward();
+				}					
+			};
+
+			void backward(tensor* Cost){
+				tensor* grad = Cost;				
+			}
+
 			virtual void update_weight() = 0;
+
 			void execute() {
 				for (auto layer : layers) {
 					layer->run();
@@ -65,9 +76,14 @@ namespace kernel {
 			static std::vector<Module*> module_list;
 			virtual std::vector<Module*> *get_module() = 0;
 			void add_layer(Module* obj) {
-				get_module()->push_back(obj);
-			
+				get_module()->push_back(obj);			
 			}
+
+			// static std::vector<tensor*> inputs;
+			// static std::vector<tensor*> outputs;
+			// static std::vector<tensor*> weights;
+			// static std::vector<tensor*> biases;
+
 
 			void super_run() {
 				auto tmp = *get_module();

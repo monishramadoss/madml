@@ -2,6 +2,62 @@
 #include "utils.h"
 #include "nn_layers.h"
 #include <numeric>
+#define maxComputeWorkGroupCount 1024
+#define LOCAL_SZ_X 1024
+
+namespace kernel {
+	namespace layers {
+		struct gradientParam {
+			int total;
+			float lr;
+		};
+
+		std::vector<Module*>* gradient::get_module() {
+			return &Module::module_list;
+		}
+
+		gradient::gradient(float lr) : m_lr(lr) {
+			initVulkanThing(3);
+			m_type = "gradient";
+		}
+
+		void gradient::reshapeOutTensor(tensor* x, tensor* z) {
+			Shape shape = x->getShape();
+			*z = z->reshape(nullptr, shape);
+		}
+
+		bool gradient::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
+			return forward(ins[0], ins[1], outs[0]);
+		}
+
+		bool gradient::forward(tensor* x, tensor* y, tensor* z) {
+			if (m_pipeline == VK_NULL_HANDLE) {
+				m_total = x->count();
+				computeGroupCount();
+				createShaderModule(shaders::gradient_spv, sizeof(shaders::gradient_spv));
+				createPipeline(sizeof(gradientParam));
+			}
+						
+			bindTensor(m_device, x, 0, m_descriptor_set);
+			bindTensor(m_device, y, 1, m_descriptor_set);			
+			bindTensor(m_device, z, 2, m_descriptor_set);
+
+			gradientParam param = { m_total, m_lr };
+			recordCommandBuffer((void*)&param, sizeof(gradientParam));
+			return true;
+		}
+
+		bool gradient::computeGroupCount() {
+			m_group_x = (int)alignSize(m_total, LOCAL_SZ_X) / LOCAL_SZ_X;
+			if (m_group_x > maxComputeWorkGroupCount)
+				m_group_x = maxComputeWorkGroupCount;
+			m_group_y = 1;
+			m_group_z = 1;
+			return true;
+		}
+	}
+}
+
 
 namespace kernel {
 	namespace layers {
@@ -14,15 +70,27 @@ namespace kernel {
 			dense::dense(int size, bool bias, bool debug) : size(size), bias(bias) {
 				
 				mul_op = new matmul();
-				layers.push_back(mul_op);
+				forward_layers.push_back(mul_op);
+
+				grad_w = new gradient(1.0);
+				gradient_layers.push_back(grad_w);
+
+				backward_mul_op_dw = new matmul();
+				backward_mul_op_dx = new matmul();
+				backward_layers.push_back(backward_mul_op_dx);
+				backward_layers.push_back(backward_mul_op_dw);
+
 				if (bias) {
 					add_op = new operators(0);
-					layers.push_back(add_op);
+					forward_layers.push_back(add_op);
+					grad_b = new gradient(1.0);
+					gradient_layers.push_back(grad_b);
 				}
 				
 				m_weight = nullptr;
 				m_bias = nullptr;
 				m_output = nullptr;
+
 				input_tensor = nullptr;
 				weight_tensor = nullptr;
 				bias_tensor = nullptr;
@@ -78,38 +146,37 @@ namespace kernel {
 			}
 					
 			void dense::update_weight() {
-				tensor* d_input = new tensor();
-				tensor* weight_gradient = new tensor();
-				tensor* bias_gradient = new tensor();
+			    
+				grad_w->forward(weight_tensor, d_weight, weight_tensor);
+				if (bias)
+					grad_b->forward(bias_tensor, d_bias, bias_tensor);
 
-				tensor* lr = new tensor();
-
-				// w = w-lr*d_w
-				auto* d_sub_op = new operators(1);
-				auto* d_mul_op = new operators(2);
-
-
-				d_mul_op->forward(d_input, lr, weight_gradient);
-				d_sub_op->forward(weight_tensor, weight_gradient, weight_tensor);
-
-
-				if (bias) {
-					d_mul_op->forward(d_input, lr, bias_gradient);
-					d_sub_op->forward(bias_tensor, bias_gradient, bias_tensor);
-
-				}
 				std::cout << "Backward Dense Layer" << std::endl;
 			}
-			void dense::backward() {
+
+			void dense::backward(tensor* d_output, tensor* d_input) {
 				/* 
 					d_C, A, B, d_A, d_B
+
+					d_L/d_X = d_L/d_Y * W.T
+					d_L/d_W = X.T * d_L/d_Y 
 
 					d_A += d_C * B.T
 					d_B += A.T * d_C
 
 					deltaoutput, inputArray, nnWeights, deltainput, deltaweights 
 
+
+					acc_grad = previous grad
+					
+					weight_gradient = input * acc_grad * loss; if no act
+					if act then act' * acc_grad * loss;
+
 				*/
+
+				d_bias = d_output;
+				backward_mul_op_dw->forward(d_output, weight_tensor, d_weight); //weight transposed
+				backward_mul_op_dx->forward(input_tensor, d_output, d_input);   //input transposed
 			}
 
 		}

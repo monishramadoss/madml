@@ -9,7 +9,7 @@ namespace kernel {
 	namespace layers {
 		class im2col : public layer {
 		public:
-            im2col(int batchsize, int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]);
+            im2col(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]);
             virtual bool forward(tensor* x, tensor* y) = 0;
             virtual void reshapeOutTensor(tensor* x, tensor* z);
             virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
@@ -32,7 +32,7 @@ namespace kernel {
 
             int height_col; // height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
             int width_col;  // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
-            int depth_col; // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
+            int depth_col;  // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
                 
             int height_im;
             int width_im;
@@ -41,7 +41,7 @@ namespace kernel {
 
         class col2im : public layer {
         public:
-            col2im(int batchsize, int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]);
+            col2im(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]);
             virtual bool forward(tensor* x, tensor* y) = 0;
             virtual void reshapeOutTensor(tensor* x, tensor* z);
             virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
@@ -64,7 +64,7 @@ namespace kernel {
 
             int height_col; // height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
             int width_col;  // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
-            int depth_col; // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
+            int depth_col;  // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
                 
             int height_im;
             int width_im;

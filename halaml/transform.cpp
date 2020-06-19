@@ -27,7 +27,7 @@ namespace kernel {
      
             int height_col; // height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
             int width_col;  // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
-            int depth_col;
+            int depth_col;  // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
   
             int height_im;
             int width_im;
@@ -35,8 +35,8 @@ namespace kernel {
 
 		};
 		
-        im2col::im2col(int batchsize, int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]) :
-            batchsize(batchsize), channels(channels),
+        im2col::im2col( int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]) :
+            batchsize(1), channels(channels),
             kernel_h(kernel[0]), kernel_w(kernel[1]), kernel_d(kernel[2]),
             pad_h(pad[0]), pad_w(pad[1]), pad_d(pad[2]),
             stride_h(stride[0]), stride_w(stride[1]), stride_d(stride[2]),
@@ -97,8 +97,8 @@ namespace kernel {
             return true;
         }
 
-        col2im::col2im(int batchsize, int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]) :
-             batchsize(batchsize), channels(channels),
+        col2im::col2im(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]):
+            batchsize(1), channels(channels),
             kernel_h(kernel[0]), kernel_w(kernel[1]), kernel_d(kernel[2]),
             pad_h(pad[0]), pad_w(pad[1]), pad_d(pad[2]),
             stride_h(stride[0]), stride_w(stride[1]), stride_d(stride[2]),
