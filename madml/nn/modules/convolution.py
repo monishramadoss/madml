@@ -1,3 +1,4 @@
+
 import numpy as np
 #from .module import Module
 
@@ -34,22 +35,22 @@ def vol2col(A, channels, height, width, kernel, pad, stride, dilation):
     channels_col = channels * kernel_h * kernel_w
 
     for elt in range(batch_size):
-        data_im = elt * channels * height * width
+        data_vol = elt * channels * height * width
         data_col = elt * n_output_plane * output_length
-        #data_im, data_col, = 0, 0
+        #data_vol, data_col, = 0, 0
         for c_col in range(channels_col):
             w_offset = int(c_col % kernel_w)
             h_offset = int((c_col / kernel_w) % kernel_h)
-            c_im = int(c_col / kernel_h / kernel_w)
+            c_vol = int(c_col / kernel_h / kernel_w)
 
             for h_col in range(int(height_col)):
-                h_im = int(h_col * stride_h - pad_h + h_offset * dilation_h)
+                h_vol = int(h_col * stride_h - pad_h + h_offset * dilation_h)
                 for w_col in range(int(width_col)):
-                    w_im = int(w_col * stride_w - pad_w + w_offset * dilation_w)
-                    if 0 <= h_im < height and 0 <= w_im < width:
+                    w_vol = int(w_col * stride_w - pad_w + w_offset * dilation_w)
+                    if 0 <= h_vol < height and 0 <= w_vol < width:
                         col_idx = int(data_col + (c_col * height_col + h_col) * width_col + w_col)
-                        im_idx = int(data_im + (c_im * height + h_im) * width + w_im)
-                        B[col_idx] = A[im_idx]
+                        vol_idx = int(data_vol + (c_vol * height + h_vol) * width + w_vol)
+                        B[col_idx] = A[vol_idx]
                     else:
                         B[int(data_col + (c_col * height_col + h_col) * width_col + w_col)] = 0
 
@@ -78,19 +79,19 @@ def col2vol(A, channels, height, width, kernel, pad, stride, dilation):
 
     for elt in range(batch_size):
         data_col = elt * n_output_plane * height * width
-        data_im = elt * channels * height_col * width_col
+        data_vol = elt * channels * height_col * width_col
         for index in range(channels_col):
             w_offset = int(index % kernel_w)
             h_offset = int((index / kernel_w) % kernel_h)
-            c_im = int(index / kernel_h / kernel_w)
+            c_vol = int(index / kernel_h / kernel_w)
             for h_col in range(int(height_col)):
-                h_im = h_col * stride_h - pad_h + h_offset * dilation_h
+                h_vol = h_col * stride_h - pad_h + h_offset * dilation_h
                 for w_col in range(int(width_col)):
-                    w_im = w_col * stride_w - pad_w + w_offset * dilation_w
-                    if 0 <= h_im < height and 0 <= w_im < width:
-                        im_idx = int(data_im + (c_im * height + h_im) * width + w_im)
+                    w_vol = w_col * stride_w - pad_w + w_offset * dilation_w
+                    if 0 <= h_vol < height and 0 <= w_vol < width:
+                        vol_idx = int(data_vol + (c_vol * height + h_vol) * width + w_vol)
                         col_idx = int(data_col + (index * height_col + h_col) * width_col + w_col)
-                        B[im_idx] += A[col_idx]
+                        B[vol_idx] += A[col_idx]
 
     return B.reshape((batch_size, channels, height, width))
 

@@ -65,26 +65,26 @@ def calculate_gain(nonlinearity, param=None):
 
 def _eye(tensor):
     if len(tensor.shape) == 2:
-        raise ValueError("Only tensors with 2 dimensions are supported")
+        raise ValueError("Only tensors with 2 dvolensions are supported")
     return np.eye(tensor.shape[0], tensor.shape[1])
 
 
 def _dirac(tensor, groups=1):
 
     if len(tensor.shape) not in [3, 4, 5]:
-        raise ValueError("Only tensors with 3, 4, or 5 dimensions are supported")
+        raise ValueError("Only tensors with 3, 4, or 5 dvolensions are supported")
     if tensor.shape[0] % groups != 0:
-        raise ValueError('dim 0 must be divisible by groups')
+        raise ValueError('dvol 0 must be divisible by groups')
 
     out_channels_per_grp = tensor.shape[0] // groups
-    min_dim = min(out_channels_per_grp, tensor.shape[1])
-    dimensions = len(tensor.shape)
+    min_dvol = min(out_channels_per_grp, tensor.shape[1])
+    dvolensions = len(tensor.shape)
     zeros = _zeros(tensor)
     for g in range(groups):
-        for d in range(min_dim):
-            if dimensions == 3:
+        for d in range(min_dvol):
+            if dvolensions == 3:
                 zeros[g * out_channels_per_grp + d, d, tensor.shape[2] // 2] = 1
-            elif dimensions == 4:
+            elif dvolensions == 4:
                 zeros[g * out_channels_per_grp + d, d, tensor.shape[2] // 2,
                       tensor.shape[3] // 2] = 1
             else:
@@ -94,13 +94,13 @@ def _dirac(tensor, groups=1):
 
 
 def _calculate_fan_in_and_fan_out(tensor):
-    dimensions = len(tensor.shape)
-    if dimensions < 2:
-        raise ValueError("Fan in and fan out can not be computed for tensor with fewer than 2 dimensions")
+    dvolensions = len(tensor.shape)
+    if dvolensions < 2:
+        raise ValueError("Fan in and fan out can not be computed for tensor with fewer than 2 dvolensions")
     num_input_fmaps = tensor.shape[1]
     num_output_fmaps = tensor.shape[0]
     receptive_field_size = 1
-    if dimensions > 2:
+    if dvolensions > 2:
         receptive_field_size = tensor[0][0].size
     fan_in = num_input_fmaps * receptive_field_size
     fan_out = num_output_fmaps * receptive_field_size
@@ -130,7 +130,7 @@ def _calculate_correct_fan(tensor, mode):
     return fan_in if mode == 'fan_in' else fan_out
 
 
-def kaiming_uniform_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
+def kavoling_uniform_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
     fan = _calculate_correct_fan(tensor, mode)
     gain = calculate_gain(nonlinearity, a)
     std = gain / math.sqrt(fan)
@@ -138,7 +138,7 @@ def kaiming_uniform_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
     return _uniform(tensor, -bound, bound)
 
 
-def kaiming_normal_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
+def kavoling_normal_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
     fan = _calculate_correct_fan(tensor, mode)
     gain = calculate_gain(nonlinearity, a)
     std = gain / math.sqrt(fan)
@@ -147,7 +147,7 @@ def kaiming_normal_(tensor, a=0, mode='fan_in', nonlinearity='leaky_relu'):
 
 def _orthogonal(tensor, gain=1):
     if len(tensor.shape) < 2:
-        raise ValueError("Only tensors with 2 or more dimensions are supported")
+        raise ValueError("Only tensors with 2 or more dvolensions are supported")
     rows = tensor.shape[0]
     cols = tensor.size // rows
     flattened = _normal(np.array(rows, cols), 0, 1)
@@ -167,7 +167,7 @@ def _orthogonal(tensor, gain=1):
 
 def _sparse(tensor, sparsity, std=0.01):
     if len(tensor.shape) != 2:
-        raise ValueError("Only tensors with 2 dimensions are supported")
+        raise ValueError("Only tensors with 2 dvolensions are supported")
 
     rows, cols = tensor.shape
     num_zeros = int(math.ceil(sparsity * rows))

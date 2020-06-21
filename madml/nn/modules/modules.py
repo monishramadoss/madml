@@ -16,7 +16,7 @@ class Module(object):
         self._modules = OrderedDict()
 
     def forward(self, *x):
-        raise NotImplementedError
+        raise NotvolplementedError
 
     def __call__(self, x):
         pass

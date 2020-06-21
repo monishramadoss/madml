@@ -31,9 +31,9 @@ namespace kernel
 			int width_col; // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
 			int depth_col; // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
 
-			int height_im;
-			int width_im;
-			int depth_im;
+			int height_vol;
+			int width_vol;
+			int depth_vol;
 		};
 
 		std::vector<Module*>* vol2col::get_module()
@@ -41,12 +41,12 @@ namespace kernel
 			return &Module::module_list;
 		}
 
-		vol2col::vol2col(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]) :
+		vol2col::vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) :
 			channels(channels),
-			kernel_h(kernel[0]), kernel_w(kernel[1]), kernel_d(kernel[2]),
-			pad_h(pad[0]), pad_w(pad[1]), pad_d(pad[2]),
-			stride_h(stride[0]), stride_w(stride[1]), stride_d(stride[2]),
-			dilation_h(dilation[0]), dilation_w(dilation[1]), dilation_d(dilation[2])
+			kernel_h(kernel.h), kernel_w(kernel.w), kernel_d(kernel.d),
+			pad_h(pad.h), pad_w(pad.w), pad_d(pad.d),
+			stride_h(stride.h), stride_w(stride.w), stride_d(stride.d),
+			dilation_h(dilation.h), dilation_w(dilation.w), dilation_d(dilation.d)
 		{
 			initVulkanThing(2);
 			m_type = "vol2col";
@@ -63,12 +63,12 @@ namespace kernel
 			if (m_pipeline == nullptr)
 			{
 				batch_size = 1;
-				height_im = x->getShape()[x->getShape().size() - 1];
-				width_im = x->getShape()[x->getShape().size() - 2];
-				depth_im = x->getShape()[x->getShape().size() - 3];
-				height_col = (height_im + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-				width_col = (width_im + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-				depth_col = (depth_im + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1;
+				height_vol = x->getShape()[x->getShape().size() - 1];
+				width_vol = x->getShape()[x->getShape().size() - 2];
+				depth_vol = x->getShape()[x->getShape().size() - 3];
+				height_col = (height_vol + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+				width_col = (width_vol + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+				depth_col = (depth_vol + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1;
 				computeGroupCount();
 				createShaderModule(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
 				createPipeline(sizeof(vol2colParam));
@@ -83,7 +83,7 @@ namespace kernel
 				stride_h, stride_w, stride_d,
 				dilation_h, dilation_w, dilation_d,
 				height_col, width_col, depth_col,
-				height_im, width_im, depth_im
+				height_vol, width_vol, depth_vol
 			};
 
 			recordCommandBuffer(static_cast<void*>(&param), sizeof(vol2colParam));
@@ -117,12 +117,12 @@ namespace kernel
 			return &Module::module_list;
 		}
 
-		col2vol::col2vol(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]) :
+		col2vol::col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) :
 			channels(channels),
-			kernel_h(kernel[0]), kernel_w(kernel[1]), kernel_d(kernel[2]),
-			pad_h(pad[0]), pad_w(pad[1]), pad_d(pad[2]),
-			stride_h(stride[0]), stride_w(stride[1]), stride_d(stride[2]),
-			dilation_h(dilation[0]), dilation_w(dilation[1]), dilation_d(dilation[2])
+			kernel_h(kernel.h), kernel_w(kernel.w), kernel_d(kernel.d),
+			pad_h(pad.h), pad_w(pad.w), pad_d(pad.d),
+			stride_h(stride.h), stride_w(stride.w), stride_d(stride.d),
+			dilation_h(dilation.h), dilation_w(dilation.w), dilation_d(dilation.d)
 		{
 			initVulkanThing(2);
 			m_type = "col2vol";
@@ -139,12 +139,12 @@ namespace kernel
 			if (m_pipeline == nullptr)
 			{
 				batch_size = 1;
-				height_im = x->getShape()[x->getShape().size() - 1];
-				width_im = x->getShape()[x->getShape().size() - 2];
-				depth_im = x->getShape()[x->getShape().size() - 3];
-				height_col = (height_im + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
-				width_col = (width_im + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
-				depth_col = (depth_im + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1;
+				height_vol = x->getShape()[x->getShape().size() - 1];
+				width_vol = x->getShape()[x->getShape().size() - 2];
+				depth_vol = x->getShape()[x->getShape().size() - 3];
+				height_col = (height_vol + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1;
+				width_col = (width_vol + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1;
+				depth_col = (depth_vol + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1;
 				computeGroupCount();
 				createShaderModule(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
 				createPipeline(sizeof(vol2colParam));
@@ -160,7 +160,7 @@ namespace kernel
 				stride_h, stride_w, stride_d,
 				dilation_h, dilation_w, dilation_d,
 				height_col, width_col, depth_col,
-				height_im, width_im, depth_im
+				height_vol, width_vol, depth_vol
 			};
 
 			recordCommandBuffer(static_cast<void*>(&param), sizeof(vol2colParam));

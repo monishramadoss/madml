@@ -9,10 +9,17 @@ namespace kernel
 {
 	namespace layers
 	{
+		struct dhw
+		{
+			int d;
+			int h;
+			int w;
+		};
+
 		class vol2col : public layer, public Module
 		{
 		public:
-			vol2col(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]);
+			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			virtual bool forward(tensor* x, tensor* y);
 			virtual void reshapeOutTensor(tensor* x, tensor* z);
 			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
@@ -49,9 +56,9 @@ namespace kernel
 			int width_col; // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
 			int depth_col; // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
 
-			int height_im;
-			int width_im;
-			int depth_im;
+			int height_vol;
+			int width_vol;
+			int depth_vol;
 
 			static std::vector<Module*> module_list;
 			std::vector<Module*>* get_module() override;
@@ -60,7 +67,7 @@ namespace kernel
 		class col2vol : public layer, public Module
 		{
 		public:
-			col2vol(int channels, int kernel[3], int pad[3], int stride[3], int dilation[3]);
+			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			virtual bool forward(tensor* x, tensor* y);
 			virtual void reshapeOutTensor(tensor* x, tensor* z);
 			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
@@ -97,9 +104,9 @@ namespace kernel
 			int width_col; // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
 			int depth_col; // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
 
-			int height_im;
-			int width_im;
-			int depth_im;
+			int height_vol;
+			int width_vol;
+			int depth_vol;
 
 			static std::vector<Module*> module_list;
 			std::vector<Module*>* get_module() override;

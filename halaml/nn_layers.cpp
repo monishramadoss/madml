@@ -97,7 +97,7 @@ namespace kernel
 
 			bool dense::operator()(tensor* x, tensor* y)
 			{
-				*m_input = *x;
+				m_input = x;
 				std::vector<int> input_shape = x->getShape();
 				std::vector<int> weight_shape = std::vector<int>{ input_shape[1], size };
 				std::vector<int> bias_shape = std::vector<int>{ input_shape[0], size };
@@ -147,15 +147,11 @@ namespace kernel
 				return &Module::module_list;
 			}
 
-			conv::conv(int num_filters, int* kernel_size, int* stride, int* padding, int* dialation, int padding_type,
-				bool use_bias) : m_num_filters(num_filters), USE_BIAS(use_bias)
+			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
+				bool use_bias) : m_kernel_size(kernel_size), m_stride(stride), m_padding(padding),
+				m_dilation(dilation), m_padding_type(padding_type), m_num_filters(num_filters),
+				USE_BIAS(use_bias)
 			{
-				*m_kernel_size = *kernel_size;
-				*m_stride = *stride;
-				*m_padding = *padding;
-				*m_dialation = *dialation;
-				m_padding_type = padding_type;
-
 				m_mm = new matmul();
 				if (USE_BIAS)
 					m_bias_op = new operators(0);
@@ -173,24 +169,24 @@ namespace kernel
 
 			bool conv::operator()(tensor* x, tensor* y)
 			{
-				*m_input = *x;
+				m_input = x;
 				auto input_shape = x->getShape(); //cdhw
-				int depth_col = (input_shape[1] + 2 * m_padding[0] - (m_dialation[0] * (m_kernel_size[0] - 1) + 1)) /
-					m_stride[0] + 1;
-				int height_col = (input_shape[2] + 2 * m_padding[1] - (m_dialation[1] * (m_kernel_size[1] - 1) + 1)) /
-					m_stride[1] + 1;
-				int width_col = (input_shape[3] + 2 * m_padding[2] - (m_dialation[2] * (m_kernel_size[2] - 1) + 1)) /
-					m_stride[2] + 1;
+				const int depth_col = (input_shape[1] + 2 * m_padding.d - (m_dilation.d * (m_kernel_size.d - 1) + 1)) /
+					m_stride.d + 1;
+				const int height_col = (input_shape[2] + 2 * m_padding.h - (m_dilation.h * (m_kernel_size.h - 1) + 1)) /
+					m_stride.h + 1;
+				const int width_col = (input_shape[3] + 2 * m_padding.w - (m_dilation.w * (m_kernel_size.w - 1) + 1)) /
+					m_stride.w + 1;
 
-				int n_output_plane = input_shape[0] * m_kernel_size[0] * m_kernel_size[1] * m_kernel_size[2];
-				int output_length = depth_col * height_col * width_col;
+				const int n_output_plane = input_shape[0] * m_kernel_size.w * m_kernel_size.h * m_kernel_size.d;
+				const int output_length = depth_col * height_col * width_col;
 
-				m_kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dialation);
+				m_kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 
-				auto input_t_shape = std::vector<int>{ n_output_plane, output_length };
-				auto weight_shape = std::vector<int>{ n_output_plane, m_num_filters }; // T
-				auto bias_shape = std::vector<int>{ m_num_filters, depth_col, height_col, width_col };
-				auto output_shape = std::vector<int>{ m_num_filters, output_length };
+				const auto input_t_shape = std::vector<int>{ n_output_plane, output_length };
+				const auto weight_shape = std::vector<int>{ m_num_filters, n_output_plane }; // T
+				const auto bias_shape = std::vector<int>{ m_num_filters, depth_col, height_col, width_col };
+				const auto output_shape = std::vector<int>{ m_num_filters, output_length };
 
 				m_input_t = new tensor(0.0, input_t_shape);
 				m_weight = new tensor(1.0, weight_shape);

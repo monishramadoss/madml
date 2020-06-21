@@ -115,36 +115,53 @@ void test_fn()
 		delete t4;
 	}
 
-	int batch_size = 1;
-	int M = 2;
-	int K = 2;
-	std::vector<int> shape_x{ batch_size, M, K };
-	auto* t1 = new kernel::tensor(1, shape_x);
-	auto* t2 = new kernel::tensor();
-	auto* t3 = new kernel::tensor();
-
-	auto dense_layer_1 = kernel::layers::nn::dense(8, true);
-	auto dense_layer_2 = kernel::layers::nn::dense(4, true);
-
-	dense_layer_1(t1, t2);
-	dense_layer_2(t2, t3);
-
-	std::cout << "OUTPUT" << std::endl;
-
-	dense_layer_2.super_run();
-
-	PrintDiffer(reinterpret_cast<float*>(t2->toHost()), M * 2);
-	std::cout << std::endl << std::endl;
-	PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * 2);
-	std::cout << std::endl << std::endl << std::endl;
-	for (int i = 0; i < 100; ++i)
+	std::cout << "testing dnn" << std::endl;
 	{
+		int M = 2;
+		int K = 2;
+		std::vector<int> shape_x{ M, K };
+		auto* t1 = new kernel::tensor(1, shape_x);
+		auto* t2 = new kernel::tensor();
+		auto* t3 = new kernel::tensor();
+
+		auto dense_layer_1 = kernel::layers::nn::dense(8, true);
+		auto dense_layer_2 = kernel::layers::nn::dense(4, true);
+
+		dense_layer_1(t1, t2);
+		dense_layer_2(t2, t3);
+
+		std::cout << "OUTPUT" << std::endl;
+
 		dense_layer_2.super_run();
+
+		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), M * 2);
+		std::cout << std::endl << std::endl;
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * 2);
+		std::cout << std::endl << std::endl << std::endl;
+
+		for (int i = 0; i < 100; ++i)
+		{
+			dense_layer_2.super_run();
+		}
+
+		delete t3;
+		delete t2;
+		delete t1;
 	}
 
-	delete t3;
-	delete t2;
-	delete t1;
+	std::cout << "testing cnn" << std::endl;
+	{
+		//cdhw
+		std::vector<int> shape_x{ 3, 1, 128, 128 };
+		auto* t1 = new kernel::tensor(1, shape_x);
+		auto* t2 = new kernel::tensor();
+
+		auto cnn_layer_1 = kernel::layers::nn::conv(1, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		cnn_layer_1(t1, t2);
+		cnn_layer_1.super_run();
+
+		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+	}
 }
 
 PYBIND11_MODULE(halaml, m)

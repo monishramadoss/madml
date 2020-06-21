@@ -9,7 +9,7 @@ struct tensorParam
 namespace kernel
 {
 	std::shared_ptr<context> kCtx;
-	bool enableValidationLayers = true;
+	bool enableValidationLayers = false;
 	VkInstance kInstance;
 	VkPhysicalDevice kPhysicalDevice;
 	VkDevice kDevice;
@@ -42,7 +42,7 @@ namespace kernel
 	}
 
 	bool checkExtensionAvailability(const char* extension_name,
-	                                const std::vector<VkExtensionProperties>& available_extensions)
+		const std::vector<VkExtensionProperties>& available_extensions)
 	{
 		for (size_t i = 0; i < available_extensions.size(); ++i)
 		{
@@ -53,9 +53,9 @@ namespace kernel
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallbackFn(VkDebugReportFlagsEXT flags,
-	                                                     VkDebugReportObjectTypeEXT objectType, uint64_t object,
-	                                                     size_t location, int32_t messageCode, const char* pLayerPrefix,
-	                                                     const char* pMessage, void* pUserData)
+		VkDebugReportObjectTypeEXT objectType, uint64_t object,
+		size_t location, int32_t messageCode, const char* pLayerPrefix,
+		const char* pMessage, void* pUserData)
 	{
 		std::cout << "Debug Report: " << pLayerPrefix << ":" << pMessage << std::endl;
 		return VK_FALSE;
@@ -130,9 +130,9 @@ namespace kernel
 
 		VkApplicationInfo applicationInfo = {};
 		applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-		applicationInfo.pApplicationName = "VkCom Library";
+		applicationInfo.pApplicationName = "halaml Library";
 		applicationInfo.applicationVersion = 0;
-		applicationInfo.pEngineName = "vkcom";
+		applicationInfo.pEngineName = "halaml";
 		applicationInfo.engineVersion = 0;
 		applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -172,11 +172,8 @@ namespace kernel
 
 		for (VkPhysicalDevice device : devices)
 		{
-			if (true)
-			{
-				kPhysicalDevice = device;
-				break;
-			}
+			kPhysicalDevice = device;
+			break;
 		}
 
 		kQueueFamilyIndex = getComputeQueueFamilyIndex();
@@ -213,8 +210,10 @@ namespace kernel
 
 	context::~context()
 	{
-		vkDestroyCommandPool(kDevice, kCmdPool, nullptr);
-		vkDestroyDevice(kDevice, nullptr);
+		if (kCmdPool != nullptr)
+			vkDestroyCommandPool(kDevice, kCmdPool, nullptr);
+		if (kDevice != nullptr)
+			vkDestroyDevice(kDevice, nullptr);
 
 		if (enableValidationLayers)
 		{
@@ -229,7 +228,9 @@ namespace kernel
 				func(kInstance, kDebugReportCallback, nullptr);
 			}
 		}
+
 		kShaders.clear();
-		vkDestroyInstance(kInstance, nullptr);
+		if (kInstance != nullptr)
+			vkDestroyInstance(kInstance, nullptr);
 	}
 }

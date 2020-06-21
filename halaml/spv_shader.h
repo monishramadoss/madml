@@ -1,13 +1,8 @@
 #include <cstdlib>
 
-namespace kernel
-{
-	namespace shaders
-	{
-		extern const unsigned int col2vol_spv[2045];
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gemm_spv[850];
-		extern const unsigned int gradient_spv[496];
-		extern const unsigned int vol2col_spv[2150];
 		extern const unsigned int celu_spv[497];
 		extern const unsigned int elu_spv[483];
 		extern const unsigned int hardshrink_spv[535];
@@ -38,7 +33,11 @@ namespace kernel
 		extern const unsigned int pow_spv[468];
 		extern const unsigned int sub_spv[466];
 		extern const unsigned int xor_spv[479];
+		extern const unsigned int gradient_spv[496];
 		extern const unsigned int MSE_spv[552];
+		extern const unsigned int col2vol_spv[2045];
+		extern const unsigned int transpose_spv[384];
+		extern const unsigned int vol2col_spv[2150];
 		extern const unsigned int abs_spv[404];
 		extern const unsigned int acos_spv[404];
 		extern const unsigned int acosh_spv[404];

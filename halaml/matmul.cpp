@@ -3,15 +3,15 @@
 #include "matmul.h"
 #define maxComputeWorkGroupCount 1024
 
-#define TSM 128                     // The tile-size in dimension M
-#define TSN 128                     // The tile-size in dimension N
-#define TSK 16                      // The tile-size in dimension K
-#define WPTM 4                      // The amount of work-per-thread in dimension M
-#define WPTN 4                      // The amount of work-per-thread in dimension N
+#define TSM 128                     // The tile-size in dvolension M
+#define TSN 128                     // The tile-size in dvolension N
+#define TSK 16                      // The tile-size in dvolension K
+#define WPTM 4                      // The amount of work-per-thread in dvolension M
+#define WPTN 4                      // The amount of work-per-thread in dvolension N
 #define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
 #define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
-#define LOCAL_SZ_X 16    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
-#define LOCAL_SZ_Y 16    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
+#define LOCAL_SZ_X 16    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
+#define LOCAL_SZ_Y 16    // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
 
 namespace kernel
 {
@@ -19,7 +19,6 @@ namespace kernel
 	{
 		struct matmulParams
 		{
-			int batch_size;
 			int m;
 			int n;
 			int k;
@@ -55,7 +54,7 @@ namespace kernel
 			if (m_pipeline == nullptr)
 			{
 				m_m = x->getShape()[0];
-				m_n = y->getShape()[0];
+				m_n = y->getShape()[1];
 				m_k = x->getShape()[1];
 				if (m_k != y->getShape()[0])
 					std::cout << "MATML ERROR" << std::endl;
@@ -68,7 +67,7 @@ namespace kernel
 			bindTensor(m_device, y, 1, m_descriptor_set);
 			bindTensor(m_device, z, 2, m_descriptor_set);
 
-			matmulParams param = { batch_size, m_m, m_n, m_k };
+			matmulParams param = { m_m, m_n, m_k };
 			recordCommandBuffer(static_cast<void*>(&param), sizeof(matmulParams));
 			return true;
 		}

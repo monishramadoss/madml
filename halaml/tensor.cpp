@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "common.h"
 #include "utils.h"
 
@@ -14,16 +16,18 @@ namespace kernel
 	{
 		createContext();
 		m_device = kDevice;
-		m_data = data;
+		m_data = std::shared_ptr<char>(data);
 		reshape(data, shape);
 	}
 
-	tensor::tensor(float c, std::vector<int> shape)
+	tensor::tensor(float c, std::vector<int> shape, Format fmt) : size_in_byte(0), format(kFormatFp32)
 	{
 		createContext();
 		m_device = kDevice;
-		m_data = fill_memory_shape<float>(shape, c);
-		reshape(m_data, shape);
+		char* data = fill_memory_shape<float>(shape, c);
+		m_data = std::shared_ptr<char>(data);
+		reshape(data, shape);
+		delete[] data;
 	}
 
 	void* tensor::map()
@@ -86,7 +90,11 @@ namespace kernel
 
 	tensor tensor::reshape(const std::vector<int>& shape)
 	{
-		return reshape(m_data, shape, false, format);
+		const size_t cnt = count();
+		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
+		if (cnt != _shape)
+			std::cout << "SHAPE ERROR" << std::endl;
+		return reshape(m_data.get(), shape, false, format);
 	}
 
 	void tensor::setTo(float val)

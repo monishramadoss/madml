@@ -41,7 +41,7 @@ namespace kernel
 			class conv : public Module
 			{
 			public:
-				conv(int num_filters, int* kernel_size, int* stride, int* padding, int* dialation, int padding_type,
+				conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
 					bool use_bias);
 				bool operator()(tensor* x, tensor* y) override;
 
@@ -52,7 +52,8 @@ namespace kernel
 				void update_weight() override;
 
 			private:
-				int m_kernel_size[3], m_stride[3], m_padding[3], m_dialation[3], m_padding_type, m_num_filters;
+				dhw m_kernel_size, m_stride, m_padding, m_dilation;
+				int m_padding_type, m_num_filters;
 				bool USE_BIAS;
 
 				tensor* m_input;
@@ -74,7 +75,7 @@ namespace kernel
 			class convTranspose : public Module
 			{
 			public:
-				convTranspose(int num_filters, int* kernel_size, int* stride, int* padding, int* dialation,
+				convTranspose(int num_filters, int* kernel_size, int* stride, int* padding, int* dilation,
 					int padding_type, bool use_bias);
 				bool operator()(tensor* x, tensor* y) override;
 
@@ -85,7 +86,7 @@ namespace kernel
 				void update_weight() override;
 
 			private:
-				int m_kernel_size[3], m_stride[3], m_padding[3], m_dialation[3], m_padding_type, m_num_filters;
+				int m_kernel_size[3], m_stride[3], m_padding[3], m_dilation[3], m_padding_type, m_num_filters;
 				bool USE_BIAS;
 
 				tensor* m_input;
