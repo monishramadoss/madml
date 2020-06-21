@@ -1,9 +1,10 @@
 #pragma once
 #include <vector>
-#include <memory>
 
-namespace kernel {
-	enum Format {
+namespace kernel
+{
+	enum Format
+	{
 		kFormatInvalid = -1,
 		kFormatFp16,
 		kFormatFp32,
@@ -18,17 +19,14 @@ namespace kernel {
 	};
 
 	enum FusedActivationType { kNone, kRelu, kRelu1, kRelu6, kActivationNum };
+
 	typedef std::vector<int> Shape;
 	bool isAvailable();
-
 }
-
-
 
 #include "tensor.h"
 #include "buffer.h"
 #include "layer.h"
-
 
 #include "operators.h"
 #include "matmul.h"

@@ -1,7 +1,6 @@
 #include "common.h"
 #include "utils.h"
 #include "matmul.h"
-#include <algorithm>
 #define maxComputeWorkGroupCount 1024
 
 #define TSM 128                     // The tile-size in dimension M
@@ -14,63 +13,72 @@
 #define LOCAL_SZ_X 16    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
 #define LOCAL_SZ_Y 16    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
 
-
-namespace kernel {
-	namespace layers {
-		struct matmulParams {
+namespace kernel
+{
+	namespace layers
+	{
+		struct matmulParams
+		{
+			int batch_size;
 			int m;
 			int n;
 			int k;
 		};
 
-		std::vector<Module*>* matmul::get_module() {
+		std::vector<Module*>* matmul::get_module()
+		{
 			return &Module::module_list;
 		}
 
-		matmul::matmul() {
-			layer::initVulkanThing(3);
-			m_type = "matmul";			
+		matmul::matmul()
+		{
+			initVulkanThing(3);
+			m_type = "matmul";
+			m_n = 0;
+			m_k = 0;
+			m_m = 0;
 		}
 
-		void matmul::reshapeOutTensor(tensor* x, tensor* z) {
+		void matmul::reshapeOutTensor(tensor* x, tensor* z)
+		{
 			Shape shape = x->getShape();
 			*z = z->reshape(nullptr, shape);
-
 		}
 
-		bool matmul::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
+		bool matmul::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs)
+		{
 			return forward(ins[0], ins[1], outs[0]);
 		}
 
-		bool matmul::forward(tensor* x, tensor* y, tensor* z) {
-			if (m_pipeline == VK_NULL_HANDLE) {
-
+		bool matmul::forward(tensor* x, tensor* y, tensor* z)
+		{
+			if (m_pipeline == nullptr)
+			{
 				m_m = x->getShape()[0];
-				m_n = y->getShape()[1];
+				m_n = y->getShape()[0];
 				m_k = x->getShape()[1];
 				if (m_k != y->getShape()[0])
 					std::cout << "MATML ERROR" << std::endl;
 				computeGroupCount();
 				createShaderModule(shaders::gemm_spv, sizeof(shaders::gemm_spv));
 				createPipeline(sizeof(matmulParams));
-			
 			}
 
 			bindTensor(m_device, x, 0, m_descriptor_set);
-			bindTensor(m_device, y, 1, m_descriptor_set);			
+			bindTensor(m_device, y, 1, m_descriptor_set);
 			bindTensor(m_device, z, 2, m_descriptor_set);
 
-			matmulParams param = { m_m, m_n, m_k};
-			recordCommandBuffer((void*)&param, sizeof(matmulParams));
+			matmulParams param = { batch_size, m_m, m_n, m_k };
+			recordCommandBuffer(static_cast<void*>(&param), sizeof(matmulParams));
 			return true;
 		}
 
-		
-		bool matmul::computeGroupCount() {
-			m_group_x = (int)alignSize(m_m, LOCAL_SZ_X) / LOCAL_SZ_X;
+		bool matmul::computeGroupCount()
+		{
+			m_group_x = static_cast<int>(alignSize(m_m, LOCAL_SZ_X)) / LOCAL_SZ_X;
 			if (m_group_x > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
-			m_group_y = (int)alignSize(m_n, LOCAL_SZ_Y) / LOCAL_SZ_Y;
+			m_group_y = static_cast<int>(alignSize(m_n, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
 			if (m_group_y > maxComputeWorkGroupCount)
 				m_group_y = maxComputeWorkGroupCount;
 			m_group_z = 1;

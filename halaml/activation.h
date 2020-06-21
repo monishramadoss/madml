@@ -1,43 +1,45 @@
-#ifndef ACTIVATION
-#define ACTIVATION
+#ifndef ACTIVATION_H
+#define ACTIVATION_H
 
 #include <vector>
 #include "madml.h"
 #include "layer.h"
 
-namespace kernel {
-	namespace layers {
-		namespace nn {
-			namespace activation {
-
-				class Activationfn : public layer, public Module
+namespace kernel
+{
+	namespace layers
+	{
+		namespace nn
+		{
+			namespace activation
+			{
+				class ActivationFn : public layer, public Module
 				{
 				public:
-					Activationfn();
+					ActivationFn();
 					virtual bool forward(tensor* x, tensor* y) = 0;
 					void reshapeOutTensor(tensor* x, tensor* z);
-					bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
+					bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
 				protected:
 					virtual bool computeGroupCount();
 					size_t m_total;
 				};
 
-
-				class elu : public Activationfn {
+				class elu : public ActivationFn
+				{
 				public:
 					elu(float alpha);
-					bool forward(tensor* x, tensor* y);
+					bool forward(tensor* x, tensor* y) override;
 				private:
 					float m_const;
 				};
 
-				class relu : public Activationfn {
+				class relu : public ActivationFn
+				{
 				public:
 					relu();
-					bool forward(tensor* x, tensor* y);
+					bool forward(tensor* x, tensor* y) override;
 				};
-
-
 			}
 		}
 	}

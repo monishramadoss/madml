@@ -19,17 +19,19 @@
 
 #include "madml.h"
 
-namespace kernel {
+namespace kernel
+{
 	extern VkPhysicalDevice kPhysicalDevice;
 	extern VkDevice kDevice;
 	extern VkQueue kQueue;
 	extern VkCommandPool kCmdPool;
 	extern std::mutex kContextMtx;
-	
+
 	/*enum ShapeIdx
 	{
 		kShapeIdxBatch = 0,
 		kShapeIdxChannel,
+		kShapeIdxDepth,
 		kShapeIdxHeight,
 		kShapeIdxWidth,
 	};*/
@@ -41,6 +43,5 @@ namespace kernel {
 			std::cout << "VULKAN KERNEL ERROR: " << f; \
 		} \
 }
-	   	 
 }
 #endif

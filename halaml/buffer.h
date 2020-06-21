@@ -2,11 +2,14 @@
 #define BUFFER_H
 #include <vulkan/vulkan.h>
 
-namespace kernel {
+namespace kernel
+{
 	class buffer
 	{
 	public:
-		buffer(VkDevice& device) : m_device(device), m_buffer(VK_NULL_HANDLE), m_memory(VK_NULL_HANDLE) {};
+		buffer(VkDevice& device) : m_device(device), m_buffer(nullptr), m_memory(nullptr)
+		{
+		};
 		buffer(VkDevice& device, size_t size_in_bytes, const char* data);
 		~buffer();
 		VkDeviceMemory getVkMemory() { return m_memory; }

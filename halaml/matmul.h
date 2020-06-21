@@ -4,20 +4,27 @@
 #include "madml.h"
 #include "layer.h"
 
-namespace kernel {
-	namespace layers {
+namespace kernel
+{
+	namespace layers
+	{
 		class matmul : public layer, public Module
 		{
 		public:
-			matmul();			
+			matmul();
 			bool forward(tensor* x, tensor* y, tensor* z);
 			void reshapeOutTensor(tensor* x, tensor* z);
-			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
-			void backward(){}
-			void update_weight() {};
-			bool operator()(tensor* x, tensor* y) { return false; };
+			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
 
-		
+			void backward() override
+			{
+			}
+
+			void update_weight() override
+			{
+			};
+			bool operator()(tensor* x, tensor* y) override { return false; };
+
 		private:
 			bool computeGroupCount();
 			int m_m;
@@ -25,9 +32,8 @@ namespace kernel {
 			int m_k;
 
 			static std::vector<Module*> module_list;
-			virtual std::vector<Module*>* get_module();
+			std::vector<Module*>* get_module() override;
 		};
-
 	}
 }
 

@@ -1,44 +1,53 @@
 #include "common.h"
 #include "utils.h"
 #include "operators.h"
-#include <algorithm>
 
 #define LOCAL_SZ_X 1024
 #define maxComputeWorkGroupCount 65535
 
-namespace kernel {
-	namespace layers {
-		struct tensorParam {
+namespace kernel
+{
+	namespace layers
+	{
+		struct tensorParam
+		{
 			size_t total;
 		};
 
-		std::vector<Module*>* operators::get_module() {			
+		std::vector<Module*>* operators::get_module()
+		{
 			return &Module::module_list;
 		}
 
-		operators::operators(size_t op_id) {
-			layer::initVulkanThing(3);
+		operators::operators(size_t op_id)
+		{
+			initVulkanThing(3);
 			m_type = "operators";
 			m_op = op_id;
+			m_total = 0;
 		}
 
-		void operators::reshapeOutTensor(tensor* x, tensor* z) {
+		void operators::reshapeOutTensor(tensor* x, tensor* z)
+		{
 			Shape shape = x->getShape();
 			*z = z->reshape(nullptr, shape);
 		}
 
-		bool operators::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
-			if(ins.size() == 2)
+		bool operators::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs)
+		{
+			if (ins.size() == 2)
 				return forward(ins[0], ins[1], outs[0]);
-			else
-				return forward(ins[0], outs[0]);
+			return forward(ins[0], outs[0]);
 		}
 
-		bool operators::forward(tensor* x, tensor* y) {
-			if (m_pipeline == VK_NULL_HANDLE) {
+		bool operators::forward(tensor* x, tensor* y)
+		{
+			if (m_pipeline == nullptr)
+			{
 				m_total = x->count();
 				computeGroupCount();
-				switch (m_op) {
+				switch (m_op)
+				{
 					//arithmetic
 				case 0:
 					createShaderModule(shaders::add_spv, sizeof(shaders::add_spv));
@@ -154,25 +163,28 @@ namespace kernel {
 				case 34:
 					createShaderModule(shaders::ceil_spv, sizeof(shaders::ceil_spv));
 					break;
-
 				}
 				createPipeline(sizeof(tensorParam));
 			}
-						
+
 			bindTensor(m_device, x, 0, m_descriptor_set);
 			bindTensor(m_device, y, 1, m_descriptor_set);
 			if (m_op < 15)
 				bindTensor(m_device, x, 2, m_descriptor_set);
 			tensorParam param = { m_total };
-			recordCommandBuffer((void*)&param, sizeof(tensorParam));
+			recordCommandBuffer(static_cast<void*>(&param), sizeof(tensorParam));
 			return true;
 		}
 
-		bool operators::forward(tensor* x, tensor* y, tensor* z) {
-			if (m_pipeline == VK_NULL_HANDLE) {
+		bool operators::forward(tensor* x, tensor* y, tensor* z)
+		{
+			if (m_pipeline == nullptr)
+			{
 				m_total = x->count();
 				computeGroupCount();
-				switch (m_op) { //34
+				switch (m_op)
+				{
+					//34
 					//arithmetic
 				case 0:
 					createShaderModule(shaders::add_spv, sizeof(shaders::add_spv));
@@ -213,11 +225,11 @@ namespace kernel {
 					createShaderModule(shaders::xor_spv, sizeof(shaders::xor_spv));
 					break;
 
-				//other ops
+					//other ops
 
 				case 12:
 					createShaderModule(shaders::pow_spv, sizeof(shaders::pow_spv));
-					break;			
+					break;
 				case 13:
 					createShaderModule(shaders::min_spv, sizeof(shaders::min_spv));
 					break;
@@ -232,31 +244,35 @@ namespace kernel {
 			bindTensor(m_device, y, 1, m_descriptor_set);
 			bindTensor(m_device, z, 2, m_descriptor_set);
 			tensorParam param = { m_total };
-			recordCommandBuffer((void*)&param, sizeof(tensorParam));
+			recordCommandBuffer(static_cast<void*>(&param), sizeof(tensorParam));
 			return true;
-		}		
+		}
 
-		bool operators::computeGroupCount() {
-			m_group_x = (int)alignSize(m_total, LOCAL_SZ_X) / LOCAL_SZ_X;
+		bool operators::computeGroupCount()
+		{
+			m_group_x = static_cast<int>(alignSize(m_total, LOCAL_SZ_X)) / LOCAL_SZ_X;
 			if (m_group_x > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
 			m_group_y = 1;
 			m_group_z = 1;
 			return true;
-		}		
+		}
 
-
-		bool operators::operator()(tensor* x, tensor* y){
-			if (y->count() == 0) {
-				char* tmp = fill_memory_shape<float>(x->getShape(), 0);				
+		bool operators::operator()(tensor* x, tensor* y)
+		{
+			if (y->count() == 0)
+			{
+				char* tmp = fill_memory_shape<float>(x->getShape(), 0);
 				*y = tensor(tmp, x->getShape(), x->getFormat());
 			}
 			forward(x, y);
 			return true;
 		}
 
-		bool operators::operator()(tensor* x, tensor* y, tensor* z) {
-			if (z->count() == 0) {
+		bool operators::operator()(tensor* x, tensor* y, tensor* z)
+		{
+			if (z->count() == 0)
+			{
 				char* tmp = fill_memory_shape<float>(x->getShape(), 0);
 				*z = tensor(tmp, x->getShape(), x->getFormat());
 			}
@@ -264,7 +280,8 @@ namespace kernel {
 			return true;
 		}
 
-		void operators::backward() {
+		void operators::backward()
+		{
 			std::cout << "BackWard Operator: " << m_op << std::endl;
 		}
 	}

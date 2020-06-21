@@ -1,11 +1,13 @@
 #include <cstdlib>
 
-namespace kernel { 
-	namespace shaders {
-		extern const unsigned int col2im_spv[2043];
+namespace kernel
+{
+	namespace shaders
+	{
+		extern const unsigned int col2vol_spv[2045];
 		extern const unsigned int gemm_spv[850];
 		extern const unsigned int gradient_spv[496];
-		extern const unsigned int im2col_spv[2148];
+		extern const unsigned int vol2col_spv[2150];
 		extern const unsigned int celu_spv[497];
 		extern const unsigned int elu_spv[483];
 		extern const unsigned int hardshrink_spv[535];

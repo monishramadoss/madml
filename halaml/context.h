@@ -1,7 +1,8 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-namespace kernel {
+namespace kernel
+{
 	class context
 	{
 	public:

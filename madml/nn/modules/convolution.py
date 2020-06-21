@@ -1,15 +1,15 @@
 import numpy as np
-from .module import Module
+#from .module import Module
 
 
 '''
-https://github.com/pytorch/pytorch/blob/0f675f9cbc71f59eaff9930a6ee3c62176b18017/aten/src/ATen/native/Im2Col.cpp
-https://github.com/pytorch/pytorch/blob/0f675f9cbc71f59eaff9930a6ee3c62176b18017/aten/src/ATen/native/im2col.h
+https://github.com/pytorch/pytorch/blob/0f675f9cbc71f59eaff9930a6ee3c62176b18017/aten/src/ATen/native/vol2col.cpp
+https://github.com/pytorch/pytorch/blob/0f675f9cbc71f59eaff9930a6ee3c62176b18017/aten/src/ATen/native/vol2col.h
 https://github.com/pytorch/pytorch/blob/b90fc52c687a6851047f18ec9d06fb998efe99dd/aten/src/ATen/native/TensorProperties.cpp
 '''
 output_h = 0
 output_w = 0
-def im2col(A, channels, height, width, kernel, pad, stride, dilation):
+def vol2col(A, channels, height, width, kernel, pad, stride, dilation):
     A = A.flatten()
     pad_h, pad_w = pad
     kernel_h, kernel_w = kernel
@@ -57,7 +57,7 @@ def im2col(A, channels, height, width, kernel, pad, stride, dilation):
     return B.reshape((batch_size, n_output_plane, output_length))
 
 
-def col2im(A, channels, height, width, kernel, pad, stride, dilation):
+def col2vol(A, channels, height, width, kernel, pad, stride, dilation):
     pad_h, pad_w = pad
     kernel_h, kernel_w = kernel
     stride_h, stride_w = stride
@@ -95,90 +95,63 @@ def col2im(A, channels, height, width, kernel, pad, stride, dilation):
     return B.reshape((batch_size, channels, height, width))
 
 BATCH_SIZE = 2
-Height = 224
-Width = 224
+Height = 4
+Width = 4
 
 
-kernel = np.ones(shape=(8,3,3,3)).reshape((27,8))
+kernel = np.ones(shape=(8,3,2,2)).reshape((8, 12))
 if __name__ == "__main__":
     inpt = np.ones(shape=(BATCH_SIZE, 3, Height, Width))
-    output = im2col(inpt, 3, Height, Width, (3,3), (0,0), (1,1), (1,1))
-    print(output.shape, output[output==1].shape, output[output==0].shape)
-    # print(kernel.shape)
-    # output = np.matmul(output[0], kernel)
-    # print(output.shape)
+    # vol2col(A, channels, height, width, kernel, pad, stride, dilation):
+    output = vol2col(inpt, 3, Height, Width, (2,2), (0,0), (1,1), (1,1))
+    #print(output)
+    print(output.shape) #, output[output==1].shape, output[output==0].shape)
+    print(kernel.shape)
+    output = np.matmul(kernel, output[0])
+    print(output.shape)
 
-    tmp = col2im(output, 3, output_h, output_w, (3,3), (0,0), (1,1), (1,1))
-    print(tmp.shape, tmp[tmp!=0].shape)
-    print(tmp)
-
-
-
-
+    tmp = col2vol(output, 3, output_h, output_w, (2,2), (0,0), (1,1), (1,1))
+    print(tmp.shape) #, tmp[tmp!=0].shape)
+    #print(tmp)
 
 
 
 
 
+# class _ConvNd(Module):
+#     __constants__ = ['stride', 'padding', 'dilation', 'groups',
+#                      'padding_mode', 'output_padding', 'in_channels',
+#                      'out_channels', 'kernel_size']
 
+#     def __init__(self, in_channels, out_channels, kernel_size, stride,
+#                  padding, dilation, transposed, output_padding,
+#                  groups, bias, padding_mode):
+#         super(_ConvNd, self).__init__()
+#         self.in_channels = in_channels
+#         self.out_channels = out_channels
+#         self.kernel_size = kernel_size
+#         self.stride = stride
+#         self.padding = padding
+#         self.dilation = dilation
+#         self.transposed = transposed
+#         self.output_padding = output_padding
+#         self.groups = groups
+#         self.padding_mode = padding_mode
+#     def forward(self, x):
+#         pass
 
+# class _ConvTransposeNd(_ConvNd):
+#     def __init__(self, in_channels, out_channels, kernel_size, stride,
+#                  padding, dilation, transposed, output_padding,
+#                  groups, bias, padding_mode):
+#         if padding_mode != 'zeros':
+#             raise ValueError('Only "zeros" padding mode is supported for {}'.format(self.__class__.__name__))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class _ConvNd(Module):
-
-    __constants__ = ['stride', 'padding', 'dilation', 'groups',
-                     'padding_mode', 'output_padding', 'in_channels',
-                     'out_channels', 'kernel_size']
-
-
-    def __init__(self, in_channels, out_channels, kernel_size, stride,
-                 padding, dilation, transposed, output_padding,
-                 groups, bias, padding_mode):
-        super(_ConvNd, self).__init__()
-        self.in_channels = in_channels
-        self.out_channels = out_channels
-        self.kernel_size = kernel_size
-        self.stride = stride
-        self.padding = padding
-        self.dilation = dilation
-        self.transposed = transposed
-        self.output_padding = output_padding
-        self.groups = groups
-        self.padding_mode = padding_mode
-    def forward(self, x):
-        pass
-
-class _ConvTransposeNd(_ConvNd):
-    def __init__(self, in_channels, out_channels, kernel_size, stride,
-                 padding, dilation, transposed, output_padding,
-                 groups, bias, padding_mode):
-        if padding_mode != 'zeros':
-            raise ValueError('Only "zeros" padding mode is supported for {}'.format(self.__class__.__name__))
-
-        super(_ConvTransposeNd, self).__init__(
-            in_channels, out_channels, kernel_size, stride,
-            padding, dilation, transposed, output_padding,
-            groups, bias, padding_mode)
+#         super(_ConvTransposeNd, self).__init__(
+#             in_channels, out_channels, kernel_size, stride,
+#             padding, dilation, transposed, output_padding,
+#             groups, bias, padding_mode)
     
-    def forward(self, x):
-        pass
-    
+#     def forward(self, x):
+#         pass
+#     

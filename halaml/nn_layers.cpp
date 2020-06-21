@@ -5,50 +5,61 @@
 #define maxComputeWorkGroupCount 1024
 #define LOCAL_SZ_X 1024
 
-namespace kernel {
-	namespace layers {
-		struct gradientParam {
+namespace kernel
+{
+	namespace layers
+	{
+		struct gradientParam
+		{
 			int total;
 			float lr;
 		};
 
-		std::vector<Module*>* gradient::get_module() {
+		std::vector<Module*>* gradient::get_module()
+		{
 			return &Module::module_list;
 		}
 
-		gradient::gradient(float lr) : m_lr(lr) {
+		gradient::gradient(float lr) : m_lr(lr)
+		{
 			initVulkanThing(3);
 			m_type = "gradient";
+			m_total = 0;
 		}
 
-		void gradient::reshapeOutTensor(tensor* x, tensor* z) {
+		void gradient::reshapeOutTensor(tensor* x, tensor* z)
+		{
 			Shape shape = x->getShape();
 			*z = z->reshape(nullptr, shape);
 		}
 
-		bool gradient::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) {
+		bool gradient::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs)
+		{
 			return forward(ins[0], ins[1], outs[0]);
 		}
 
-		bool gradient::forward(tensor* x, tensor* y, tensor* z) {
-			if (m_pipeline == VK_NULL_HANDLE) {
+		bool gradient::forward(tensor* x, tensor* y, tensor* z)
+		{
+			if (m_pipeline == nullptr)
+			{
 				m_total = x->count();
 				computeGroupCount();
 				createShaderModule(shaders::gradient_spv, sizeof(shaders::gradient_spv));
 				createPipeline(sizeof(gradientParam));
 			}
-						
+
 			bindTensor(m_device, x, 0, m_descriptor_set);
-			bindTensor(m_device, y, 1, m_descriptor_set);			
+			bindTensor(m_device, y, 1, m_descriptor_set);
 			bindTensor(m_device, z, 2, m_descriptor_set);
 
 			gradientParam param = { m_total, m_lr };
-			recordCommandBuffer((void*)&param, sizeof(gradientParam));
+			recordCommandBuffer(static_cast<void*>(&param), sizeof(gradientParam));
 			return true;
 		}
 
-		bool gradient::computeGroupCount() {
-			m_group_x = (int)alignSize(m_total, LOCAL_SZ_X) / LOCAL_SZ_X;
+		bool gradient::computeGroupCount()
+		{
+			m_group_x = static_cast<int>(alignSize(m_total, LOCAL_SZ_X)) / LOCAL_SZ_X;
 			if (m_group_x > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
 			m_group_y = 1;
@@ -58,127 +69,160 @@ namespace kernel {
 	}
 }
 
-
-namespace kernel {
-	namespace layers {
-		namespace nn {
-			
-			std::vector<Module*>* dense::get_module() {
+namespace kernel
+{
+	namespace layers
+	{
+		namespace nn
+		{
+			std::vector<Module*>* dense::get_module()
+			{
 				return &Module::module_list;
 			}
 
-			dense::dense(int size, bool bias, bool debug) : size(size), bias(bias) {
-				
-				mul_op = new matmul();
-				forward_layers.push_back(mul_op);
-
-				grad_w = new gradient(1.0);
-				gradient_layers.push_back(grad_w);
-
-				backward_mul_op_dw = new matmul();
-				backward_mul_op_dx = new matmul();
-				backward_layers.push_back(backward_mul_op_dx);
-				backward_layers.push_back(backward_mul_op_dw);
-
-				if (bias) {
-					add_op = new operators(0);
-					forward_layers.push_back(add_op);
-					grad_b = new gradient(1.0);
-					gradient_layers.push_back(grad_b);
-				}
-				
+			dense::dense(int size, bool use_bias) : size(size), USE_BIAS(use_bias)
+			{
+				m_mm = new matmul();
+				if (USE_BIAS)
+					m_bias_op = new operators(0);
+				else
+					m_bias_op = nullptr;
+				m_input = nullptr;
 				m_weight = nullptr;
 				m_bias = nullptr;
 				m_output = nullptr;
-
-				input_tensor = nullptr;
-				weight_tensor = nullptr;
-				bias_tensor = nullptr;
-				output_tensor = nullptr;
-				m_debug = debug;
-
+				d_weight = nullptr;
+				d_bias = nullptr;
 			}
 
-			bool dense::operator()(tensor* x, tensor* y) {
-				std::vector<layer*> layers;
-				std::vector<tensor*> tensors;
-				tensors.push_back(x);
+			bool dense::operator()(tensor* x, tensor* y)
+			{
+				*m_input = *x;
+				std::vector<int> input_shape = x->getShape();
+				std::vector<int> weight_shape = std::vector<int>{ input_shape[1], size };
+				std::vector<int> bias_shape = std::vector<int>{ input_shape[0], size };
+				std::vector<int> output_shape = std::vector<int>{ input_shape[0], size };
 
-				auto in_shape = x->getShape();
-				
-				if (m_weight == nullptr) {
-					auto weight_shape = std::vector<int>{ in_shape[1], size };
-					m_weight = fill_memory_shape<float>(weight_shape, 1);
-					weight_tensor = new tensor(m_weight, weight_shape, kFormatFp32);
-					tensors.push_back(weight_tensor);
-				}
+				m_weight = new tensor(1.0, weight_shape);
+				m_output = new tensor(0.0, output_shape);
+				*y = *m_output;
+				if (USE_BIAS)
+					m_bias = new tensor(1.0, bias_shape);
 
-				if (m_bias == nullptr && bias) {
-					auto bias_shape = std::vector<int>{ in_shape[0], size };
-					m_bias = fill_memory_shape<float>(bias_shape, 1);
-					bias_tensor = new tensor(m_bias, bias_shape, kFormatFp32);
-					tensors.push_back(bias_tensor);
-				}
-				if (m_output == nullptr) {
-					auto output_shape = std::vector<int>{ in_shape[0], size };
-					m_output = fill_memory_shape<float>(output_shape, 0);
-					output_tensor = new tensor(m_output, output_shape, kFormatFp32);
-					tensors.push_back(output_tensor);
-					*y = *output_tensor;
-				}
+				m_mm->forward(x, m_weight, y);
+				forward_layers.push_back(m_mm);
 
-				mul_op->forward(x, weight_tensor, y);
-				if (bias) {
-					add_op->forward(output_tensor, bias_tensor, output_tensor);
+				if (USE_BIAS)
+				{
+					m_bias_op->forward(y, m_bias, y);
+					forward_layers.push_back(m_bias_op);
 				}
-				
-				if (m_debug) {
-					mul_op->run();
-					if (bias)
-						add_op->run();
-					for(int i = 0; i < y->count(); ++i)
-						std::cout << ((float*)y->toHost())[i] << " ";
-					std::cout << std::endl;				
-				}	
 
 				add_layer(this);
 				return true;
 			}
-					
-			void dense::update_weight() {
-			    
-				grad_w->forward(weight_tensor, d_weight, weight_tensor);
-				if (bias)
-					grad_b->forward(bias_tensor, d_bias, bias_tensor);
 
+			void dense::backward(tensor* d_output, tensor* d_input)
+			{
+				// _loss
+				//
+			}
+
+			void dense::update_weight()
+			{
 				std::cout << "Backward Dense Layer" << std::endl;
 			}
+		}
+	}
+}
 
-			void dense::backward(tensor* d_output, tensor* d_input) {
-				/* 
-					d_C, A, B, d_A, d_B
-
-					d_L/d_X = d_L/d_Y * W.T
-					d_L/d_W = X.T * d_L/d_Y 
-
-					d_A += d_C * B.T
-					d_B += A.T * d_C
-
-					deltaoutput, inputArray, nnWeights, deltainput, deltaweights 
-
-
-					acc_grad = previous grad
-					
-					weight_gradient = input * acc_grad * loss; if no act
-					if act then act' * acc_grad * loss;
-
-				*/
-
-				d_bias = d_output;
-				backward_mul_op_dw->forward(d_output, weight_tensor, d_weight); //weight transposed
-				backward_mul_op_dx->forward(input_tensor, d_output, d_input);   //input transposed
+namespace kernel
+{
+	namespace layers
+	{
+		namespace nn
+		{
+			std::vector<Module*>* conv::get_module()
+			{
+				return &Module::module_list;
 			}
 
+			conv::conv(int num_filters, int* kernel_size, int* stride, int* padding, int* dialation, int padding_type,
+				bool use_bias) : m_num_filters(num_filters), USE_BIAS(use_bias)
+			{
+				*m_kernel_size = *kernel_size;
+				*m_stride = *stride;
+				*m_padding = *padding;
+				*m_dialation = *dialation;
+				m_padding_type = padding_type;
+
+				m_mm = new matmul();
+				if (USE_BIAS)
+					m_bias_op = new operators(0);
+				else
+					m_bias_op = nullptr;
+				m_input = nullptr;
+				m_weight = nullptr;
+				m_bias = nullptr;
+				m_output = nullptr;
+				m_input_t = nullptr;
+				m_kernel = nullptr;
+				d_weight = nullptr;
+				d_bias = nullptr;
+			}
+
+			bool conv::operator()(tensor* x, tensor* y)
+			{
+				*m_input = *x;
+				auto input_shape = x->getShape(); //cdhw
+				int depth_col = (input_shape[1] + 2 * m_padding[0] - (m_dialation[0] * (m_kernel_size[0] - 1) + 1)) /
+					m_stride[0] + 1;
+				int height_col = (input_shape[2] + 2 * m_padding[1] - (m_dialation[1] * (m_kernel_size[1] - 1) + 1)) /
+					m_stride[1] + 1;
+				int width_col = (input_shape[3] + 2 * m_padding[2] - (m_dialation[2] * (m_kernel_size[2] - 1) + 1)) /
+					m_stride[2] + 1;
+
+				int n_output_plane = input_shape[0] * m_kernel_size[0] * m_kernel_size[1] * m_kernel_size[2];
+				int output_length = depth_col * height_col * width_col;
+
+				m_kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dialation);
+
+				auto input_t_shape = std::vector<int>{ n_output_plane, output_length };
+				auto weight_shape = std::vector<int>{ n_output_plane, m_num_filters }; // T
+				auto bias_shape = std::vector<int>{ m_num_filters, depth_col, height_col, width_col };
+				auto output_shape = std::vector<int>{ m_num_filters, output_length };
+
+				m_input_t = new tensor(0.0, input_t_shape);
+				m_weight = new tensor(1.0, weight_shape);
+				m_output = new tensor(1.0, output_shape);
+				*y = *m_output;
+				if (USE_BIAS)
+					m_bias = new tensor(1.0, bias_shape);
+
+				m_kernel->forward(x, m_input_t);
+				forward_layers.push_back(m_kernel);
+				m_mm->forward(m_weight, m_input_t, m_output);
+				forward_layers.push_back(m_mm);
+
+				if (USE_BIAS)
+				{
+					m_bias_op->forward(y, m_bias, y);
+					forward_layers.push_back(m_bias_op);
+				}
+
+				y->reshape(bias_shape);
+
+				add_layer(this);
+				return true;
+			}
+
+			void conv::backward(tensor* x, tensor* y)
+			{
+			}
+
+			void conv::update_weight()
+			{
+			}
 		}
 	}
 }

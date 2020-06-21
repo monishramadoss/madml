@@ -1,127 +1,195 @@
-#ifndef NN
-#define NN
+#ifndef NN_H
+#define NN_H
 
 #include <vector>
 #include "madml.h"
 #include "layer.h"
 
-namespace kernel {
-	namespace layers{
-		class gradient : public layer, public Module {
+namespace kernel
+{
+	namespace layers
+	{
+		class gradient : public layer, public Module
+		{
 		public:
 			gradient(float lr);
 			bool forward(tensor* x, tensor* y, tensor* z);
 			void reshapeOutTensor(tensor* x, tensor* z);
-			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs);
-			void backward() {}
-			void update_weight() {}
-			bool operator()(tensor* x, tensor* y) { return forward(x, y, x); };
+			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
+
+			void backward() override
+			{
+			}
+
+			void update_weight() override
+			{
+			}
+
+			bool operator()(tensor* x, tensor* y) override { return forward(x, y, x); };
+
 		private:
 			float m_lr;
 			int m_total;
 			bool computeGroupCount();
 
 			static std::vector<Module*> module_list;
-			virtual std::vector<Module*>* get_module();
+			std::vector<Module*>* get_module() override;
 		};
 
-		namespace nn {
-			class conv : public Module {
-				int kernel_size, num_filters, stride, padding, dialation, padding_type;
+		namespace nn
+		{
+			class conv : public Module
+			{
 			public:
-				conv(int kernel_size, int num_filters, bool bias, int stride, int padding, int dialation, int padding_type);
-				bool forward(tensor* x, tensor* y);
-				bool operator()(tensor* x, tensor* y);
-				void backward();
-				void update_weight();
+				conv(int num_filters, int* kernel_size, int* stride, int* padding, int* dialation, int padding_type,
+					bool use_bias);
+				bool operator()(tensor* x, tensor* y) override;
+
+				void backward() override
+				{
+				};
+				void backward(tensor* d_output, tensor* d_input);
+				void update_weight() override;
+
+			private:
+				int m_kernel_size[3], m_stride[3], m_padding[3], m_dialation[3], m_padding_type, m_num_filters;
+				bool USE_BIAS;
+
+				tensor* m_input;
+				tensor* m_weight;
+				tensor* m_bias;
+				tensor* m_output;
+				tensor* d_weight;
+				tensor* d_bias;
+
+				tensor* m_input_t;
+				vol2col* m_kernel;
+				matmul* m_mm;
+				operators* m_bias_op;
+
+				static std::vector<Module*> module_list;
+				std::vector<Module*>* get_module() override;
+			};
+
+			class convTranspose : public Module
+			{
+			public:
+				convTranspose(int num_filters, int* kernel_size, int* stride, int* padding, int* dialation,
+					int padding_type, bool use_bias);
+				bool operator()(tensor* x, tensor* y) override;
+
+				void backward() override
+				{
+				};
+				void backward(tensor* d_output, tensor* d_input);
+				void update_weight() override;
+
+			private:
+				int m_kernel_size[3], m_stride[3], m_padding[3], m_dialation[3], m_padding_type, m_num_filters;
+				bool USE_BIAS;
+
+				tensor* m_input;
+				tensor* m_weight;
+				tensor* m_bias;
+				tensor* m_output;
+				tensor* d_weight;
+				tensor* d_bias;
+
+				tensor* m_input_t;
+				col2vol* m_kernel;
+				matmul* m_mm;
+				operators* m_bias_op;
+
+				static std::vector<Module*> module_list;
+				std::vector<Module*>* get_module() override;
 			};
 
 			class dense : public Module
 			{
 			public:
-				dense(int size, bool bias, bool debug=false);
-				bool operator()(tensor* x, tensor* y);
-				virtual void dense::backward() {};
-				void dense::backward(tensor* d_output, tensor* d_input);
-				void update_weight();
-				~dense() {
-					if (m_weight != nullptr)
-						delete[] m_weight;
-					if (m_bias != nullptr)
-						delete[] m_bias;
-					
-					if (weight_tensor != nullptr)
-						delete weight_tensor;
-					if (bias_tensor != nullptr)
-						delete bias_tensor;
+				dense(int size, bool use_bias);
+				bool operator()(tensor* x, tensor* y) override;
 
-					forward_layers.clear();
-					gradient_layers.clear();
+				void backward() override
+				{
+				};
+				void backward(tensor* d_output, tensor* d_input);
+				void update_weight() override;
 
-					delete mul_op;
-					delete add_op;
-				}
 			private:
-				int size; bool bias;
-				bool m_debug;
-				char* m_weight;
-				char* m_bias;
-				char* m_output;
-				tensor* input_tensor;
-				tensor* weight_tensor;
-				tensor* bias_tensor;
-				tensor* output_tensor;
+				int size;
+				bool USE_BIAS;
 
-				layers::matmul* mul_op;
-				layers::operators* add_op;
-
-				static std::vector<Module*> module_list;
-				virtual std::vector<Module*>* get_module();
-
+				tensor* m_input;
+				tensor* m_weight;
+				tensor* m_bias;
+				tensor* m_output;
 				tensor* d_weight;
 				tensor* d_bias;
-				layers::matmul* backward_mul_op_dw;
-				layers::matmul* backward_mul_op_dx;
 
-				layers::gradient* grad_w;
-				layers::gradient* grad_b;
+				matmul* m_mm;
+				operators* m_bias_op;
+
+				static std::vector<Module*> module_list;
+				std::vector<Module*>* get_module() override;
 			};
 
-			class RNN : public Module {
-
+			class RNN : public Module
+			{
 			public:
 				RNN(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool operator()(tensor* x, tensor* y);
-				void backward();
-				void update_weight();
+				bool operator()(tensor* x, tensor* y) override;
+				void backward() override;
+				void update_weight() override;
 
+			private:
+				bool USE_BIAS;
+
+				tensor* m_input;
+				tensor* m_weight;
+				tensor* m_bias;
+				tensor* m_output;
+				tensor* d_weight;
+				tensor* d_bias;
 			};
 
-			class LSTM : public Module {
-
+			class LSTM : public Module
+			{
 			public:
 				LSTM(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool operator()(tensor* x, tensor* y);
-				void backward();
-				void update_weight();
+				bool operator()(tensor* x, tensor* y) override;
+				void backward() override;
+				void update_weight() override;
+			private:
+				bool USE_BIAS;
 
+				tensor* m_input;
+				tensor* m_weight;
+				tensor* m_bias;
+				tensor* m_output;
+				tensor* d_weight;
+				tensor* d_bias;
 			};
 
-			class GRU : public Module {
-
+			class GRU : public Module
+			{
 			public:
 				GRU(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool operator()(tensor* x, tensor* y);
-				void backward();
-				void update_weight();
+				bool operator()(tensor* x, tensor* y) override;
+				void backward() override;
+				void update_weight() override;
+			private:
+				bool USE_BIAS;
+
+				tensor* m_input;
+				tensor* m_weight;
+				tensor* m_bias;
+				tensor* m_output;
+				tensor* d_weight;
+				tensor* d_bias;
 			};
 		}
 	}
-
 }
-
-
-
-
 
 #endif //!NN
