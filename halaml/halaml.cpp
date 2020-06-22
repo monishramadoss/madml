@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <chrono>
+#include <future>
 #include <pybind11/pybind11.h>
 
 #include "madml.h"
@@ -139,10 +140,19 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * 2);
 		std::cout << std::endl << std::endl << std::endl;
 
+		std::vector<std::future<void>> future_lst = std::vector<std::future<void>>();
+
 		for (int i = 0; i < 100; ++i)
 		{
-			dense_layer_2.super_run();
+			future_lst.push_back(std::async(&kernel::layers::Module::super_run, &dense_layer_2));
 		}
+
+		std::for_each(future_lst.begin(), future_lst.end(), [](std::future<void>& x) { x.wait(); });
+
+		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), M * 2);
+		std::cout << std::endl << std::endl;
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * 2);
+		std::cout << std::endl << std::endl << std::endl;
 
 		delete t3;
 		delete t2;
@@ -156,11 +166,25 @@ void test_fn()
 		auto* t1 = new kernel::tensor(1, shape_x);
 		auto* t2 = new kernel::tensor();
 
-		auto cnn_layer_1 = kernel::layers::nn::conv(1, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto cnn_layer_1 = kernel::layers::nn::conv(64, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 		cnn_layer_1(t1, t2);
 		cnn_layer_1.super_run();
 
+		for (int i = 0; i < 100; ++i)
+		{
+			cnn_layer_1.super_run();
+		}
+
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+	}
+
+	std::cout << "testing rnn" << std::endl;
+	{
+		int length = 128;
+		int hidden_size = 16;
+
+		std::vector<int> shape_x{ length,  hidden_size };
+		auto* t1 = new kernel::tensor(1, shape_x);
 	}
 }
 

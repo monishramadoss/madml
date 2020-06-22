@@ -80,7 +80,8 @@ namespace kernel
 				return &Module::module_list;
 			}
 
-			dense::dense(int size, bool use_bias) : size(size), USE_BIAS(use_bias)
+			dense::dense(int size, bool use_bias)
+				: size(size), USE_BIAS(use_bias)
 			{
 				m_mm = new matmul();
 				if (USE_BIAS)
@@ -147,8 +148,8 @@ namespace kernel
 				return &Module::module_list;
 			}
 
-			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-				bool use_bias) : m_kernel_size(kernel_size), m_stride(stride), m_padding(padding),
+			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias)
+				: m_kernel_size(kernel_size), m_stride(stride), m_padding(padding),
 				m_dilation(dilation), m_padding_type(padding_type), m_num_filters(num_filters),
 				USE_BIAS(use_bias)
 			{
@@ -190,7 +191,7 @@ namespace kernel
 
 				m_input_t = new tensor(0.0, input_t_shape);
 				m_weight = new tensor(1.0, weight_shape);
-				m_output = new tensor(1.0, output_shape);
+				m_output = new tensor(0.0, output_shape);
 				*y = *m_output;
 				if (USE_BIAS)
 					m_bias = new tensor(1.0, bias_shape);
@@ -218,6 +219,84 @@ namespace kernel
 
 			void conv::update_weight()
 			{
+			}
+		}
+	}
+}
+
+namespace kernel
+{
+	namespace layers
+	{
+		namespace nn
+		{
+			RNNCell::RNNCell(int vocab_size, int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias, std::string nonlinearity)
+				: m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_dropout(dropout), m_bidirectional(bidirectional),
+				USE_BIAS(bias)
+			{
+				tensor* m_input = nullptr;
+				tensor* m_output = nullptr;
+				tensor* m_input_hidden = nullptr;
+
+				m_input_hidden_layer = new matmul();
+				m_hidden_hidden_layer = new matmul();
+
+				if (USE_BIAS) {
+					m_input_bias_layer = new operators(0);
+					m_hidden_bias_layer = new operators(0);
+				}
+				else
+				{
+					m_input_bias_layer = nullptr;
+					m_hidden_bias_layer = nullptr;
+				}
+
+				m_input_output_add_layer = new operators(0);
+
+				if (nonlinearity == "relu")
+				{
+					m_tanh = nullptr;
+					m_relu = new activation::relu();
+				}
+				else
+				{
+					m_tanh = new activation::tanh();
+					m_relu = nullptr;
+				}
+			}
+
+			bool RNNCell::operator()(tensor* x, tensor* h, tensor* y)
+			{
+				m_input = x;
+				auto input_shape = x->getShape(); //cdhw
+				int num_directions = 1;
+				if (m_bidirectional)
+					num_directions = 2;
+
+				m_input_hidden = new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size});
+				m_hidden_hidden = new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size});
+				m_WIH = new tensor(1.0, std::vector<int>{m_hidden_size, input_shape[0]});
+				m_WHH = new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size});
+				m_output = new tensor(1.0, std::vector<int>{m_hidden_size});
+
+				if (USE_BIAS)
+				{
+					m_bh = new tensor(1.0, std::vector<int>{m_hidden_size});
+					m_bi = new tensor(1.0, std::vector<int>{m_hidden_size});
+				}
+
+				m_input_hidden_layer->forward(m_WIH, x, m_input_hidden);
+				m_hidden_hidden_layer->forward(m_WHH, h, m_hidden_hidden);
+
+				if (USE_BIAS)
+				{
+					m_input_bias_layer->forward(m_input_hidden, m_bi, m_input_hidden);
+					m_hidden_bias_layer->forward(m_hidden_hidden, m_bh, m_hidden_hidden);
+				}
+
+				m_input_output_add_layer->forward(m_input_hidden, m_hidden_hidden, y);
+
+				return true;
 			}
 		}
 	}

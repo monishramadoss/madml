@@ -24,10 +24,8 @@ namespace kernel
 	{
 		createContext();
 		m_device = kDevice;
-		char* data = fill_memory_shape<float>(shape, c);
-		m_data = std::shared_ptr<char>(data);
-		reshape(data, shape);
-		delete[] data;
+		m_data = std::shared_ptr<char>(fill_memory_shape<float>(shape, c));
+		reshape(m_data.get(), shape);
 	}
 
 	void* tensor::map()

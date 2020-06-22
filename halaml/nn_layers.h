@@ -135,14 +135,56 @@ namespace kernel
 				std::vector<Module*>* get_module() override;
 			};
 
-			class RNN : public Module
+			class RNNCell : public Module
 			{
 			public:
-				RNN(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
+				RNNCell(int vocab_size, int hidden_size, int num_layers = 1, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
+				bool operator()(tensor* x, tensor* y) override { return false; };
+				bool operator()(tensor* x, tensor* h, tensor* y);
+				void backward() override {};
+				void update_weight() override {};
+
+			private:
+				int m_vocab_size;
+				int m_hidden_size;
+				int m_num_layers;
+				float m_dropout;
+				bool m_bidirectional;
+				bool USE_BIAS;
+
+				tensor* m_input;
+				tensor* m_output;
+
+				tensor* m_WIH;
+				tensor* m_WHH;
+				tensor* m_bi;
+				tensor* m_bh;
+
+				tensor* m_input_hidden;
+				tensor* m_hidden_hidden;
+
+				matmul* m_input_hidden_layer;
+				operators* m_input_bias_layer;
+				matmul* m_hidden_hidden_layer;
+				operators* m_hidden_bias_layer;
+
+				dense* m_dense_1;
+				dense* m_dense_2;
+
+				operators* m_input_output_add_layer;
+
+				activation::tanh* m_tanh;
+				activation::relu* m_relu;
+			};
+
+			class LSTMCell : public Module
+			{
+			public:
+				LSTMCell(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
 				bool operator()(tensor* x, tensor* y) override;
+				bool operator()(tensor* x, tensor* y, tensor* z);
 				void backward() override;
 				void update_weight() override;
-
 			private:
 				bool USE_BIAS;
 
@@ -154,10 +196,10 @@ namespace kernel
 				tensor* d_bias;
 			};
 
-			class LSTM : public Module
+			class GRUCell : public Module
 			{
 			public:
-				LSTM(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
+				GRUCell(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
 				bool operator()(tensor* x, tensor* y) override;
 				void backward() override;
 				void update_weight() override;
@@ -165,25 +207,7 @@ namespace kernel
 				bool USE_BIAS;
 
 				tensor* m_input;
-				tensor* m_weight;
-				tensor* m_bias;
-				tensor* m_output;
-				tensor* d_weight;
-				tensor* d_bias;
-			};
-
-			class GRU : public Module
-			{
-			public:
-				GRU(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool operator()(tensor* x, tensor* y) override;
-				void backward() override;
-				void update_weight() override;
-			private:
-				bool USE_BIAS;
-
-				tensor* m_input;
-				tensor* m_weight;
+				std::vector<tensor*> m_weight;
 				tensor* m_bias;
 				tensor* m_output;
 				tensor* d_weight;
