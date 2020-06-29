@@ -4,11 +4,6 @@
 
 namespace kernel
 {
-	namespace layers
-	{
-		std::vector<Module*> Module::module_list;
-	}
-
 	layer::layer()
 	{
 		createContext();
@@ -162,6 +157,7 @@ namespace kernel
 
 	void layer::runCommandBuffer()
 	{
+		//TODO: generate with thread pool;
 		VkSubmitInfo submit_info = {};
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
@@ -175,7 +171,6 @@ namespace kernel
 		VK_CHECK_RESULT(vkCreateFence(m_device, &fence_create_info_, NULL, &fence));
 		{
 			kContextMtx.lock();
-			//TODO: lock context cv::AutoLock lock(kContextMtx);
 			VK_CHECK_RESULT(vkQueueSubmit(kQueue, 1, &submit_info, fence));
 			kContextMtx.unlock();
 		}
@@ -185,39 +180,50 @@ namespace kernel
 
 	namespace layers
 	{
-		bool Module::forward(std::vector<tensor*>& x, std::vector<tensor*>& y)
-		{
-			return true;
-		}
-
 		void Module::backward()
 		{
-			for (int l = 0; l < module_list.size(); ++l)
-			{
-				module_list.at(l)->backward();
-			}
-		}
-
-		void Module::backward(tensor* Cost)
-		{
-			tensor* grad = Cost;
+			tensor* grad;
 		}
 
 		void Module::execute()
 		{
-			for (auto layer : forward_layers)
+			for (auto it = layers.begin(); it != layers.end(); ++it)
 			{
-				layer->run();
+				(*it)->runCommandBuffer();
 			}
 		}
 
 		void Module::super_run()
 		{
-			auto tmp = *get_module();
+			auto tmp = get_module();
 			for (Module* m : tmp)
 			{
 				m->execute();
 			}
+		}
+
+		std::vector<Module*>& Module::get_module()
+		{
+			static std::vector<Module*> M;
+			return M;
+		}
+
+		std::vector<tensor*>& Module::get_tensors()
+		{
+			static std::vector<tensor*> T;
+			return T;
+		}
+
+		void Module::add_module(Module* M)
+		{
+			auto& m = get_module();
+			m.push_back(M);
+		}
+
+		void Module::add_tensor(tensor* T)
+		{
+			auto& t = get_tensors();
+			t.push_back(T);
 		}
 	}
 }

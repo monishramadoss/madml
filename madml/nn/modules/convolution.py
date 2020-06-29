@@ -23,8 +23,7 @@ def vol2col(A, channels, height, width, kernel, pad, stride, dilation):
     global output_w
     output_h = height_col
     output_w = width_col
-
-    print("in:", height, width, "out:", height_col, width_col)
+    print("out:", height_col, width_col, "in:", height, width,)
     batch_size = inpt.shape[0]
 
     n_output_plane = int(channels * kernel_w * kernel_h)
@@ -63,12 +62,16 @@ def col2vol(A, channels, height, width, kernel, pad, stride, dilation):
     kernel_h, kernel_w = kernel
     stride_h, stride_w = stride
     dilation_h, dilation_w = dilation
+	#(X[0]−1) × stride[0]−2 × padding[0] + dilation[0] × (kernel_size[0]−1)+output_padding[0]+1
 
-    height_col = (height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
-    width_col = (width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
+    height_col = height #(height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
+    width_col = width #(width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
     kernel_extent_w = (kernel_w - 1) * dilation_w + 1
     kernel_extent_h = (kernel_h - 1) * dilation_h + 1
-
+    height  = (height - 1) * stride_h -2 * pad_h + dilation_h * (kernel_h - 1) + pad_h + 1
+    width 	= (width - 1) * stride_w - 2 * pad_w + dilation_w * (kernel_w - 1) + pad_w + 1
+    print("out:", height, width, "in:", height_col, width_col)
+   
     batch_size = A.shape[0]
     n_input_plane = A.shape[1]
     n_output_plane = int(n_input_plane / (kernel_w * kernel_h))
@@ -76,7 +79,8 @@ def col2vol(A, channels, height, width, kernel, pad, stride, dilation):
     A = A.flatten()
     B = np.zeros(shape=int(batch_size * n_output_plane * height * width))
     channels_col = channels * kernel_h * kernel_w
-
+    print(A.shape, B.shape)
+ 
     for elt in range(batch_size):
         data_col = elt * n_output_plane * height * width
         data_vol = elt * channels * height_col * width_col
@@ -91,27 +95,28 @@ def col2vol(A, channels, height, width, kernel, pad, stride, dilation):
                     if 0 <= h_vol < height and 0 <= w_vol < width:
                         vol_idx = int(data_vol + (c_vol * height + h_vol) * width + w_vol)
                         col_idx = int(data_col + (index * height_col + h_col) * width_col + w_col)
-                        B[vol_idx] += A[col_idx]
+                        xtmp = A[col_idx]
+                        B[vol_idx] += xtmp
 
     return B.reshape((batch_size, channels, height, width))
 
 BATCH_SIZE = 2
-Height = 4
-Width = 4
+Height = 5
+Width = 5
 
 
-kernel = np.ones(shape=(8,3,2,2)).reshape((8, 12))
+kernel = np.ones(shape=(8,3,3,3)).reshape((8, 27))
 if __name__ == "__main__":
     inpt = np.ones(shape=(BATCH_SIZE, 3, Height, Width))
     # vol2col(A, channels, height, width, kernel, pad, stride, dilation):
-    output = vol2col(inpt, 3, Height, Width, (2,2), (0,0), (1,1), (1,1))
+    output = vol2col(inpt, 3, Height, Width, (3,3), (0,0), (1,1), (1,1))
     #print(output)
-    print(output.shape) #, output[output==1].shape, output[output==0].shape)
+    print("::", output.shape) #, output[output==1].shape, output[output==0].shape)
     print(kernel.shape)
     output = np.matmul(kernel, output[0])
     print(output.shape)
 
-    tmp = col2vol(output, 3, output_h, output_w, (2,2), (0,0), (1,1), (1,1))
+    tmp = col2vol(output, 8, 3, 3, (3,3), (0,0), (1,1), (1,1))
     print(tmp.shape) #, tmp[tmp!=0].shape)
     #print(tmp)
 

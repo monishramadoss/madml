@@ -7,6 +7,10 @@
 
 namespace kernel
 {
+	namespace layers {
+		class Module;
+	}
+
 	class context;
 
 	class layer
@@ -14,14 +18,8 @@ namespace kernel
 	public:
 		layer();
 		virtual ~layer();
-		virtual bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
-
-		bool run()
-		{
-			runCommandBuffer();
-			return true;
-		}
-
+		//		virtual void forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
+		//		virtual void backward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 	protected:
 		void initVulkanThing(int buffer_num);
 		void createDescriptorSetLayout(int buffer_num);
@@ -31,6 +29,7 @@ namespace kernel
 		void createCommandBuffer();
 		void recordCommandBuffer(void* push_constants = nullptr, size_t push_constants_size = 0);
 		void runCommandBuffer();
+		virtual void computeGroupCount() = 0;
 
 		VkPipeline m_pipeline;
 		VkCommandBuffer m_cmd_buffer;
@@ -44,41 +43,32 @@ namespace kernel
 		int m_group_y;
 		int m_group_z;
 		std::string m_type;
+
+		friend class layers::Module;
 	};
 
 	namespace layers
 	{
 		class Module
 		{
-		protected:
-			std::vector<layer*> forward_layers;
-			std::vector<layer*> gradient_layers;
-			std::vector<layer*> backward_layers;
-			int batch_size = 0;
-
 		public:
-
-			static std::vector<Module*> module_list;
-			virtual std::vector<Module*>* get_module() = 0;
-
-			void add_layer(Module* obj)
-			{
-				get_module()->push_back(obj);
-			}
-
-			virtual bool forward(std::vector<tensor*>& x, std::vector<tensor*>& z);
-			virtual bool operator()(tensor* x, tensor* y) = 0;
-			virtual void backward();
-			void backward(tensor* Cost);
-
+			void backward();
 			virtual void update_weight() = 0;
 			void execute();
 			void super_run();
+			std::vector<int> m_input;
+			std::vector<int> m_output;
 
-			// static std::vector<tensor*> inputs;
-			// static std::vector<tensor*> outputs;
-			// static std::vector<tensor*> weights;
-			// static std::vector<tensor*> biases;
+		protected:
+			std::vector<layer*> layers;
+			static std::vector<Module*>& get_module();
+			static std::vector<tensor*>& get_tensors();
+			void add_tensor(tensor* T);
+			void add_module(Module* T);
+			int batch_size = 0;
+			float lr = 0.0001f;
+
+			friend class kernel::tensor;
 		};
 	}
 }

@@ -27,11 +27,11 @@
     <ClInclude Include="..\halaml\madml.h" />
     <ClInclude Include="..\halaml\matmul.h" />
     <ClInclude Include="..\halaml\nn_layers.h" />
-    <ClInclude Include="..\halaml\operators.h" />
     <ClInclude Include="..\halaml\spv_shader.h" />
     <ClInclude Include="..\halaml\tensor.h" />
     <ClInclude Include="..\halaml\transform.h" />
     <ClInclude Include="..\halaml\utils.h" />
+    <ClInclude Include="math.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activation.cpp" />
@@ -39,9 +39,9 @@
     <ClCompile Include="context.cpp" />
     <ClCompile Include="halaml.cpp" />
     <ClCompile Include="layer.cpp" />
+    <ClCompile Include="math.cpp" />
     <ClCompile Include="matmul.cpp" />
     <ClCompile Include="nn_layers.cpp" />
-    <ClCompile Include="operators.cpp" />
     <ClCompile Include="spv_shader.cpp" />
     <ClCompile Include="tensor.cpp" />
     <ClCompile Include="transform.cpp" />

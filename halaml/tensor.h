@@ -18,11 +18,11 @@ namespace kernel
 		void* map();
 		void unMap();
 		Shape getShape() const;
+		int getId() const;
 		int dimNum() const;
 		int dimSize(int axis) const;
 		int count(int start_axis = 0, int end_axis = -1) const;
 		char* toHost();
-
 		tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false,
 			Format fmt = kFormatInvalid);
 		tensor reshape(const std::vector<int>& shape);
@@ -33,15 +33,18 @@ namespace kernel
 		void copyTo(tensor dst);
 		std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
 
-		//fill types
-
 	private:
+
+		int id;
+		bool counted = false;
 		VkDevice m_device;
 		std::vector<int> m_shape;
 		size_t size_in_byte;
 		std::shared_ptr<char> m_data;
 		std::shared_ptr<buffer> m_buffer;
 		Format format;
+		static int& get_object_id();
+		void update_id();
 	};
 }
 

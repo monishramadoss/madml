@@ -29,7 +29,7 @@ void PrintDiffer(float* data, int size)
 		std::cout << df.first << ": " << df.second << ", ";
 	}
 
-	std::cout << "}";
+	std::cout << "}" << std::endl;
 }
 
 void PrintDiffer(int* data, int size)
@@ -46,7 +46,7 @@ void PrintDiffer(int* data, int size)
 		std::cout << df.first << ": " << df.second << ", ";
 	}
 
-	std::cout << "}";
+	std::cout << "}" << std::endl;
 }
 
 void PrintMatrix(float* data, std::vector<int> shape)
@@ -62,122 +62,55 @@ void PrintMatrix(float* data, std::vector<int> shape)
 	}
 }
 
-void test_fn()
-{
-	if (false)
+#define TEST_MATH
+#define TEST_NN
+#define TEST_CNN
+
+void test_fn() {
+#ifdef TEST_MATH
+	std::cout << "testing add_op" << std::endl;
 	{
-		std::cout << "testing operators" << std::endl;
-		int size = static_cast<int>(2654123);
-
-		std::vector<int> shape;
-		shape.push_back(size);
-
-		auto* x = fill_memory_shape<float>(shape, 2);
-		auto* y = fill_memory_shape<float>(shape, 5);
-		auto* w = fill_memory_shape<float>(shape, 0);
-		auto* z = fill_memory_shape<int>(shape, 0);
-
-		auto* t1 = new kernel::tensor(x, shape, kernel::kFormatFp32);
-		auto* t2 = new kernel::tensor(y, shape, kernel::kFormatFp32);
-		auto* t3 = new kernel::tensor(z, shape, kernel::kFormatBool);
-		auto* t4 = new kernel::tensor(w, shape, kernel::kFormatFp32);
-
-		for (int i = 0; i < 15; ++i)
-		{
-			if (i == 5)
-				i = 12;
-			kernel::layers::operators k1 = kernel::layers::operators(i);
-			k1(t1, t2, t4);
-			k1.run();
-		}
-
-		for (int i = 5; i < 11; ++i)
-		{
-			kernel::layers::operators k1 = kernel::layers::operators(i);
-			k1(t1, t2, t3);
-			k1.run();
-		}
-
-		for (int i = 15; i < 35; ++i)
-		{
-			kernel::layers::operators k1 = kernel::layers::operators(i);
-			k1(t2, t4);
-			k1.run();
-		}
-
-		delete[] x;
-		delete[] y;
-		delete[] z;
-		delete[] w;
-
-		delete t1;
-		delete t2;
-		delete t3;
-		delete t4;
+		std::vector<int> shape_x{ 1000 };
+		auto* t1 = new kernel::tensor(1.0, shape_x);
+		auto* t2 = new kernel::tensor(1.0, shape_x);
+		auto* k1 = new kernel::layers::math::add();
+		auto* t3 = k1->forward(t1, t2);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 1000);
+		k1->super_run();
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 1000);
 	}
+#endif
 
+#ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		int M = 2;
-		int K = 2;
+		int M = 240;
+		int K = 240;
+		int N = 240;
 		std::vector<int> shape_x{ M, K };
-		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* t2 = new kernel::tensor();
-		auto* t3 = new kernel::tensor();
-
-		auto dense_layer_1 = kernel::layers::nn::dense(8, true);
-		auto dense_layer_2 = kernel::layers::nn::dense(4, true);
-
-		dense_layer_1(t1, t2);
-		dense_layer_2(t2, t3);
-
-		std::cout << "OUTPUT" << std::endl;
-
-		dense_layer_2.super_run();
-
-		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), M * 2);
-		std::cout << std::endl << std::endl;
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * 2);
-		std::cout << std::endl << std::endl << std::endl;
-
-		std::vector<std::future<void>> future_lst = std::vector<std::future<void>>();
-
-		for (int i = 0; i < 100; ++i)
-		{
-			future_lst.push_back(std::async(&kernel::layers::Module::super_run, &dense_layer_2));
-		}
-
-		std::for_each(future_lst.begin(), future_lst.end(), [](std::future<void>& x) { x.wait(); });
-
-		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), M * 2);
-		std::cout << std::endl << std::endl;
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * 2);
-		std::cout << std::endl << std::endl << std::endl;
-
-		delete t3;
-		delete t2;
-		delete t1;
+		auto* t1 = new kernel::tensor(1.0, shape_x);
+		auto* layer = new kernel::layers::nn::dense(N, false);
+		auto* t3 = layer->forward(t1);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
+		layer->super_run();
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
 	}
-
+#endif
+#ifdef TEST_CNN
 	std::cout << "testing cnn" << std::endl;
 	{
 		//cdhw
-		std::vector<int> shape_x{ 3, 1, 128, 128 };
+		std::vector<int> shape_x{ 3, 1, 5, 5 };
 		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* t2 = new kernel::tensor();
+		auto* cnn_layer_1 = new kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto* t3 = cnn_layer_1->forward(t1);
 
-		auto cnn_layer_1 = kernel::layers::nn::conv(64, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
-		cnn_layer_1(t1, t2);
-		cnn_layer_1.super_run();
-
-		for (int i = 0; i < 100; ++i)
-		{
-			cnn_layer_1.super_run();
-		}
-
-		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		cnn_layer_1->super_run();
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 	}
-
+#endif
+#ifdef TEST_RNN
 	std::cout << "testing rnn" << std::endl;
 	{
 		int length = 128;
@@ -186,6 +119,8 @@ void test_fn()
 		std::vector<int> shape_x{ length,  hidden_size };
 		auto* t1 = new kernel::tensor(1, shape_x);
 	}
+#endif
+	std::cin.get();
 }
 
 PYBIND11_MODULE(halaml, m)

@@ -17,71 +17,47 @@ namespace kernel
 {
 	namespace layers
 	{
-		struct matmulParams
-		{
-			int m;
-			int n;
-			int k;
-		};
-
-		std::vector<Module*>* matmul::get_module()
-		{
-			return &Module::module_list;
-		}
-
 		matmul::matmul()
 		{
 			initVulkanThing(3);
 			m_type = "matmul";
-			m_n = 0;
-			m_k = 0;
-			m_m = 0;
 		}
 
-		void matmul::reshapeOutTensor(tensor* x, tensor* z)
+		void matmul::computeGroupCount()
 		{
-			Shape shape = x->getShape();
-			*z = z->reshape(nullptr, shape);
-		}
-
-		bool matmul::forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs)
-		{
-			return forward(ins[0], ins[1], outs[0]);
-		}
-
-		bool matmul::forward(tensor* x, tensor* y, tensor* z)
-		{
-			if (m_pipeline == nullptr)
-			{
-				m_m = x->getShape()[0];
-				m_n = y->getShape()[1];
-				m_k = x->getShape()[1];
-				if (m_k != y->getShape()[0])
-					std::cout << "MATML ERROR" << std::endl;
-				computeGroupCount();
-				createShaderModule(shaders::gemm_spv, sizeof(shaders::gemm_spv));
-				createPipeline(sizeof(matmulParams));
-			}
-
-			bindTensor(m_device, x, 0, m_descriptor_set);
-			bindTensor(m_device, y, 1, m_descriptor_set);
-			bindTensor(m_device, z, 2, m_descriptor_set);
-
-			matmulParams param = { m_m, m_n, m_k };
-			recordCommandBuffer(static_cast<void*>(&param), sizeof(matmulParams));
-			return true;
-		}
-
-		bool matmul::computeGroupCount()
-		{
-			m_group_x = static_cast<int>(alignSize(m_m, LOCAL_SZ_X)) / LOCAL_SZ_X;
+			m_group_x = static_cast<int>(alignSize(m_param.m, LOCAL_SZ_X)) / LOCAL_SZ_X;
 			if (m_group_x > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
-			m_group_y = static_cast<int>(alignSize(m_n, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
+			m_group_y = static_cast<int>(alignSize(m_param.n, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
 			if (m_group_y > maxComputeWorkGroupCount)
 				m_group_y = maxComputeWorkGroupCount;
 			m_group_z = 1;
-			return true;
+		}
+
+		tensor* matmul::forward(tensor* x, tensor* w)
+		{
+			if (x->getShape()[1] != w->getShape()[0])
+				std::cerr << "Mat mul dim ERROR" << std::endl;
+			m_input.push_back(x->getId());
+			m_input.push_back(w->getId());
+			auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], w->getShape()[1]});
+			m_output.push_back(y->getId());
+
+			if (m_pipeline == nullptr)
+			{
+				m_param = { x->getShape()[0], w->getShape()[1], x->getShape()[1] };
+				computeGroupCount();
+				createShaderModule(shaders::gemm_spv, sizeof(shaders::gemm_spv));
+				createPipeline(sizeof(matmul_param));
+			}
+
+			bindTensor(m_device, x, 0, m_descriptor_set);
+			bindTensor(m_device, w, 1, m_descriptor_set);
+			bindTensor(m_device, y, 2, m_descriptor_set);
+
+			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(matmul_param));
+			layers.push_back(this);
+			return y;
 		}
 	}
 }

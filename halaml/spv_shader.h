@@ -3,6 +3,7 @@
 namespace kernel { 
 	namespace shaders {
 		extern const unsigned int gemm_spv[850];
+		extern const unsigned int rnn_spv[48];
 		extern const unsigned int celu_spv[497];
 		extern const unsigned int elu_spv[483];
 		extern const unsigned int hardshrink_spv[535];
@@ -39,24 +40,26 @@ namespace kernel {
 		extern const unsigned int transpose_spv[384];
 		extern const unsigned int vol2col_spv[2150];
 		extern const unsigned int abs_spv[404];
+		extern const unsigned int ceil_spv[404];
+		extern const unsigned int clip_spv[456];
+		extern const unsigned int exp_spv[404];
+		extern const unsigned int floor_spv[404];
+		extern const unsigned int log_spv[404];
+		extern const unsigned int round_spv[404];
+		extern const unsigned int sqrt_spv[472];
 		extern const unsigned int acos_spv[404];
 		extern const unsigned int acosh_spv[404];
 		extern const unsigned int asin_spv[404];
 		extern const unsigned int asinh_spv[404];
 		extern const unsigned int atan_spv[404];
 		extern const unsigned int atanh_spv[404];
-		extern const unsigned int ceil_spv[404];
-		extern const unsigned int clip_spv[456];
 		extern const unsigned int cos_spv[404];
 		extern const unsigned int cosh_spv[404];
-		extern const unsigned int exp_spv[404];
-		extern const unsigned int floor_spv[404];
-		extern const unsigned int log_spv[404];
-		extern const unsigned int round_spv[404];
 		extern const unsigned int sin_spv[404];
 		extern const unsigned int sinh_spv[404];
-		extern const unsigned int sqrt_spv[472];
 		extern const unsigned int tan_spv[404];
 		extern const unsigned int tanh_spv[404];
+		extern const unsigned int d_MSE_spv[494];
+		extern const unsigned int d_tanh_spv[438];
 	}
 }

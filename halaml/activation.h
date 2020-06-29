@@ -5,6 +5,8 @@
 #include "madml.h"
 #include "layer.h"
 
+#endif
+/*
 namespace kernel
 {
 	namespace layers
@@ -23,6 +25,10 @@ namespace kernel
 					bool operator()(tensor* x, tensor* y) override { return forward(x, y); };
 
 					void backward() override
+					{
+					}
+
+					virtual void backward(tensor* m_output, tensor* m_input)
 					{
 					}
 
@@ -154,6 +160,7 @@ namespace kernel
 				public:
 					tanh();
 					bool forward(tensor* x, tensor* y) override;
+					void backward(tensor* d_output, tensor* d_input) override;
 				};
 			}
 		}
@@ -161,3 +168,4 @@ namespace kernel
 }
 
 #endif //!activation
+*/

@@ -3,7 +3,7 @@
 #include "activation.h"
 #define LOCAL_SZ_X 1024
 #define maxComputeWorkGroupCount 65535
-
+/*/
 struct noParam
 {
 	int m_total;
@@ -32,6 +32,7 @@ namespace kernel
 				{
 					initVulkanThing(2);
 					m_type = "Activation";
+					m_total = 0;
 				}
 
 				void ActivationFn::reshapeOutTensor(tensor* x, tensor* z)
@@ -403,7 +404,7 @@ namespace kernel
 
 				tanh::tanh()
 				{
-					initVulkanThing(2);
+					initVulkanThing(4);
 					m_type = "tanh";
 				}
 
@@ -423,7 +424,23 @@ namespace kernel
 					recordCommandBuffer(static_cast<void*>(&param), sizeof(noParam));
 					return true;
 				}
+
+				void tanh::backward(tensor* d_output, tensor* d_input)
+				{
+					if (m_pipeline == nullptr)
+					{
+						m_total = d_output->count();
+						computeGroupCount();
+						createShaderModule(shaders::d_tanh_spv, sizeof(shaders::d_tanh_spv));
+						createPipeline(sizeof(noParam));
+					}
+					bindTensor(m_device, d_output, 2, m_descriptor_set);
+					bindTensor(m_device, d_input, 3, m_descriptor_set);
+					noParam param = { static_cast<int>(m_total) };
+					recordCommandBuffer(static_cast<void*>(&param), sizeof(noParam));
+				}
 			}
 		}
 	}
 }
+*/

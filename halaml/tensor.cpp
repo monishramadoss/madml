@@ -8,6 +8,11 @@ namespace kernel
 	tensor::tensor(Format fmt) : size_in_byte(0), format(fmt)
 	{
 		createContext();
+		if (!counted) {
+			update_id();
+			counted = true;
+		}
+
 		m_device = kDevice;
 		m_data = nullptr;
 	}
@@ -15,16 +20,30 @@ namespace kernel
 	tensor::tensor(char* data, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt)
 	{
 		createContext();
+		if (!counted) {
+			update_id();
+			counted = true;
+		}
+
 		m_device = kDevice;
 		m_data = std::shared_ptr<char>(data);
 		reshape(data, shape);
 	}
 
-	tensor::tensor(float c, std::vector<int> shape, Format fmt) : size_in_byte(0), format(kFormatFp32)
+	tensor::tensor(float c, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt)
 	{
 		createContext();
+		if (!counted) {
+			update_id();
+			counted = true;
+		}
+
 		m_device = kDevice;
-		m_data = std::shared_ptr<char>(fill_memory_shape<float>(shape, c));
+		if (fmt == kernel::kFormatBool)
+			m_data = std::shared_ptr<char>(fill_memory_shape<int>(shape, static_cast<int> (c)));
+		else
+			m_data = std::shared_ptr<char>(fill_memory_shape<float>(shape, c));
+
 		reshape(m_data.get(), shape);
 	}
 
@@ -38,6 +57,8 @@ namespace kernel
 	void tensor::unMap() { vkUnmapMemory(m_device, m_buffer->getVkMemory()); }
 
 	Shape tensor::getShape() const { return m_shape; }
+
+	int tensor::getId() const { return id; }
 
 	int tensor::count(const int start_axis, const int end_axis) const
 	{
@@ -123,5 +144,17 @@ namespace kernel
 		memcpy(data, p, size_in_byte);
 		unMap();
 		return data;
+	}
+
+	int& tensor::get_object_id()
+	{
+		static int objId;
+		return objId;
+	}
+
+	void tensor::update_id()
+	{
+		auto& objId = get_object_id();
+		id = objId++;
 	}
 }

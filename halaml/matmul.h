@@ -8,31 +8,22 @@ namespace kernel
 {
 	namespace layers
 	{
+		struct matmul_param
+		{
+			int m;
+			int n;
+			int k;
+		};
+
 		class matmul : public layer, public Module
 		{
+		private:
+			void computeGroupCount() override;
+			matmul_param m_param;
 		public:
 			matmul();
-			bool forward(tensor* x, tensor* y, tensor* z);
-			void reshapeOutTensor(tensor* x, tensor* z);
-			bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
-
-			void backward() override
-			{
-			}
-
-			void update_weight() override
-			{
-			};
-			bool operator()(tensor* x, tensor* y) override { return false; };
-
-		private:
-			bool computeGroupCount();
-			int m_m;
-			int m_n;
-			int m_k;
-
-			static std::vector<Module*> module_list;
-			std::vector<Module*>* get_module() override;
+			tensor* forward(tensor* x, tensor* w);
+			virtual void update_weight() override {};
 		};
 	}
 }
