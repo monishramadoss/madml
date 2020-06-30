@@ -2,6 +2,8 @@
 
 namespace kernel { 
 	namespace shaders {
+		extern const unsigned int d_MSE_spv[494];
+		extern const unsigned int d_tanh_spv[438];
 		extern const unsigned int gemm_spv[850];
 		extern const unsigned int rnn_spv[48];
 		extern const unsigned int celu_spv[497];
@@ -59,7 +61,5 @@ namespace kernel {
 		extern const unsigned int sinh_spv[404];
 		extern const unsigned int tan_spv[404];
 		extern const unsigned int tanh_spv[404];
-		extern const unsigned int d_MSE_spv[494];
-		extern const unsigned int d_tanh_spv[438];
 	}
 }

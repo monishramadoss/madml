@@ -55,7 +55,8 @@ namespace kernel
 				dhw m_kernel_size, m_stride, m_padding, m_dilation;
 				bool USE_BIAS;
 				col2vol* m_kernel;
-				dense* m_layer;
+				matmul* m_mm;
+				math::add* m_bias_op;
 			};
 
 			/*class RNNCell : public Module

@@ -63,16 +63,18 @@ namespace kernel
 			{
 				auto input_shape = x->getShape();
 				m_kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
-				auto* ir_vol2col = m_kernel->forward(x);
+				auto* ir_vol2col = m_kernel->forward(x); //27 9
 				layers.push_back(m_kernel);
 				m_input.insert(m_input.end(), m_kernel->m_input.begin(), m_kernel->m_input.end());
 				m_output.insert(m_output.end(), m_kernel->m_output.begin(), m_kernel->m_output.end());
 
-				auto* w = new tensor(1.0, std::vector<int> {ir_vol2col->getShape()[1], m_num_filters});
-				auto* y = m_mm->forward(ir_vol2col, w);
+				auto* w = new tensor(1.0, std::vector<int> {m_num_filters, ir_vol2col->getShape()[0]});
+				auto* y = m_mm->forward(w, ir_vol2col);
 				layers.push_back(m_mm);
 				m_input.insert(m_input.end(), m_mm->m_input.begin(), m_mm->m_input.end());
 				m_output.insert(m_output.end(), m_mm->m_output.begin(), m_mm->m_output.end());
+				auto out = m_kernel->output_shape();
+				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
 
 				if (USE_BIAS)
 				{
@@ -82,10 +84,7 @@ namespace kernel
 					m_input.insert(m_input.end(), m_bias_op->m_input.begin(), m_bias_op->m_input.end());
 					m_output.insert(m_output.end(), m_bias_op->m_output.begin(), m_bias_op->m_output.end());
 				}
-
-				auto out = m_kernel->output_shape();
-				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]});
-
+				add_module(this);
 				return y;
 			}
 
@@ -93,7 +92,11 @@ namespace kernel
 				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride), m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 			{
 				m_kernel = nullptr;
-				m_layer = new dense(num_filters, use_bias);
+				m_mm = new matmul();
+				if (USE_BIAS)
+				{
+					m_bias_op = new math::add(true, false);
+				}
 			}
 
 			tensor* convTranspose::forward(tensor* x)
@@ -105,14 +108,24 @@ namespace kernel
 				layers.push_back(m_kernel);
 				m_input.insert(m_input.end(), m_kernel->m_input.begin(), m_kernel->m_input.end());
 				m_output.insert(m_output.end(), m_kernel->m_output.begin(), m_kernel->m_output.end());
+
+				auto* w = new tensor(1.0, std::vector<int> {m_num_filters, ir_col2vol->getShape()[0]});
+				auto* y = m_mm->forward(w, ir_col2vol);
+				layers.push_back(m_mm);
+				m_input.insert(m_input.end(), m_mm->m_input.begin(), m_mm->m_input.end());
+				m_output.insert(m_output.end(), m_mm->m_output.begin(), m_mm->m_output.end());
 				auto out = m_kernel->output_shape();
+				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
 
-				auto* y = m_layer->forward(ir_col2vol);
-				add_module(m_layer);
-				m_input.insert(m_input.end(), m_layer->m_input.begin(), m_layer->m_input.end());
-				m_output.insert(m_output.end(), m_layer->m_output.begin(), m_layer->m_output.end());
-				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]});
-
+				if (USE_BIAS)
+				{
+					auto* b = new tensor(1.0, y->getShape());
+					y = m_bias_op->forward(y, b);
+					layers.push_back(m_bias_op);
+					m_input.insert(m_input.end(), m_bias_op->m_input.begin(), m_bias_op->m_input.end());
+					m_output.insert(m_output.end(), m_bias_op->m_output.begin(), m_bias_op->m_output.end());
+				}
+				add_module(this);
 				return y;
 			}
 		}

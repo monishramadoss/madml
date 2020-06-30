@@ -25,12 +25,12 @@ namespace kernel
 			tmp *= m_param.kernel_w;
 			tmp *= m_param.kernel_d;
 
-			m_group_x = static_cast<int>(alignSize(1, LOCAL_SZ_X)) / LOCAL_SZ_X;
+			m_group_x = static_cast<int>(alignSize(tmp, LOCAL_SZ_X)) / LOCAL_SZ_X;
 			if (m_group_x > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
-			m_group_x = static_cast<int>(alignSize(tmp, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-			if (m_group_x > maxComputeWorkGroupCount)
-				m_group_x = maxComputeWorkGroupCount;
+			m_group_y = 1; // static_cast<int>(alignSize(1, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
+			if (m_group_y > maxComputeWorkGroupCount)
+				m_group_y = maxComputeWorkGroupCount;
 			m_group_z = 1;
 		}
 
@@ -90,8 +90,8 @@ namespace kernel
 			m_group_x = static_cast<int>(alignSize(1, LOCAL_SZ_X)) / LOCAL_SZ_X;
 			if (m_group_x > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
-			m_group_x = static_cast<int>(alignSize(tmp, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-			if (m_group_x > maxComputeWorkGroupCount)
+			m_group_y = static_cast<int>(alignSize(tmp, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
+			if (m_group_y > maxComputeWorkGroupCount)
 				m_group_x = maxComputeWorkGroupCount;
 			m_group_z = 1;
 		}
@@ -116,14 +116,16 @@ namespace kernel
 				createShaderModule(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
 				createPipeline(sizeof(vol2col_param));
 			}
-			int n_output = x->getShape()[0] / (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
-			auto* y = new tensor(0.0, std::vector<int>{n_output* (m_param.depth_col* m_param.height_col* m_param.width_col) });
+			int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
+			int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
+			auto* y = new tensor(0.0, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol) });
 			m_output.push_back(y->getId());
 			bindTensor(m_device, x, 0, m_descriptor_set);
 			bindTensor(m_device, y, 1, m_descriptor_set);
 
 			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(vol2col_param));
 			layers.push_back(this);
+			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
 

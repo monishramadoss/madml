@@ -101,10 +101,11 @@ void test_fn() {
 	{
 		//cdhw
 		std::vector<int> shape_x{ 3, 1, 5, 5 };
-		auto* t1 = new kernel::tensor(1, shape_x);
+		auto* t1 = new kernel::tensor(1.0, shape_x);
 		auto* cnn_layer_1 = new kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 		auto* t3 = cnn_layer_1->forward(t1);
-
+		auto* cnn_layer_2 = new kernel::layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto* t4 = cnn_layer_2->forward(t3);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		cnn_layer_1->super_run();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
