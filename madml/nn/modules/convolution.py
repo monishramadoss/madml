@@ -74,6 +74,7 @@ def col2vol(A, channels, height, width, kernel, pad, stride, dilation):
    
     batch_size = A.shape[0]
     n_input_plane = A.shape[1]
+    print(n_input_plane)
     n_output_plane = int(n_input_plane / (kernel_w * kernel_h))
 
     A = A.flatten()

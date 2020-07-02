@@ -104,14 +104,14 @@ namespace kernel
 			{
 				const int depth = x->getShape()[x->getShape().size() - 3];
 				const int height = x->getShape()[x->getShape().size() - 2];
-				const int width = x->getShape()[x->getShape().size() - 3];
+				const int width = x->getShape()[x->getShape().size() - 1];
 				m_param.batchsize = 1;
 				m_param.depth_col = depth;
 				m_param.height_col = height;
 				m_param.width_col = width;
 				m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1) + m_param.pad_d + 1;
 				m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h - 1) + m_param.pad_h + 1;
-				m_param.width_vol = (depth - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
+				m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
 				computeGroupCount();
 				createShaderModule(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
 				createPipeline(sizeof(vol2col_param));

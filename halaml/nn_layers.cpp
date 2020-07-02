@@ -128,19 +128,50 @@ namespace kernel
 				add_module(this);
 				return y;
 			}
+
+			RNN::RNN(int vocab_size, int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias, std::string nonlinearity) :
+				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), USE_BIAS(bias)
+				/// requires batch first
+			{
+				ih_mm = new matmul();
+				hh_mm = new matmul();
+				oh_mm = new matmul();
+				ht_add = new math::add(false, false);
+				if(USE_BIAS)
+					bias = new math::add(true, false);
+				m_directions = 1;
+				if (bidirectional)
+					m_directions = 2;
+				tanh = new math::tanh();
+				softmax = new math::exp();
+			}
+
+			std::tuple<tensor*, tensor*> RNN::forward(tensor* x, tensor* h0) { 
+				auto input_shape = x->getShape();//seq_len, input_size
+				auto hidden_shape = h0->getShape(); //num_layers * num_directions, hidden_size
+				
+				auto* U = new tensor(1.0, std::vector<int>{m_hidden_size, m_vocab_size});
+				auto* V = new tensor(1.0, std::vector<int>{m_vocab_size, m_hidden_size});
+				auto* W = new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size});
+				
+				auto* t1 = ih_mm->forward(U, x);
+				auto* t2 = hh_mm->forward(W, h0);
+				auto* t3 = ht_add->forward(t1, t2);				
+
+				if (USE_BIAS) {
+					auto b = new tensor(1.0, t3->getShape());
+					t3 = bias->forward(t3, b);
+				}
+				
+				auto* hn = tanh->forward(t3);
+				
+				auto* y = oh_mm->forward(V, hn);
+				y = softmax->forward(y);
+				//auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], m_directions * m_hidden_size});
+				//auto* hn = new tensor(0.0, std::vector<int>{x->getShape()[0], m_num_layers * m_directions, m_hidden_size});
+
+				return std::make_tuple(y, hn);
+			}
 		}
 	}
 }
-/*
-		m_input = x;
-		auto input_shape = x->getShape(); //cdhw
-		const int depth_col = (input_shape[1] + 2 * m_padding.d - (m_dilation.d * (m_kernel_size.d - 1) + 1)) /
-			m_stride.d + 1;
-		const int height_col = (input_shape[2] + 2 * m_padding.h - (m_dilation.h * (m_kernel_size.h - 1) + 1)) /
-			m_stride.h + 1;
-		const int width_col = (input_shape[3] + 2 * m_padding.w - (m_dilation.w * (m_kernel_size.w - 1) + 1)) /
-			m_stride.w + 1;
-
-		const int n_output_plane = input_shape[0] * m_kernel_size.w * m_kernel_size.h * m_kernel_size.d;
-		const int output_length = depth_col * height_col * width_col;
- */

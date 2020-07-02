@@ -5,167 +5,157 @@
 #include "madml.h"
 #include "layer.h"
 
-#endif
-/*
-namespace kernel
-{
-	namespace layers
-	{
-		namespace nn
-		{
-			namespace activation
-			{
-				class ActivationFn : public layer, public Module
-				{
-				public:
-					ActivationFn();
-					virtual bool forward(tensor* x, tensor* y) = 0;
-					void reshapeOutTensor(tensor* x, tensor* z);
-					bool forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) override;
-					bool operator()(tensor* x, tensor* y) override { return forward(x, y); };
-
-					void backward() override
-					{
-					}
-
-					virtual void backward(tensor* m_output, tensor* m_input)
-					{
-					}
-
-					void update_weight() override
-					{
-					};
-
-				protected:
-					virtual bool computeGroupCount();
-					size_t m_total;
-					static std::vector<Module*> module_list;
-					std::vector<Module*>* get_module() override;
-				};
-
-				class elu : public ActivationFn
-				{
-				public:
-					elu(float alpha);
-					bool forward(tensor* x, tensor* y) override;
-				private:
-					float m_const;
-				};
-
-				class relu : public ActivationFn
-				{
-				public:
-					relu();
-					bool forward(tensor* x, tensor* y) override;
-				};
-
-				class sigmoid : public ActivationFn
-				{
-				public:
-					sigmoid();
-					bool forward(tensor* x, tensor* y) override;
-				};
-			}
-		}
-	}
-}
 
 namespace kernel
 {
 	namespace layers
 	{
-		namespace nn
+		namespace activation
 		{
-			namespace activation
+			struct operator_param
 			{
-				class acos : public ActivationFn
-				{
-				public:
-					acos();
-					bool forward(tensor* x, tensor* y) override;
-				};
+				int total;
+				float alpha;
+			};
 
-				class acosh : public ActivationFn
-				{
-				public:
-					acosh();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			class unary_operator : public layer, public Module
+			{
+			protected:
+				bool as_module;
+				bool m_inplace;
+				float m_alpha;
+				operator_param m_param;
+				tensor* layer_construct(const uint32_t* shader, size_t codeSize, tensor* x);
+				void computeGroupCount() override;
 
-				class asin : public ActivationFn
-				{
-				public:
-					asin();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			public:
+				unary_operator(float alpha, bool in_place, bool as_module = true);
+				virtual tensor* forward(tensor* x) = 0;
+				virtual void update_weight() override;
+			};
 
-				class asinh : public ActivationFn
-				{
-				public:
-					asinh();
-					bool forward(tensor* x, tensor* y) override;
-				};
+		
 
-				class atan : public ActivationFn
-				{
-				public:
-					atan();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			class celu : public unary_operator
+			{	
+			public:
+				celu(float alpha, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x) override;
+			};
 
-				class atanh : public ActivationFn
-				{
-				public:
-					atanh();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			class elu : public unary_operator 
+			{				
+			public:
+				elu(float alpha, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x) override;
+			};
 
-				class cos : public ActivationFn
-				{
-				public:
-					cos();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			class hardshrink : public unary_operator
+			{public:
+				hardshrink(float lambda, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x) override;
+			};
 
-				class cosh : public ActivationFn
-				{
-				public:
-					cosh();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			struct two_param {
+				int total;
+				float alpha;
+				float beta;
+			};
 
-				class sin : public ActivationFn
-				{
-				public:
-					sin();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			class hardtanh : public unary_operator 
+			{
+				two_param m_param;
+			public:
+				hardtanh(float min_val = -1, float max_val = 1, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
 
-				class sinh : public ActivationFn
-				{
-				public:
-					sinh();
-					bool forward(tensor* x, tensor* y) override;
-				};
+			};
 
-				class tan : public ActivationFn
-				{
-				public:
-					tan();
-					bool forward(tensor* x, tensor* y) override;
-				};
 
-				class tanh : public ActivationFn
-				{
-				public:
-					tanh();
-					bool forward(tensor* x, tensor* y) override;
-					void backward(tensor* d_output, tensor* d_input) override;
-				};
-			}
+			class leakyrelu : public unary_operator
+			{
+			public:
+				leakyrelu(float slope = -0.01, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+
+			};
+
+
+			class logsigmoid : public unary_operator
+			{
+			public:
+				logsigmoid(float alpha = -0.01, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+
+			};
+
+
+			class prelu : public unary_operator
+			{
+			public:
+				prelu(float alpha = -0.01, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class relu : public unary_operator
+			{
+			public:
+				relu(bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class relu6 : public unary_operator
+			{
+			public:
+				relu6(bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class selu : public unary_operator
+			{
+			public:
+				selu(bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class sigmoid : public unary_operator
+			{
+			public:
+				sigmoid(bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class softplus : public unary_operator
+			{
+			public:
+				softplus(float alpha, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class softshrink : public unary_operator
+			{
+			public:
+				softshrink(float alpha, bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class softsign : public unary_operator
+			{
+			public:
+				softsign(bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
+			class tanhshrink : public unary_operator
+			{
+			public:
+				tanhshrink(bool in_place = false, bool as_module = true);
+				tensor* forward(tensor* x);
+			};
+
 		}
+
 	}
 }
 
 #endif //!activation
-*/

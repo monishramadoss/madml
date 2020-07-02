@@ -1,0 +1,61 @@
+#version 450
+
+layout(push_constant) uniform pushBlock {
+      int vocab_size;
+      int hidden_size;
+      int num_layers;
+      int directions;
+} p;
+
+layout (local_size_x = RTSM, local_size_y = RTSN, local_size_z = 1) in;
+
+layout (binding = 0) readonly buffer ssbA {
+  float A[];
+};
+
+layout (binding = 1) readonly buffer ssbB {
+  float B[];
+};
+
+layout (binding = 2) readonly buffer ssbA {
+  float A_h[];
+};
+
+layout (binding = 3) readonly buffer ssbB {
+  float B_h[];
+};
+
+layout (binding = 4) buffer ssbC {
+    float C[];
+};
+
+layout (binding = 5) buffer ssbD{
+    float D[];
+};
+
+void gemm_1(int M, int N, int K){
+   	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+ 		    for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+	          float acc = 0.0;
+            for (uint k=0u; k < K; k++)
+                acc += A[k*M + globalRow] * A_h[globalCol*K + k];
+            C[globalCol*M + globalRow] = acc;
+        }
+    }     
+}
+
+void gemm_1(int M, int N, int K){
+   	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+ 		    for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+	          float acc = 0.0;
+            for (uint k=0u; k < K; k++)
+                acc += B[k*M + globalRow] * B_h[globalCol*K + k];
+            C[globalCol*M + globalRow] = acc;
+        }
+    }     
+}
+
+void main(){
+
+
+} 

@@ -5,7 +5,6 @@ namespace kernel {
 		extern const unsigned int d_MSE_spv[494];
 		extern const unsigned int d_tanh_spv[438];
 		extern const unsigned int gemm_spv[850];
-		extern const unsigned int rnn_spv[48];
 		extern const unsigned int celu_spv[497];
 		extern const unsigned int elu_spv[483];
 		extern const unsigned int hardshrink_spv[535];
@@ -15,12 +14,12 @@ namespace kernel {
 		extern const unsigned int prelu_spv[468];
 		extern const unsigned int relu_spv[420];
 		extern const unsigned int relu6_spv[431];
-		extern const unsigned int selu_spv[502];
+		extern const unsigned int selu_spv[513];
 		extern const unsigned int sigmoid_spv[422];
 		extern const unsigned int softplus_spv[471];
 		extern const unsigned int softshrink_spv[583];
-		extern const unsigned int softsign_spv[432];
-		extern const unsigned int tanhshrink_spv[423];
+		extern const unsigned int softsign_spv[443];
+		extern const unsigned int tanhshrink_spv[434];
 		extern const unsigned int add_spv[466];
 		extern const unsigned int div_spv[466];
 		extern const unsigned int equal_spv[476];

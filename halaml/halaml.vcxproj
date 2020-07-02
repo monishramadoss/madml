@@ -47,61 +47,6 @@
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\activation\celu.comp" />
-    <None Include="shaders\activation\elu.comp" />
-    <None Include="shaders\activation\hardshrink.comp" />
-    <None Include="shaders\activation\hardtanh.comp" />
-    <None Include="shaders\activation\leakyrelu.comp" />
-    <None Include="shaders\activation\logsigmoid.comp" />
-    <None Include="shaders\activation\prelu.comp" />
-    <None Include="shaders\activation\relu.comp" />
-    <None Include="shaders\activation\relu6.comp" />
-    <None Include="shaders\activation\selu.comp" />
-    <None Include="shaders\activation\sigmoid.comp" />
-    <None Include="shaders\activation\softplus.comp" />
-    <None Include="shaders\activation\softshrink.comp" />
-    <None Include="shaders\activation\softsign.comp" />
-    <None Include="shaders\activation\tanhshrink.comp" />
-    <None Include="shaders\binary_operators\add.comp" />
-    <None Include="shaders\binary_operators\div.comp" />
-    <None Include="shaders\binary_operators\equal.comp" />
-    <None Include="shaders\binary_operators\greater_eq.comp" />
-    <None Include="shaders\binary_operators\greater_than.comp" />
-    <None Include="shaders\binary_operators\less_eq.comp" />
-    <None Include="shaders\binary_operators\less_than.comp" />
-    <None Include="shaders\binary_operators\max.comp" />
-    <None Include="shaders\binary_operators\min.comp" />
-    <None Include="shaders\binary_operators\mod.comp" />
-    <None Include="shaders\binary_operators\mul.comp" />
-    <None Include="shaders\binary_operators\nequal.comp" />
-    <None Include="shaders\binary_operators\pow.comp" />
-    <None Include="shaders\binary_operators\sub.comp" />
-    <None Include="shaders\binary_operators\xor.comp" />
-    <None Include="shaders\col2im.comp" />
-    <None Include="shaders\gemm.comp" />
-    <None Include="shaders\im2col.comp" />
-    <None Include="shaders\unary_operators\abs.comp" />
-    <None Include="shaders\unary_operators\acos.comp" />
-    <None Include="shaders\unary_operators\acosh.comp" />
-    <None Include="shaders\unary_operators\asin.comp" />
-    <None Include="shaders\unary_operators\asinh.comp" />
-    <None Include="shaders\unary_operators\atan.comp" />
-    <None Include="shaders\unary_operators\atanh.comp" />
-    <None Include="shaders\unary_operators\ceil.comp" />
-    <None Include="shaders\unary_operators\clip.comp" />
-    <None Include="shaders\unary_operators\cos.comp" />
-    <None Include="shaders\unary_operators\cosh.comp" />
-    <None Include="shaders\unary_operators\exp.comp" />
-    <None Include="shaders\unary_operators\floor.comp" />
-    <None Include="shaders\unary_operators\log.comp" />
-    <None Include="shaders\unary_operators\round.comp" />
-    <None Include="shaders\unary_operators\sin.comp" />
-    <None Include="shaders\unary_operators\sinh.comp" />
-    <None Include="shaders\unary_operators\sqrt.comp" />
-    <None Include="shaders\unary_operators\tan.comp" />
-    <None Include="shaders\unary_operators\tanh.comp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6B0875F4-A651-4318-AABA-E48BF5505EF9}</ProjectGuid>
     <RootNamespace>halaml</RootNamespace>

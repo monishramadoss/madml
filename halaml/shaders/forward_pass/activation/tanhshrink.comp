@@ -2,6 +2,7 @@
 #define LOCAL_SZ_X 1024
 layout(push_constant) uniform pushBlock {
       int total;
+      float alpha;
 } p;
 
 layout(binding = 0) readonly buffer buf1{

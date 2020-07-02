@@ -62,9 +62,10 @@ void PrintMatrix(float* data, std::vector<int> shape)
 	}
 }
 
-#define TEST_MATH
-#define TEST_NN
-#define TEST_CNN
+//#define TEST_MATH
+//#define TEST_NN
+//#define TEST_CNN
+#define TEST_RNN
 
 void test_fn() {
 #ifdef TEST_MATH
@@ -107,18 +108,27 @@ void test_fn() {
 		auto* cnn_layer_2 = new kernel::layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 		auto* t4 = cnn_layer_2->forward(t3);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+
 		cnn_layer_1->super_run();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 	}
 #endif
 #ifdef TEST_RNN
 	std::cout << "testing rnn" << std::endl;
 	{
-		int length = 128;
-		int hidden_size = 16;
-
-		std::vector<int> shape_x{ length,  hidden_size };
+		int length = 1;
+		int vocab = 16;
+		int num_layers = 1;
+		int directions = 1;
+		int hidden_size = 128;
+		std::vector<int> shape_x{ vocab, length };
+		std::vector<int> shape_y{ hidden_size, num_layers * directions };
 		auto* t1 = new kernel::tensor(1, shape_x);
+		auto* t2 = new kernel::tensor(1, shape_y);
+		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers);
+		auto t3 = rnn_layer_1->forward(t1, t2);
 	}
 #endif
 	std::cin.get();
