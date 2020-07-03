@@ -106,14 +106,10 @@ namespace kernel
 				auto* ir_col2vol = m_kernel->forward(x);
 				add_module(m_kernel);
 				layers.push_back(m_kernel);
-				m_input.insert(m_input.end(), m_kernel->m_input.begin(), m_kernel->m_input.end());
-				m_output.insert(m_output.end(), m_kernel->m_output.begin(), m_kernel->m_output.end());
-
+				
 				auto* w = new tensor(1.0, std::vector<int> {m_num_filters, ir_col2vol->getShape()[0]});
 				auto* y = m_mm->forward(w, ir_col2vol);
 				layers.push_back(m_mm);
-				m_input.insert(m_input.end(), m_mm->m_input.begin(), m_mm->m_input.end());
-				m_output.insert(m_output.end(), m_mm->m_output.begin(), m_mm->m_output.end());
 				auto out = m_kernel->output_shape();
 				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
 
@@ -172,6 +168,12 @@ namespace kernel
 
 				return std::make_tuple(y, hn);
 			}
+			
+			RNNCell::RNNCell() {
+				
+			}
+
+
 		}
 	}
 }

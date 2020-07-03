@@ -89,7 +89,7 @@ namespace kernel
 				void computeGroupCount() override;
 				RNN_cell_param m_param;
 			public:
-				RNNCell();
+				RNNCell(int vocab_size, hidden_size, num_layers);
 				tensor* forward(tensor* x, tensor* h, tensor* y);
 				virtual void update_weight() override {};
 			};
