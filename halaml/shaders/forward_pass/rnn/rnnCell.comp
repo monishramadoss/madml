@@ -3,59 +3,95 @@
 layout(push_constant) uniform pushBlock {
       int vocab_size;
       int hidden_size;
-      int num_layers;
-      int directions;
+      int out_size;
+      int in_offset;
+      int weight_offset;
 } p;
 
-layout (local_size_x = RTSM, local_size_y = RTSN, local_size_z = 1) in;
+layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
-  float A[];
+  float U[];
 };
 
 layout (binding = 1) readonly buffer ssbB {
+  float V[];
+};
+
+layout (binding = 2) readonly buffer ssbC {
+  float W[];
+};
+
+layout (binding = 3) readonly buffer ssbD {
+  float A[];
+};
+
+layout (binding = 4) readonly buffer ssbE {
   float B[];
 };
 
-layout (binding = 2) readonly buffer ssbA {
-  float A_h[];
+layout (binding = 5) readonly buffer ssbF {
+  float bias[];
 };
 
-layout (binding = 3) readonly buffer ssbB {
-  float B_h[];
+layout (binding = 6) readonly buffer ssbG {
+  float bias2[];
 };
 
-layout (binding = 4) buffer ssbC {
+layout (binding = 7) buffer ssbH {
     float C[];
 };
 
-layout (binding = 5) buffer ssbD{
+layout (binding = 8) buffer ssbI{
     float D[];
 };
 
-void gemm_1(int M, int N, int K){
+void gemm_1(){
+	int M = p.hidden_size;
+	int K = p.vocab_size;
+	int N = 1;
    	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
- 		    for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
-	          float acc = 0.0;
-            for (uint k=0u; k < K; k++)
-                acc += A[k*M + globalRow] * A_h[globalCol*K + k];
-            C[globalCol*M + globalRow] = acc;
-        }
+      	float acc = 0.0;
+        for (uint k=0u; k < K; k++)
+            acc += U[k*M + globalRow] * A[p.in_offset*K + k];
+        barrier();
+    	C[p.weight_offset*M + globalRow] = acc + bias[globalRow];
     }     
 }
 
-void gemm_1(int M, int N, int K){
+void gemm_2(){
+	int M = p.hidden_size;
+	int K = p.hidden_size;
+	int N = 1;
    	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
- 		    for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
-	          float acc = 0.0;
-            for (uint k=0u; k < K; k++)
-                acc += B[k*M + globalRow] * B_h[globalCol*K + k];
-            C[globalCol*M + globalRow] = acc;
-        }
+   		float acc = 0.0;
+	    for (uint k=0u; k < K; k++)
+	        acc += W[k*M + globalRow] * B[p.weight_offset*K + k];
+	    barrier();
+	    C[p.weight_offset*M + globalRow] += acc;
+
     }     
 }
+
+
+
+void gemm_3(){
+	int M = p.out_size;
+	int K = p.hidden_size;
+	int N = 1;
+   	for (uint globalRow = gl_GlobalInvocationID.y; globalRow < M; globalRow += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+ 		    float acc = 0.0;
+            for (uint k=0u; k < K; k++)
+                acc += V[k*M + globalRow] * tanh(C[p.weight_offset*K + k]);
+            D[p.in_offset*M + globalRow] = 1/(1+exp(-(acc + bias2[globalRow]))); //sum of acc needed;
+    }         
+}
+
+
 
 void main(){
-
-
+	gemm_1();
+	gemm_2();
+	barrier();
+	gemm_3();
 } 

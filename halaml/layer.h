@@ -58,13 +58,17 @@ namespace kernel
 			void super_run();
 			std::vector<int> m_input;
 			std::vector<int> m_output;
+			std::vector<int> m_weights;
+			std::vector<int> m_bias;
 
 		protected:
 			std::vector<layer*> layers;
 			static std::vector<Module*>& get_module();
 			static std::vector<tensor*>& get_tensors();
-			void add_tensor(tensor* T);
-			void add_module(Module* T);
+			static void add_tensor(tensor* T);
+			static void add_module(Module* M);
+			inline void set_io(Module* m);
+
 			int batch_size = 0;
 			float lr = 0.0001f;
 

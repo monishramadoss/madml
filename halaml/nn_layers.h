@@ -21,8 +21,6 @@ namespace kernel
 			private:
 				int m_size;
 				bool USE_BIAS;
-				matmul* m_mm;
-				math::add* m_bias_op;
 			};
 
 			class conv : public Module
@@ -37,9 +35,6 @@ namespace kernel
 				int m_num_filters;
 				dhw m_kernel_size, m_stride, m_padding, m_dilation;
 				bool USE_BIAS;
-				vol2col* m_kernel;
-				matmul* m_mm;
-				math::add* m_bias_op;
 			};
 
 			class convTranspose : public Module
@@ -54,9 +49,6 @@ namespace kernel
 				int m_num_filters;
 				dhw m_kernel_size, m_stride, m_padding, m_dilation;
 				bool USE_BIAS;
-				col2vol* m_kernel;
-				matmul* m_mm;
-				math::add* m_bias_op;
 			};
 
 			class RNN : public Module
@@ -68,31 +60,27 @@ namespace kernel
 
 			private:
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
-				bool USE_BIAS;
-				matmul* ih_mm;
-				matmul* hh_mm;
-				matmul* oh_mm;
-				math::add* bias;
-				math::add* ht_add;
-				math::tanh* tanh;
-				math::exp* softmax;
+				bool USE_BIAS, bidirectional;
 			};
 
 			struct RNN_cell_param {
 				int vocab_size;
 				int hidden_size;
-				int num_layers;
+				int out_size;
+				int in_offset;
+				int weight_offset;
 			};
-			
+
 			class RNNCell : public layer, public Module {
 			private:
 				void computeGroupCount() override;
 				RNN_cell_param m_param;
 			public:
-				RNNCell(int vocab_size, hidden_size, num_layers);
+				RNNCell(int vocab_size, int hidden_size, int out_size = 0, int num_layers = 1);
 				tensor* forward(tensor* x, tensor* h, tensor* y);
 				virtual void update_weight() override {};
 			};
+
 			/*
 			class LSTM : public Module
 			{
@@ -139,7 +127,7 @@ namespace kernel
 				tensor* d_weight;
 				tensor* d_bias;
 			};
-			
+
 			class GRUCell : public layer, public Module {
 			private:
 				void computeGroupCount() override;
