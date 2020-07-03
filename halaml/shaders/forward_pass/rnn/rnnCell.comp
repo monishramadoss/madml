@@ -51,11 +51,11 @@ void gemm_1(){
 	int K = p.vocab_size;
 	int N = 1;
    	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
-      	float acc = 0.0;
+      	float acc = bias[globalRow];
         for (uint k=0u; k < K; k++)
             acc += U[k*M + globalRow] * A[p.in_offset*K + k];
         barrier();
-    	C[p.weight_offset*M + globalRow] = acc + bias[globalRow];
+    	C[p.weight_offset*M + globalRow] = acc;
     }     
 }
 
@@ -64,11 +64,11 @@ void gemm_2(){
 	int K = p.hidden_size;
 	int N = 1;
    	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
-   		float acc = 0.0;
+   		float acc = C[p.weight_offset*M + globalRow];
 	    for (uint k=0u; k < K; k++)
 	        acc += W[k*M + globalRow] * B[p.weight_offset*K + k];
 	    barrier();
-	    C[p.weight_offset*M + globalRow] += acc;
+	    C[p.weight_offset*M + globalRow] = tanh(acc);
 
     }     
 }
@@ -80,10 +80,10 @@ void gemm_3(){
 	int K = p.hidden_size;
 	int N = 1;
    	for (uint globalRow = gl_GlobalInvocationID.y; globalRow < M; globalRow += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
- 		    float acc = 0.0;
+ 		    float acc = bias2[globalRow];
             for (uint k=0u; k < K; k++)
-                acc += V[k*M + globalRow] * tanh(C[p.weight_offset*K + k]);
-            D[p.in_offset*M + globalRow] = 1/(1+exp(-(acc + bias2[globalRow]))); //sum of acc needed;
+                acc += V[k*M + globalRow] * C[p.weight_offset*K + k];
+            D[p.in_offset*M + globalRow] = 1/(1+exp(-acc)); //sigmoid
     }         
 }
 
