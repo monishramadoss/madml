@@ -64,8 +64,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 
 //#define TEST_MATH
 //#define TEST_NN
-//#define TEST_CNN
-#define TEST_RNN
+#define TEST_CNN
+//#define TEST_RNN
 
 void test_fn() {
 #ifdef TEST_MATH
@@ -101,7 +101,7 @@ void test_fn() {
 	std::cout << "testing cnn" << std::endl;
 	{
 		//cdhw
-		std::vector<int> shape_x{ 3, 1, 5, 5 };
+		std::vector<int> shape_x{ 3, 1, 512, 512 };
 		auto* t1 = new kernel::tensor(1.0, shape_x);
 		auto* cnn_layer_1 = new kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 		auto* t3 = cnn_layer_1->forward(t1);

@@ -67,7 +67,7 @@ namespace kernel
 			static std::vector<tensor*>& get_tensors();
 			static void add_tensor(tensor* T);
 			static void add_module(Module* M);
-			inline void set_io(Module* m);
+			void set_io(Module* m);
 
 			int batch_size = 0;
 			float lr = 0.0001f;

@@ -51,18 +51,6 @@ namespace kernel
 				bool USE_BIAS;
 			};
 
-			class RNN : public Module
-			{
-			public:
-				RNN(int vocab_size, int hidden_size, int num_layers = 1, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<tensor*, tensor*> forward(tensor* x, tensor* h);
-				void update_weight() override {};
-
-			private:
-				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
-				bool USE_BIAS, bidirectional;
-			};
-
 			struct RNN_cell_param {
 				int vocab_size;
 				int hidden_size;
@@ -76,28 +64,24 @@ namespace kernel
 				void computeGroupCount() override;
 				RNN_cell_param m_param;
 			public:
-				RNNCell(int vocab_size, int hidden_size, int out_size = 0, int num_layers = 1);
-				tensor* forward(tensor* x, tensor* h, tensor* y);
-				virtual void update_weight() override {};
+				RNNCell(int vocab_size, int hidden_size, int out_size = 0);
+				std::tuple<tensor*, tensor*> forward(tensor* x, tensor* h, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset);
+				void update_weight() override {};
 			};
 
-			/*
-			class LSTM : public Module
+			class RNN : public Module
 			{
-				LSTM(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool operator()(tensor* x, tensor* y) override;
-				bool operator()(tensor* x, tensor* y, tensor* z, tensor* h_t);
-				void backward() override;
-				void update_weight() override;
-			private:
-				bool USE_BIAS;
+			public:
+				RNN(int vocab_size, int hidden_size, int seq_length = 16, int out_size = 0, int num_layers = 1, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
+				std::tuple<tensor*, tensor*> forward(tensor* x);
+				void update_weight() override {};
 
-				tensor* m_input;
-				tensor* m_weight;
-				tensor* m_bias;
-				tensor* m_output;
-				tensor* d_weight;
-				tensor* d_bias;
+			private:
+				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
+				int m_out_size;
+				bool USE_BIAS, bidirectional;
+				std::vector<RNNCell*> rnn_cells;
+				std::vector<tensor*> rnn_weights_bias;
 			};
 
 			class LSTMCell : public layer, public Module {
@@ -105,27 +89,19 @@ namespace kernel
 				void computeGroupCount() override;
 				RNN_cell_param m_param;
 			public:
-				LSTMCell();
-				tensor* forward(tensor* x, tensor* h, tensor* y);
+				LSTMCell(int vocab_size, int hidden_size, int out_size);
+				std::tuple<tensor*, tensor*, tensor*> forward(tensor* x, tensor* h, tensor* c, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset);
 				virtual void update_weight() override {};
 			};
 
 			class LSTM : public Module
 			{
 			public:
-				LSTM(int hidden_size, int num_layers, float dropout, bool bidirectional, bool bias);
-				bool operator()(tensor* x, tensor* y) override;
-				void backward() override;
-				void update_weight() override;
+				LSTM(int vocab_size, int hidden_size, int seq_length = 16, int out_size = 0, int num_layers = 1, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
+				std::tuple<tensor*, tensor*, tensor*> forward(tensor* x);
+				void update_weight() override {};
 			private:
 				bool USE_BIAS;
-
-				tensor* m_input;
-				std::vector<tensor*> m_weight;
-				tensor* m_bias;
-				tensor* m_output;
-				tensor* d_weight;
-				tensor* d_bias;
 			};
 
 			class GRUCell : public layer, public Module {
@@ -133,12 +109,17 @@ namespace kernel
 				void computeGroupCount() override;
 				RNN_cell_param m_param;
 			public:
-				GRUCell();
-				tensor* forward(tensor* x, tensor* h, tensor* y);
+				GRUCell(int vocab_size, int hidden_size, int out_size);
+				std::tuple<tensor*, tensor*> GRUCell::forward(tensor* x, tensor* h, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset);
 				virtual void update_weight() override {};
 			};
 
-			*/
+			class GRU : public Module
+			{
+				GRU(int hidden_size, int num_layers, float dropout, bool bidirectional);
+				std::tuple<tensor*, tensor*> forward(tensor* x);
+				void update_weight() override {};
+			};
 		}
 	}
 }
