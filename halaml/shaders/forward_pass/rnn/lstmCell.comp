@@ -11,35 +11,35 @@ layout(push_constant) uniform pushBlock {
 layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
-  float U[];
+    float U[];
 };
 
 layout (binding = 1) readonly buffer ssbB {
-  float V[];
+    float V[];
 };
 
 layout (binding = 2) readonly buffer ssbC {
-  float W[];
+    float W[];
 };
 
 layout (binding = 3) readonly buffer ssbD {
-  float A[];
+    float A[];
 };
 
 layout (binding = 4) readonly buffer ssbE {
-  float B[];
+    float B[];
 };
 
 layout(binding = 5) readonly buffer ssbF{
-	float C[];
-}
+	 float C[];
+};
 
 layout (binding = 6) readonly buffer ssbG {
-  float bias[];
+    float bias[];
 };
 
 layout (binding = 7) readonly buffer ssbH {
-  float bias2[];
+    float bias2[];
 };
 
 layout (binding = 8) buffer ssbI {
@@ -50,7 +50,7 @@ layout (binding = 9) buffer ssbJ {
     float E[];
 };
 
-layout (binding = 10) buffer ssbK{
+layout (binding = 10) buffer ssbK {
     float G[];
 };
 
