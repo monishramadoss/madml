@@ -38,6 +38,7 @@ namespace kernel {
 		extern const unsigned int gradient_spv[496];
 		extern const unsigned int MSE_spv[552];
 		extern const unsigned int gruCell_spv[2421];
+		extern const unsigned int lstmCell_spv[2773];
 		extern const unsigned int rnnCell_spv[1664];
 		extern const unsigned int col2vol_spv[2045];
 		extern const unsigned int transpose_spv[384];

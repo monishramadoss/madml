@@ -332,7 +332,7 @@ namespace kernel
 				if (m_pipeline == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::rnnCell_spv, sizeof(shaders::rnnCell_spv));
+					createShaderModule(shaders::lstmCell_spv, sizeof(shaders::lstmCell_spv));
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
@@ -396,7 +396,7 @@ namespace kernel
 				if (m_pipeline == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::rnnCell_spv, sizeof(shaders::rnnCell_spv));
+					createShaderModule(shaders::gruCell_spv, sizeof(shaders::gruCell_spv));
 					createPipeline(sizeof(RNN_cell_param));
 				}
 

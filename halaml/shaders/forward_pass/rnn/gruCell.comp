@@ -57,7 +57,7 @@ void gemm_1(){
 
         for (uint k=0u; k < p.vocab_size; k++){
             r += U[k*M*3 + globalRow*3 + 0] * A[p.in_offset*K + k];
-            z += U[k*M*3 + globalRow*3 + 1] *  A[p.in_offset*K + k];
+            z += U[k*M*3 + globalRow*3 + 1] * A[p.in_offset*K + k];
             n += U[k*M*3 + globalRow*3 + 2] * A[p.in_offset*K + k];
         }
         for (uint k=0u; k < p.hidden_size; ++k){
