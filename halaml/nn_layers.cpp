@@ -122,98 +122,73 @@ namespace kernel
 					layers.push_back(new RNNCell(input, hidden, output));
 			}
 
-			void rnn_constructor_tensor_helper(bool use_bias, int input, int hidden, int output, std::vector<tensor*>& tensors)
-			{
-				auto* U = new tensor(1.0, std::vector<int>{hidden, input});
-				auto* W = new tensor(1.0, std::vector<int>{hidden, hidden});
-				auto* V = new tensor(1.0, std::vector<int>{output, hidden});
 
-				tensor* b1; tensor* b2;
-				if (use_bias)
-				{
-					b1 = new tensor(1.0, std::vector<int>{hidden});
-					b2 = new tensor(1.0, std::vector<int>{output});
-				}
-				else
-				{
-					b1 = new tensor(0.0, std::vector<int>{hidden});
-					b2 = new tensor(0.0, std::vector<int>{output});
-				}
-
-				tensors.push_back(U);
-				tensors.push_back(W);
-				tensors.push_back(V);
-				tensors.push_back(b1);
-				tensors.push_back(b2);
-			}
-
-			RNN::RNN(int vocab_size, int hidden_size, int seq_length, int out_size, int num_layers, float dropout, bool bidirectional, bool bias, std::string nonlinearity) :
-				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_out_size(out_size), m_directions(1), USE_BIAS(bias)
+			RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, int out_size, float dropout, bool bidirectional, bool bias, std::string nonlinearity) :
+				m_vocab_size(vocab_size), m_hidden_size(hidden_size),  m_num_layers(num_layers), m_seq_length(seq_length), m_out_size(out_size), m_directions(1), USE_BIAS(bias)
 			{
 				if (bidirectional)
 					m_directions = 2;
 				if (out_size == 0)
 					m_out_size = vocab_size;
 
-				if (num_layers == 1 && !bidirectional)
-					rnn_constructor_helper(seq_length, m_vocab_size, m_hidden_size, m_out_size, rnn_cells);
+				for (int dir = 0; dir < m_directions; ++dir) {
+					for (int l = 0; l < m_num_layers; ++l) {
+						int input = l == 0 ? m_vocab_size : m_hidden_size;
+						int output = l == m_num_layers-1 ? m_out_size : m_hidden_size;
 
-				else if (num_layers > 1)
-				{
-					rnn_constructor_helper(seq_length, m_vocab_size, m_hidden_size, m_hidden_size, rnn_cells);
-					for (int i = 0; i < num_layers - 1; ++i)
-						rnn_constructor_helper(seq_length, m_hidden_size, m_hidden_size, m_hidden_size, rnn_cells);
-					rnn_constructor_helper(seq_length, m_hidden_size, m_hidden_size, m_out_size, rnn_cells);
-					if (bidirectional) {
-						rnn_constructor_helper(seq_length, m_vocab_size, m_hidden_size, m_hidden_size, rnn_cells);
-						for (int i = 0; i < num_layers - 1; ++i)
-							rnn_constructor_helper(seq_length, m_hidden_size, m_hidden_size, m_hidden_size, rnn_cells);
-						rnn_constructor_helper(seq_length, m_hidden_size, m_hidden_size, m_out_size, rnn_cells);
+						rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input}));
+						rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size}));
+						rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size}));
+						if (USE_BIAS)
+						{
+							rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{m_hidden_size}));
+							rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{output}));
+						}
+						else
+						{
+							rnn_weights_bias.push_back(new tensor(0.0, std::vector<int>{m_hidden_size}));
+							rnn_weights_bias.push_back(new tensor(0.0, std::vector<int>{output}));
+						}
+						for (int i = 0; i < seq_length; ++i)
+							rnn_cells.push_back(new RNNCell(input, m_hidden_size, output));
 					}
 				}
-
-				if (num_layers == 1 && !bidirectional)
-					rnn_constructor_tensor_helper(USE_BIAS, vocab_size, hidden_size, out_size, rnn_weights_bias);
-				else
-				{
-					rnn_constructor_tensor_helper(USE_BIAS, vocab_size, hidden_size, hidden_size, rnn_weights_bias);
-					for (int i = 0; i < num_layers - 1; ++i)
-					{
-						rnn_constructor_tensor_helper(USE_BIAS, hidden_size, hidden_size, hidden_size, rnn_weights_bias);
-					}
-					rnn_constructor_tensor_helper(USE_BIAS, hidden_size, hidden_size, out_size, rnn_weights_bias);
-				}
+			
 			}
 
 			std::tuple<tensor*, tensor*> RNN::forward(tensor* x) {
 				const auto input_shape = x->getShape();
-				auto* hn = new tensor(0.0, std::vector<int>{x->getShape()[0], m_directions, m_out_size});
-				auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], m_directions, m_hidden_size});
-
-				auto n = rnn_cells[0]->forward(x, hn, y, rnn_weights_bias[0], rnn_weights_bias[1], rnn_weights_bias[2], rnn_weights_bias[3], rnn_weights_bias[4], 0, 0);
-				cache.push_back(std::get<0>(n));
-				cache.push_back(std::get<1>(n));
-				
+				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+				cache.push_back(x);
+				cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				for (int l = 0; l < m_num_layers; ++l) {
-					for (int i = 0; i < input_shape[0]; ++i)
-					{
-						
-					}
+					int input = l == 0 ? m_vocab_size : m_hidden_size;
+					int output = l == m_num_layers - 1 ? m_out_size : m_hidden_size;
+					cache.push_back(new tensor(1.0, std::vector<int>{m_seq_length, m_directions, output}));
+					cache.push_back(new tensor(1.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				}
-
-				if (m_directions == 2)
-				{
+			
+				for (int dir = 0; dir < m_directions; ++dir) {
 					for (int l = 0; l < m_num_layers; ++l) {
-						for (int i = input_shape[0] - 1; i >= 0; --i)
-						{
-							// = m_num_layers * input_shape[0] + l*input_shape[0] + i
+
+						for (int i = 0; i < input_shape[0]; ++i) {
+							int direction = dir == 1 ? input_shape[0] - i - 1 : i;
+							int input_offset = direction * cache[l * 2]->getShape()[2];
+							int weight_offset = direction * m_hidden_size;
+
+							rnn_cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]->forward(cache[l * 2], cache[l * 2 + 1], cache[l * 2 + 2], cache[l * 2 + 3],
+								rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 0], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 1], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 2], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 3], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 4],
+								input_offset, weight_offset); // needs output offset 
+							layers.push_back(rnn_cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]);
 						}
 					}
 				}
 
-				//auto tuple = rnn_cells[0]->forward(x, hn, U, y, W, V, b1, b2, 0, 0);
-
-				return std::make_tuple(y, hn);
+				for (auto l : rnn_cells) {
+					set_io(l);
+				}
+				add_module(this);
+				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 		}
 	}
@@ -245,15 +220,13 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			std::tuple<tensor*, tensor*> RNNCell::forward(tensor* x, tensor* h, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset)
+			void RNNCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset)
 			{
 				const auto input_shape = x->getShape();//seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
 
 				m_param.in_offset = input_offset;
 				m_param.weight_offset = weight_offset;
-
-				auto* hn = new tensor(0.0, hidden_shape);
 
 				m_input.push_back(x->getId());
 				m_input.push_back(h->getId());
@@ -284,7 +257,6 @@ namespace kernel
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 				layers.push_back(this);
-				return std::make_tuple(y, hn);
 			}
 
 			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int out_size) : m_param({ vocab_size, hidden_size, out_size, 0, 0 })

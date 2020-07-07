@@ -229,7 +229,7 @@ namespace kernel
 		void Module::set_io(Module* m)
 		{
 			m_input.insert(m_input.end(), m->m_input.begin(), m->m_input.end());
-			m_output.insert(m_output.end(), m->m_output.begin(), m->m_input.begin());
+			m_output.insert(m_output.end(), m->m_output.begin(), m->m_output.begin());
 		}
 	}
 }

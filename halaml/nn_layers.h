@@ -65,20 +65,20 @@ namespace kernel
 				RNN_cell_param m_param;
 			public:
 				RNNCell(int vocab_size, int hidden_size, int out_size = 0);
-				std::tuple<tensor*, tensor*> forward(tensor* x, tensor* h, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset);
+				void forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset);
 				void update_weight() override {};
 			};
 
 			class RNN : public Module
 			{
 			public:
-				RNN(int vocab_size, int hidden_size, int seq_length = 16, int out_size = 0, int num_layers = 1, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
+				RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, int out_size = 0, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<tensor*, tensor*> forward(tensor* x);
 				void update_weight() override {};
 
 			private:
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
-				int m_out_size;
+				int m_out_size, m_seq_length;
 				bool USE_BIAS, bidirectional;
 				std::vector<RNNCell*> rnn_cells;
 				std::vector<tensor*> rnn_weights_bias;
@@ -98,7 +98,7 @@ namespace kernel
 			class LSTM : public Module
 			{
 			public:
-				LSTM(int vocab_size, int hidden_size, int seq_length = 16, int out_size = 0, int num_layers = 1, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
+				LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, int out_size = 0, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<tensor*, tensor*, tensor*> forward(tensor* x);
 				void update_weight() override {};
 			private:
@@ -119,7 +119,7 @@ namespace kernel
 			class GRU : public Module
 			{
 			public:
-				GRU(int hidden_size, int num_layers, float dropout, bool bidirectional);
+				GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, int out_size = 0, float dropout = 0.9, bool bidirectional = false, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<tensor*, tensor*> forward(tensor* x);
 				void update_weight() override {};
 			private:
