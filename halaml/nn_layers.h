@@ -82,6 +82,7 @@ namespace kernel
 				bool USE_BIAS, bidirectional;
 				std::vector<RNNCell*> rnn_cells;
 				std::vector<tensor*> rnn_weights_bias;
+				std::vector<tensor*> cache;
 			};
 
 			class LSTMCell : public layer, public Module {
@@ -102,6 +103,7 @@ namespace kernel
 				void update_weight() override {};
 			private:
 				bool USE_BIAS;
+				std::vector<tensor*> cache;
 			};
 
 			class GRUCell : public layer, public Module {
@@ -116,9 +118,12 @@ namespace kernel
 
 			class GRU : public Module
 			{
+			public:
 				GRU(int hidden_size, int num_layers, float dropout, bool bidirectional);
 				std::tuple<tensor*, tensor*> forward(tensor* x);
 				void update_weight() override {};
+			private:
+				std::vector<tensor*> cache;
 			};
 		}
 	}

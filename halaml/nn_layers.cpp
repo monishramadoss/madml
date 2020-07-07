@@ -191,11 +191,13 @@ namespace kernel
 				auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], m_directions, m_hidden_size});
 
 				auto n = rnn_cells[0]->forward(x, hn, y, rnn_weights_bias[0], rnn_weights_bias[1], rnn_weights_bias[2], rnn_weights_bias[3], rnn_weights_bias[4], 0, 0);
-
+				cache.push_back(std::get<0>(n));
+				cache.push_back(std::get<1>(n));
+				
 				for (int l = 0; l < m_num_layers; ++l) {
 					for (int i = 0; i < input_shape[0]; ++i)
 					{
-						// = l*input_shape[0] + i
+						
 					}
 				}
 

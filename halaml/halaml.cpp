@@ -64,8 +64,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 
 //#define TEST_MATH
 //#define TEST_NN
-#define TEST_CNN
-//#define TEST_RNN
+//#define TEST_CNN
+#define TEST_RNN
 
 void test_fn() {
 #ifdef TEST_MATH
@@ -123,12 +123,10 @@ void test_fn() {
 		int num_layers = 1;
 		int directions = 1;
 		int hidden_size = 128;
-		std::vector<int> shape_x{ vocab, length };
-		std::vector<int> shape_y{ hidden_size, num_layers * directions };
+		std::vector<int> shape_x{ length, vocab };
 		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* t2 = new kernel::tensor(1, shape_y);
 		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers);
-		auto t3 = rnn_layer_1->forward(t1, t2);
+		auto t3 = rnn_layer_1->forward(t1);
 	}
 #endif
 	std::cin.get();
