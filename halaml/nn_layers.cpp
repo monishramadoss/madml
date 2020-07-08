@@ -136,9 +136,9 @@ namespace kernel
 						int input = l == 0 ? m_vocab_size : m_hidden_size;
 						int output = l == m_num_layers-1 ? m_out_size : m_hidden_size;
 
-						rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input}));
-						rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size}));
-						rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size}));
+						rnn_weights_bias.push_back(new tensor(2.0, std::vector<int>{m_hidden_size, input}));
+						rnn_weights_bias.push_back(new tensor(2.0, std::vector<int>{m_hidden_size, m_hidden_size}));
+						rnn_weights_bias.push_back(new tensor(2.0, std::vector<int>{output, m_hidden_size}));
 						if (USE_BIAS)
 						{
 							rnn_weights_bias.push_back(new tensor(1.0, std::vector<int>{m_hidden_size}));
@@ -164,27 +164,40 @@ namespace kernel
 				for (int l = 0; l < m_num_layers; ++l) {
 					int input = l == 0 ? m_vocab_size : m_hidden_size;
 					int output = l == m_num_layers - 1 ? m_out_size : m_hidden_size;
-					cache.push_back(new tensor(1.0, std::vector<int>{m_seq_length, m_directions, output}));
-					cache.push_back(new tensor(1.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, output}));
+					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				}
 			
 				for (int dir = 0; dir < m_directions; ++dir) {
 					for (int l = 0; l < m_num_layers; ++l) {
-
 						for (int i = 0; i < input_shape[0]; ++i) {
+							int weight_bias_idx = dir * m_num_layers * 5 + l * 5;
+							int cache_idx = l * 2;
 							int direction = dir == 1 ? input_shape[0] - i - 1 : i;
-							int input_offset = direction * cache[l * 2]->getShape()[2];
-							int weight_offset = direction * m_hidden_size;
 
-							rnn_cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]->forward(cache[l * 2], cache[l * 2 + 1], cache[l * 2 + 2], cache[l * 2 + 3],
-								rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 0], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 1], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 2], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 3], rnn_weights_bias[dir * m_num_layers * 5 + l * 5 + 4],
-								input_offset, weight_offset); // needs output offset 
-							layers.push_back(rnn_cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]);
+							int input_offset = direction * cache[cache_idx]->getShape()[2];
+							int weight_offset = direction * m_hidden_size;
+							int output_offset = direction * cache[cache_idx + 2]->getShape()[2];
+														
+							rnn_cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]->forward(
+								cache[cache_idx + 0],
+								cache[cache_idx + 1],
+								cache[cache_idx + 2],
+								cache[cache_idx + 3],
+								rnn_weights_bias[weight_bias_idx + 0], 
+								rnn_weights_bias[weight_bias_idx + 1], 
+								rnn_weights_bias[weight_bias_idx + 2], 
+								rnn_weights_bias[weight_bias_idx + 3],
+								rnn_weights_bias[weight_bias_idx + 4],
+								input_offset, weight_offset, output_offset
+							);					
 						}
 					}
 				}
+			
 
 				for (auto l : rnn_cells) {
+					layers.push_back(l);
 					set_io(l);
 				}
 				add_module(this);
@@ -220,13 +233,14 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void RNNCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset)
+			void RNNCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape();//seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
-
-				m_param.in_offset = input_offset;
+				
+				m_param.input_offset = input_offset;
 				m_param.weight_offset = weight_offset;
+				m_param.output_offset = output_offset;
 
 				m_input.push_back(x->getId());
 				m_input.push_back(h->getId());
@@ -279,14 +293,15 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			std::tuple<tensor*, tensor*, tensor*> LSTMCell::forward(tensor* x, tensor* h, tensor* c, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset)
+			std::tuple<tensor*, tensor*, tensor*> LSTMCell::forward(tensor* x, tensor* h, tensor* c, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape();//seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
 				const auto cell_shape = c->getShape();
 
-				m_param.in_offset = input_offset;
+				m_param.input_offset = input_offset;
 				m_param.weight_offset = weight_offset;
+				m_param.output_offset = output_offset;
 
 				auto* hn = new tensor(0.0, hidden_shape);
 				auto* cn = new tensor(0.0, cell_shape);
@@ -347,13 +362,14 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			std::tuple<tensor*, tensor*> GRUCell::forward(tensor* x, tensor* h, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset)
+			std::tuple<tensor*, tensor*> GRUCell::forward(tensor* x, tensor* h, tensor* y, tensor* U, tensor* W, tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape();//seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
 
-				m_param.in_offset = input_offset;
+				m_param.input_offset = input_offset;
 				m_param.weight_offset = weight_offset;
+				m_param.output_offset = output_offset;
 
 				auto* hn = new tensor(0.0, hidden_shape);
 

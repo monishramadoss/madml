@@ -3,9 +3,10 @@
 layout(push_constant) uniform pushBlock {
       int vocab_size;
       int hidden_size;
-      int out_size;
-      int in_offset;
+      int output_size;
+      int input_offset;
       int weight_offset;
+      int output_offset;
 } p;
 
 layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
@@ -47,38 +48,27 @@ layout (binding = 8) buffer ssbI{
 };
 
 void gemm_1(){
-	int M = p.hidden_size;
-	int K = p.vocab_size;
-	int N = 1;
-   	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+   	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.hidden_size; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
       	float acc = bias[globalRow];
-        for (uint k=0u; k < p.vocab_size; k++)
-            acc += U[k*M + globalRow] * A[p.in_offset*K + k];
+        for (uint k=0u; k < p.vocab_size; ++k)
+            acc += U[k*p.vocab_size + globalRow] * A[p.input_offset + k];
         for (uint k=0u; k < p.hidden_size; ++k)
-            acc += W[k*M + globalRow] * B[p.weight_offset*K + k];
-        barrier();
-    	  C[p.weight_offset*M + globalRow] = tanh(acc);
+            acc += W[k*p.hidden_size + globalRow] * B[p.weight_offset + k];
+    	D[p.weight_offset + globalRow] = tanh(acc);
     }     
 }
 
-
-
 void gemm_2(){
-	int M = p.out_size;
-	int K = p.hidden_size;
-	int N = 1;
-   	for (uint globalRow = gl_GlobalInvocationID.y; globalRow < M; globalRow += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
- 		    float acc = bias2[globalRow];
-            for (uint k=0u; k < K; k++)
-                acc += V[k*M + globalRow] * C[p.weight_offset*K + k];
-            D[p.in_offset*M + globalRow] = 1/(1+exp(-acc)); //sigmoid
+   	for (uint globalRow = gl_GlobalInvocationID.y; globalRow < p.output_size; globalRow += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+        float acc = bias2[globalRow];
+        for (uint k=0u; k < p.hidden_size; ++k)
+            acc += V[k*p.output_size + globalRow] * C[p.weight_offset + k];
+        C[p.output_offset + globalRow] = 1.0/(1.0 + exp(-acc)); //sigmoid
     }         
 }
 
-
-
 void main(){
 	gemm_1();
-  barrier();
+    barrier();
 	gemm_2();
 } 

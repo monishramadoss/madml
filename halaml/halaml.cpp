@@ -64,8 +64,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 
 //#define TEST_MATH
 //#define TEST_NN
-#define TEST_CNN
-//#define TEST_RNN
+//#define TEST_CNN
+#define TEST_RNN
 
 void test_fn() {
 #ifdef TEST_MATH
@@ -109,7 +109,6 @@ void test_fn() {
 		auto* t4 = cnn_layer_2->forward(t3);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-
 		cnn_layer_1->super_run();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
@@ -125,7 +124,14 @@ void test_fn() {
 		std::vector<int> shape_x{ length, vocab };
 		auto* t1 = new kernel::tensor(1, shape_x);
 		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length);
-		auto t3 = rnn_layer_1->forward(t1);
+		auto tup = rnn_layer_1->forward(t1);
+		auto* t3 = std::get<0>(tup);
+		auto* t4 = std::get<1>(tup);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		rnn_layer_1->super_run();
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 	}
 #endif
 	std::cin.get();

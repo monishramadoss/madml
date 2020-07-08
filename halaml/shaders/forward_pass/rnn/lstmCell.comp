@@ -3,9 +3,10 @@
 layout(push_constant) uniform pushBlock {
       int vocab_size;
       int hidden_size;
-      int out_size;
-      int in_offset;
+      int output_size;
+      int input_offset;
       int weight_offset;
+      int output_offset;
 } p;
 
 layout (local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
@@ -55,57 +56,48 @@ layout (binding = 10) buffer ssbK {
 };
 
 void gemm_1(){
-  	int M = p.hidden_size;
-  	int K = p.vocab_size;
-  	int N = 1;
-   	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+   	for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.hidden_size; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
       	float i = bias[globalRow*4 + 0];
         float f = bias[globalRow*4 + 1];
         float g = bias[globalRow*4 + 2];
         float o = bias[globalRow*4 + 3];
         
-        for (uint k=0u; k < p.vocab_size; k++){
-            i += U[k*M*4 + globalRow*4 + 0] * A[p.in_offset*K + k];
-            f += U[k*M*4 + globalRow*4 + 1] * A[p.in_offset*K + k];
-            g += U[k*M*4 + globalRow*4 + 2] * A[p.in_offset*K + k];
-            o += U[k*M*4 + globalRow*4 + 3] * A[p.in_offset*K + k];
-               
+        for (uint k=0u; k < p.vocab_size; ++k){
+            i += U[k*p.hidden_size*4 + globalRow*4 + 0] * A[p.input_offset + k];
+            f += U[k*p.hidden_size*4 + globalRow*4 + 1] * A[p.input_offset + k];
+            g += U[k*p.hidden_size*4 + globalRow*4 + 2] * A[p.input_offset + k];
+            o += U[k*p.hidden_size*4 + globalRow*4 + 3] * A[p.input_offset + k];            
         }
 
-        for (uint k=0u; k < p.hidden_size; k++){
-            i += W[k*M*4 + globalRow*4 + 0] * B[p.weight_offset*K + k];
-            f += W[k*M*4 + globalRow*4 + 1] * B[p.weight_offset*K + k];
-            g += W[k*M*4 + globalRow*4 + 2] * B[p.weight_offset*K + k];
-            o += W[k*M*4 + globalRow*4 + 3] * B[p.weight_offset*K + k];
+        for (uint k=0u; k < p.hidden_size; ++k){
+            i += W[k*p.hidden_size*4 + globalRow*4 + 0] * B[p.weight_offset + k];
+            f += W[k*p.hidden_size*4 + globalRow*4 + 1] * B[p.weight_offset + k];
+            g += W[k*p.hidden_size*4 + globalRow*4 + 2] * B[p.weight_offset + k];
+            o += W[k*p.hidden_size*4 + globalRow*4 + 3] * B[p.weight_offset + k];            
         } 
 
-        barrier();
         i = 1/(1+exp(-i));
         f = 1/(1+exp(-f));
         g = tanh(g);
-        o = tanh(o);
-        float ct = f * C[p.weight_offset*M + globalRow] + i * g;
-        G[p.weight_offset*M + globalRow] = ct;
-        D[p.weight_offset*M + globalRow] = o * tanh(ct);
+        o = 1/(1+exp(-o));
+
+        float ct = f * C[p.weight_offset + globalRow] + i * g;
+        G[p.weight_offset + globalRow] = ct;
+        E[p.weight_offset + globalRow] = o * tanh(ct);
     }     
 }
 
 void gemm_2(){
-	int M = p.out_size;
-	int K = p.hidden_size;
-	int N = 1;
-   	for (uint globalRow = gl_GlobalInvocationID.y; globalRow < M; globalRow += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
- 		    float acc = bias2[globalRow];
-            for (uint k=0u; k < K; k++)
-                acc += V[k*M + globalRow] * G[p.weight_offset*K + k];
-            E[p.in_offset*M + globalRow] = 1/(1+exp(-acc)); //sigmoid
+   	for (uint globalRow = gl_GlobalInvocationID.y; globalRow < p.output_size; globalRow += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+        float acc = bias2[globalRow];
+        for (uint k=0u; k < p.hidden_size; ++k)
+            acc += V[k*p.output_size + globalRow] * E[p.weight_offset + k];
+        D[p.output_offset + globalRow] = 1.0/(1.0 + exp(-acc)); //sigmoid
     }         
 }
 
-
-
 void main(){
 	gemm_1();
-	barrier();
+    barrier();
 	gemm_2();
 } 
