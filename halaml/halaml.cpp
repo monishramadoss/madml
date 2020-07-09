@@ -123,15 +123,78 @@ void test_fn() {
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
 		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length);
+		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, true);
 		auto tup = rnn_layer_1->forward(t1);
 		auto* t3 = std::get<0>(tup);
 		auto* t4 = std::get<1>(tup);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		rnn_layer_1->super_run();
+		std::cout << std::endl;
+
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		std::cout << std::endl;
+		
+		delete t3;
+		delete t4;
+		delete rnn_layer_1;
+		delete t1;
+	}
+	std::cout << "testing lstm" << std::endl;
+
+	{
+		int length = 4;
+		int vocab = 16;
+		int num_layers = 2;
+		int hidden_size = 128;
+		std::vector<int> shape_x{ length, vocab };
+		auto* t1 = new kernel::tensor(1, shape_x);
+		auto* rnn_layer_1 = new kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, true);
+		auto tup = rnn_layer_1->forward(t1);
+		auto* t3 = std::get<0>(tup);
+		auto* t4 = std::get<1>(tup);
+		auto* t5 = std::get<2>(tup);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
+		rnn_layer_1->super_run();
+		std::cout << std::endl;
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
+		std::cout << std::endl;
+		delete t3;
+		delete t4;
+		delete t5;
+		delete rnn_layer_1;
+		delete t1;
+	}
+	std::cout << "testing gru" << std::endl;
+
+	{
+		int length = 4;
+		int vocab = 16;
+		int num_layers = 2;
+		int hidden_size = 128;
+		std::vector<int> shape_x{ length, vocab };
+		auto* t1 = new kernel::tensor(1, shape_x);
+		auto* rnn_layer_1 = new kernel::layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
+		auto tup = rnn_layer_1->forward(t1);
+		auto* t3 = std::get<0>(tup);
+		auto* t4 = std::get<1>(tup);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		rnn_layer_1->super_run();
+		std::cout << std::endl;
+
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		std::cout << std::endl;
+		delete t3;
+		delete t4;
+		delete rnn_layer_1;
+		delete t1;
 	}
 #endif
 	std::cin.get();

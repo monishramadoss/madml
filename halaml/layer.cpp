@@ -189,7 +189,7 @@ namespace kernel
 		{
 			for (auto it = layers.begin(); it != layers.end(); ++it)
 			{
-				(*it)->runCommandBuffer();
+				(*it)->runCommandBuffer(); //layers are buggy
 			}
 		}
 

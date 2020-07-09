@@ -173,12 +173,19 @@ namespace kernel
 						for (int i = 0; i < input_shape[0]; ++i) {
 							int weight_bias_idx = dir * m_num_layers * 5 + l * 5;
 							int cache_idx = l * 2;
-							int direction = dir == 1 ? input_shape[0] - i - 1 : i;
-
+							int direction = dir == 1 ? input_shape[0] - i - 1 : i;								
+							
 							int input_offset = direction * cache[cache_idx]->getShape()[2];
 							int weight_offset = direction * m_hidden_size;
 							int output_offset = direction * cache[cache_idx + 2]->getShape()[2];
 														
+							if (dir == 1) {
+								if (cache_idx != 0)
+									input_offset += m_seq_length * cache[cache_idx]->getShape()[2];
+								weight_offset += m_seq_length * m_hidden_size;
+								output_offset += m_seq_length * cache[cache_idx + 2]->getShape()[2];
+							}
+
 							cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]->forward(
 								cache[cache_idx + 0],
 								cache[cache_idx + 1],
@@ -261,8 +268,14 @@ namespace kernel
 
 							int input_offset = direction * cache[cache_idx]->getShape()[2];
 							int weight_offset = direction * m_hidden_size;
-							int output_offset = direction * cache[cache_idx + 2]->getShape()[2];
+							int output_offset = direction * cache[cache_idx + 3]->getShape()[2];
 
+							if (dir == 1) {
+								if (cache_idx != 0)
+									input_offset += m_seq_length * cache[cache_idx]->getShape()[2];
+								weight_offset += m_seq_length * m_hidden_size;
+								output_offset += m_seq_length * cache[cache_idx + 3]->getShape()[2];
+							}
 							cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]->forward(
 								cache[cache_idx + 0],
 								cache[cache_idx + 1],
@@ -337,13 +350,20 @@ namespace kernel
 				for (int dir = 0; dir < m_directions; ++dir) {
 					for (int l = 0; l < m_num_layers; ++l) {
 						for (int i = 0; i < input_shape[0]; ++i) {
-							int weight_bias_idx = dir * m_num_layers * 5 + l * 5;
-							int cache_idx = l * 3;
-							int direction = dir == 1 ? input_shape[0] - i - 1 : i;
-
+						int weight_bias_idx = dir * m_num_layers * 5 + l * 5;
+							int cache_idx = l * 2;
+							int direction = dir == 1 ? input_shape[0] - i - 1 : i;								
+							
 							int input_offset = direction * cache[cache_idx]->getShape()[2];
 							int weight_offset = direction * m_hidden_size;
 							int output_offset = direction * cache[cache_idx + 2]->getShape()[2];
+														
+							if (dir == 1) {
+								if (cache_idx != 0)
+									input_offset += m_seq_length * cache[cache_idx]->getShape()[2];
+								weight_offset += m_seq_length * m_hidden_size;
+								output_offset += m_seq_length * cache[cache_idx + 2]->getShape()[2];
+							}
 
 							cells[dir * m_num_layers * m_seq_length + l * m_seq_length + i]->forward(
 								cache[cache_idx + 0],
@@ -533,8 +553,7 @@ namespace kernel
 				m_param.weight_offset = weight_offset;
 				m_param.output_offset = output_offset;
 
-				auto* hn = new tensor(0.0, hidden_shape);
-
+				
 				m_input.push_back(x->getId());
 				m_input.push_back(h->getId());
 				m_input.push_back(U->getId());
