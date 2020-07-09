@@ -24,6 +24,10 @@ namespace kernel
 	bool isAvailable();
 }
 
+//TODO need work on deallocations
+//TODO work on static members
+//TODO worker threads for first hand latency
+
 #include "tensor.h"
 #include "buffer.h"
 #include "layer.h"

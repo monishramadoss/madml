@@ -189,13 +189,13 @@ namespace kernel
 		{
 			for (auto it = layers.begin(); it != layers.end(); ++it)
 			{
-				(*it)->runCommandBuffer(); //layers are buggy
+				(*it)->runCommandBuffer(); //inconsitencies in layer allocations;
 			}
 		}
 
 		void Module::super_run()
 		{
-			auto tmp = get_module();
+			auto tmp = get_module(); 
 			for (Module* m : tmp)
 			{
 				m->execute();

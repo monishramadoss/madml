@@ -63,9 +63,9 @@ void PrintMatrix(float* data, std::vector<int> shape)
 }
 
 //#define TEST_MATH
-//#define TEST_NN
+#define TEST_NN
 //#define TEST_CNN
-#define TEST_RNN
+//#define TEST_RNN
 
 void test_fn() {
 #ifdef TEST_MATH
@@ -136,10 +136,6 @@ void test_fn() {
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
 		
-		delete t3;
-		delete t4;
-		delete rnn_layer_1;
-		delete t1;
 	}
 	std::cout << "testing lstm" << std::endl;
 
@@ -164,11 +160,7 @@ void test_fn() {
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		std::cout << std::endl;
-		delete t3;
-		delete t4;
-		delete t5;
-		delete rnn_layer_1;
-		delete t1;
+		
 	}
 	std::cout << "testing gru" << std::endl;
 
@@ -187,14 +179,13 @@ void test_fn() {
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		rnn_layer_1->super_run();
 		std::cout << std::endl;
-
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
-		delete t3;
-		delete t4;
-		delete rnn_layer_1;
-		delete t1;
+		for (int i = 0; i < 100; ++i) {
+			rnn_layer_1->super_run();
+		}
+		std::cout << "DONE STRESS TESTING" << std::endl;
 	}
 #endif
 	std::cin.get();
