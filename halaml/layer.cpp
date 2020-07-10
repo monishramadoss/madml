@@ -182,7 +182,7 @@ namespace kernel
 	{
 		void Module::backward()
 		{
-			tensor* grad;
+			//tensor* grad;
 		}
 
 		void Module::execute()

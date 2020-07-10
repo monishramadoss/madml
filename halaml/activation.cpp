@@ -6,7 +6,6 @@
 
 namespace kernel {
 	namespace layers {
-
 		namespace activation {
 
 			unary_operator::unary_operator(float alpha, bool in_place, bool as_module) : m_inplace(in_place), as_module(as_module), m_param({ 0, m_alpha })

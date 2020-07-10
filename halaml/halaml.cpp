@@ -188,6 +188,24 @@ void test_fn() {
 		std::cout << "DONE STRESS TESTING" << std::endl;
 	}
 #endif
+#ifdef TEST_MNIST
+	auto l1 = kernel::layers::nn::Dense(64);
+	auto l2 = kernel::layers::activation::relu();
+	auto l3 = kernel::layers::nn::Dense(64);
+	auto l4 = kernel::layers::activation::relu();
+	auto l5 = kernel::layers::nn::Dense(10);
+	auto l6 = kernel::layers:::activation::sigmoid();
+
+	auto* t1 = new kernel::tensor(1.0, std::vector<int>{784});
+	auto* t2 = l1.forward(t1);
+	auto* t3 = l2.forward(t2);
+	auto* t4 = l3.forward(t3);
+	auto* t5 = l4.forward(t4);
+	auto* t6 = l5.forward(t5);
+	auto* t7 = l6.forward(t6);
+	
+#endif
+	
 	std::cin.get();
 }
 

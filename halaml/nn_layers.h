@@ -26,8 +26,7 @@ namespace kernel
 			class conv : public Module
 			{
 			public:
-				conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-					bool use_bias);
+				conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,	bool use_bias);
 				tensor* forward(tensor* x);
 				void update_weight() override {};
 
