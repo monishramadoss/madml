@@ -19,11 +19,14 @@ namespace kernel
 		{
 		private:
 			void computeGroupCount() override;
-			matmul_param m_param;
+			matmul_param m_param{};
 		public:
 			matmul();
 			tensor* forward(tensor* x, tensor* w);
-			virtual void update_weight() override {};
+
+			void update_weight() override
+			{
+			};
 		};
 	}
 }

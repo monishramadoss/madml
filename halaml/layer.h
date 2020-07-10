@@ -7,7 +7,8 @@
 
 namespace kernel
 {
-	namespace layers {
+	namespace layers
+	{
 		class Module;
 	}
 
@@ -72,7 +73,7 @@ namespace kernel
 			int batch_size = 0;
 			float lr = 0.0001f;
 
-			friend class kernel::tensor;
+			friend class tensor;
 		};
 	}
 }

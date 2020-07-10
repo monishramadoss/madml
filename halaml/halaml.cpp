@@ -67,7 +67,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 //#define TEST_CNN
 //#define TEST_RNN
 
-void test_fn() {
+void test_fn()
+{
 #ifdef TEST_MATH
 	std::cout << "testing add_op" << std::endl;
 	{
@@ -85,10 +86,10 @@ void test_fn() {
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		int M = 240;
-		int K = 240;
-		int N = 240;
-		std::vector<int> shape_x{ M, K };
+		const int M = 240;
+		const int K = 240;
+		const int N = 240;
+		const std::vector<int> shape_x{M, K};
 		auto* t1 = new kernel::tensor(1.0, shape_x);
 		auto* layer = new kernel::layers::nn::dense(N, false);
 		auto* t3 = layer->forward(t1);
@@ -205,13 +206,13 @@ void test_fn() {
 	auto* t7 = l6.forward(t6);
 	
 #endif
-	
+
 	std::cin.get();
 }
 
 PYBIND11_MODULE(halaml, m)
 {
-	m.doc() = "pybind11 testing pipleine"; // optional module docstring
+	m.doc() = "pybind11 testing pipeline"; // optional module docstring
 	m.def("test", &test_fn, "A function which test ml pipeline");
 #ifdef VERSION_INFO
 	m.attr("__version__") = VERSION_INFO;

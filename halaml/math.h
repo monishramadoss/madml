@@ -28,7 +28,7 @@ namespace kernel
 			public:
 				unary_operator(bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x) = 0;
-				virtual void update_weight() override;
+				void update_weight() override;
 			};
 
 			class binary_operator : public layer, public Module
@@ -43,7 +43,7 @@ namespace kernel
 			public:
 				binary_operator(bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x, tensor* w) = 0;
-				virtual void update_weight() override;
+				void update_weight() override;
 			};
 		}
 	}

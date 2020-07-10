@@ -1,7 +1,9 @@
 #include <cstdlib>
 
-namespace kernel { 
-	namespace shaders {
+namespace kernel
+{
+	namespace shaders
+	{
 		extern const unsigned int d_MSE_spv[494];
 		extern const unsigned int d_tanh_spv[438];
 		extern const unsigned int gemm_spv[850];

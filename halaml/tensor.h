@@ -12,35 +12,35 @@ namespace kernel
 	class tensor
 	{
 	public:
-		tensor(Format fmt = kFormatFp32);
-		tensor(char* data, std::vector<int> shape, Format fmt = kFormatInvalid);
-		tensor(float c, std::vector<int> shape, Format fmt = kFormatFp32);
-		void* map();
-		void unMap();
+		tensor(Format fmt = Format::kFormatFp32);
+		tensor(char* data, std::vector<int> shape, Format fmt = Format::kFormatInvalid);
+		tensor(float c, std::vector<int> shape, Format fmt = Format::kFormatFp32);
+		void* map() const;
+		void unMap() const;
 		Shape getShape() const;
 		int getId() const;
 		int dimNum() const;
 		int dimSize(int axis) const;
 		int count(int start_axis = 0, int end_axis = -1) const;
-		char* toHost();
+		char* toHost() const;
 		tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false,
-			Format fmt = kFormatInvalid);
+		               Format fmt = Format::kFormatInvalid);
 		tensor reshape(const std::vector<int>& shape);
-		void setTo(float val);
+		void set_to(float val) const;
 		Format getFormat() const;
 		size_t size() const { return size_in_byte; }
 		bool isEmpty() const { return size_in_byte == 0; }
-		void copyTo(tensor dst);
+		void copyTo(tensor dst) const;
 		std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
 
 	private:
 
-		int id;
+		int id{};
 		bool counted = false;
 		VkDevice m_device;
 		std::vector<int> m_shape;
 		size_t size_in_byte;
-		std::shared_ptr<char> m_data;
+//		std::shared_ptr<char> m_data;
 		std::shared_ptr<buffer> m_buffer;
 		Format format;
 		static int& get_object_id();
@@ -51,8 +51,8 @@ namespace kernel
 template <typename dType = float>
 char* fill_memory_shape(std::vector<int> shape, dType c)
 {
-	size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-	dType* ret = new dType[_shape];
+	const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
+	auto* ret = new dType[_shape];
 	for (int i = 0; i < _shape; ++i)
 		ret[i] = reinterpret_cast<dType&>(c);
 	return reinterpret_cast<char*>(ret);

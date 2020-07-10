@@ -12,8 +12,8 @@ namespace kernel
 		};
 		buffer(VkDevice& device, size_t size_in_bytes, const char* data);
 		~buffer();
-		VkDeviceMemory getVkMemory() { return m_memory; }
-		VkBuffer getVkBuffer() { return m_buffer; }
+		VkDeviceMemory getVkMemory() const { return m_memory; }
+		VkBuffer getVkBuffer() const { return m_buffer; }
 
 	private:
 		buffer();

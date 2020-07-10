@@ -48,7 +48,11 @@ namespace kernel
 		public:
 			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			tensor* forward(tensor* x);
-			virtual void update_weight() override {}
+
+			void update_weight() override
+			{
+			}
+
 			std::vector<int> output_shape() const;
 		};
 
@@ -60,7 +64,11 @@ namespace kernel
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			tensor* forward(tensor* x);
-			virtual void update_weight() override {}
+
+			void update_weight() override
+			{
+			}
+
 			std::vector<int> output_shape() const;
 		};
 	}

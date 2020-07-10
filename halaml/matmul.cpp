@@ -1,7 +1,7 @@
 #include "common.h"
 #include "utils.h"
 #include "matmul.h"
-#define maxComputeWorkGroupCount 1024
+#define MAX_COMPUTE_WORK_GROUP_COUNT 1024
 
 #define TSM 128                     // The tile-size in dvolension M
 #define TSN 128                     // The tile-size in dvolension N
@@ -26,11 +26,11 @@ namespace kernel
 		void matmul::computeGroupCount()
 		{
 			m_group_x = static_cast<int>(alignSize(m_param.m, LOCAL_SZ_X)) / LOCAL_SZ_X;
-			if (m_group_x > maxComputeWorkGroupCount)
-				m_group_x = maxComputeWorkGroupCount;
+			if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
+				m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
 			m_group_y = static_cast<int>(alignSize(m_param.n, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-			if (m_group_y > maxComputeWorkGroupCount)
-				m_group_y = maxComputeWorkGroupCount;
+			if (m_group_y > MAX_COMPUTE_WORK_GROUP_COUNT)
+				m_group_y = MAX_COMPUTE_WORK_GROUP_COUNT;
 			m_group_z = 1;
 		}
 
@@ -45,7 +45,7 @@ namespace kernel
 
 			if (m_pipeline == nullptr)
 			{
-				m_param = { x->getShape()[0], w->getShape()[1], x->getShape()[1] };
+				m_param = {x->getShape()[0], w->getShape()[1], x->getShape()[1]};
 				computeGroupCount();
 				createShaderModule(shaders::gemm_spv, sizeof(shaders::gemm_spv));
 				createPipeline(sizeof(matmul_param));

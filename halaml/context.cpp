@@ -31,31 +31,32 @@ namespace kernel
 
 		for (; i < queueFamilies.size(); ++i)
 		{
-			VkQueueFamilyProperties props = queueFamilies[i];
+			const VkQueueFamilyProperties props = queueFamilies[i];
 			if (props.queueCount > 0 && (props.queueFlags & VK_QUEUE_COMPUTE_BIT))
 				break;
 		}
 
-		if (i == queueFamilies.size()) throw std::runtime_error(
-			"could not find a queue family that supports operations");
+		if (i == queueFamilies.size())
+			throw std::runtime_error(
+				"could not find a queue family that supports operations");
 		return i;
 	}
 
 	bool checkExtensionAvailability(const char* extension_name,
-		const std::vector<VkExtensionProperties>& available_extensions)
+	                                const std::vector<VkExtensionProperties>& available_extensions)
 	{
-		for (size_t i = 0; i < available_extensions.size(); ++i)
+		for (const auto& available_extension : available_extensions)
 		{
-			if (strcmp(available_extensions[i].extensionName, extension_name) == 0)
+			if (strcmp(available_extension.extensionName, extension_name) == 0)
 				return true;
 		}
 		return false;
 	}
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallbackFn(VkDebugReportFlagsEXT flags,
-		VkDebugReportObjectTypeEXT objectType, uint64_t object,
-		size_t location, int32_t messageCode, const char* pLayerPrefix,
-		const char* pMessage, void* pUserData)
+	                                                     VkDebugReportObjectTypeEXT objectType, uint64_t object,
+	                                                     size_t location, int32_t messageCode, const char* pLayerPrefix,
+	                                                     const char* pMessage, void* pUserData)
 	{
 		std::cout << "Debug Report: " << pLayerPrefix << ":" << pMessage << std::endl;
 		return VK_FALSE;
@@ -123,8 +124,9 @@ namespace kernel
 				}
 			}
 
-			if (!foundExtension) throw std::runtime_error(
-				"Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
+			if (!foundExtension)
+				throw std::runtime_error(
+					"Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
 			enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 		}
 
@@ -217,8 +219,8 @@ namespace kernel
 
 		if (enableValidationLayers)
 		{
-			auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(
-				kInstance, "vkDestroyDebugReportCallbackEXT");
+			const auto func = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(
+				kInstance, "vkDestroyDebugReportCallbackEXT"));
 			if (func == nullptr)
 			{
 				printf("Could not load vkDestroyDebugReportCallbackEXT");

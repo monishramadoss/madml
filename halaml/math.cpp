@@ -3,7 +3,7 @@
 #include "math.h"
 
 #define LOCAL_SZ_X 1024
-#define maxComputeWorkGroupCount 65535
+#define MAX_COMPUTE_WORK_GROUP_COUNT 65535
 
 // https://stats.stackexchange.com/questions/268820/gradient-backpropagation-through-resnet-skip-connections
 namespace kernel
@@ -12,7 +12,8 @@ namespace kernel
 	{
 		namespace math
 		{
-			unary_operator::unary_operator(bool in_place, bool as_module) : m_inplace(in_place), as_module(as_module), m_param({ 0 })
+			unary_operator::unary_operator(bool in_place, bool as_module) : as_module(as_module), m_inplace(in_place),
+			                                                                m_param({0})
 			{
 				initVulkanThing(2);
 			}
@@ -20,8 +21,8 @@ namespace kernel
 			void unary_operator::computeGroupCount()
 			{
 				m_group_x = static_cast<int>(alignSize(m_param.total, LOCAL_SZ_X)) / LOCAL_SZ_X;
-				if (m_group_x > maxComputeWorkGroupCount)
-					m_group_x = maxComputeWorkGroupCount;
+				if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
+					m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
 				m_group_y = 1;
 				m_group_z = 1;
 			}
@@ -38,7 +39,7 @@ namespace kernel
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shader, codeSize);
 					createPipeline(sizeof(operator_param));
@@ -58,7 +59,8 @@ namespace kernel
 			{
 			}
 
-			binary_operator::binary_operator(bool in_place, bool as_module) : m_inplace(in_place), as_module(as_module), m_param({ 0 })
+			binary_operator::binary_operator(bool in_place, bool as_module) : as_module(as_module), m_inplace(in_place),
+			                                                                  m_param({0})
 			{
 				initVulkanThing(6);
 			}
@@ -66,8 +68,8 @@ namespace kernel
 			void binary_operator::computeGroupCount()
 			{
 				m_group_x = static_cast<int>(alignSize(m_param.total, LOCAL_SZ_X)) / LOCAL_SZ_X;
-				if (m_group_x > maxComputeWorkGroupCount)
-					m_group_x = maxComputeWorkGroupCount;
+				if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
+					m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
 				m_group_y = 1;
 				m_group_z = 1;
 			}
@@ -85,7 +87,7 @@ namespace kernel
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shader, codeSize);
 					createPipeline(sizeof(operator_param));
@@ -135,7 +137,8 @@ namespace kernel
 				return layer_construct(shaders::ceil_spv, sizeof(shaders::ceil_spv), x);
 			}
 
-			clip::clip(float min, float max, bool in_place, bool as_module) : m_min(min), m_max(max), unary_operator(in_place, as_module)
+			clip::clip(float min, float max, bool in_place, bool as_module) : unary_operator(in_place, as_module), m_min(min),
+			                                                                  m_max(max)
 			{
 				m_type = "clip";
 			}
@@ -152,12 +155,12 @@ namespace kernel
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::clip_spv, sizeof(shaders::clip_spv));
 					createPipeline(sizeof(clip_operator_param));
 				}
-				clip_operator_param param = { m_param.total, m_min, m_max };
+				clip_operator_param param = {m_param.total, m_min, m_max};
 				bindTensor(m_device, x, 0, m_descriptor_set);
 				bindTensor(m_device, y, 1, m_descriptor_set);
 
@@ -171,7 +174,8 @@ namespace kernel
 				m_type = "exp";
 			}
 
-			tensor* exp::forward(tensor* x) {
+			tensor* exp::forward(tensor* x)
+			{
 				return layer_construct(shaders::exp_spv, sizeof(shaders::exp_spv), x);
 			}
 
@@ -227,7 +231,7 @@ namespace kernel
 
 			acosh::acosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
-				m_type = "acohs";
+				m_type = "acosh";
 			}
 
 			tensor* acosh::forward(tensor* x)
@@ -244,6 +248,7 @@ namespace kernel
 			{
 				return layer_construct(shaders::asin_spv, sizeof(shaders::asin_spv), x);
 			}
+
 			asinh::asinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "asinh";
@@ -336,6 +341,7 @@ namespace kernel
 		}
 	}
 }
+
 namespace kernel
 {
 	namespace layers
@@ -434,12 +440,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::equal_spv, sizeof(shaders::equal_spv));
 					createPipeline(sizeof(operator_param));
@@ -465,12 +471,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::nequal_spv, sizeof(shaders::nequal_spv));
 					createPipeline(sizeof(operator_param));
@@ -496,12 +502,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::less_than_spv, sizeof(shaders::less_than_spv));
 					createPipeline(sizeof(operator_param));
@@ -527,12 +533,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::less_eq_spv, sizeof(shaders::less_eq_spv));
 					createPipeline(sizeof(operator_param));
@@ -558,12 +564,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::greater_than_spv, sizeof(shaders::greater_than_spv));
 					createPipeline(sizeof(operator_param));
@@ -589,12 +595,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv));
 					createPipeline(sizeof(operator_param));
@@ -615,7 +621,8 @@ namespace kernel
 
 			tensor* xr::forward(tensor* x, tensor* w)
 			{
-				if (x->getFormat() != kFormatBool && w->getFormat() != kFormatBool) {
+				if (x->getFormat() != Format::kFormatBool && w->getFormat() != Format::kFormatBool)
+				{
 					std::cerr << "XOR KERNEL REQUIRES BOTH INPUTS BE BOOLEAN VALUES" << std::endl;
 					return nullptr;
 				}
@@ -625,12 +632,12 @@ namespace kernel
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape(), kFormatBool);
+					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
 				if (m_pipeline == nullptr)
 				{
-					m_param = { x->count() };
+					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModule(shaders::xor_spv, sizeof(shaders::xor_spv));
 					createPipeline(sizeof(operator_param));
