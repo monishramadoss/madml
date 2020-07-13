@@ -21,25 +21,44 @@ namespace kernel
 		virtual ~layer();
 		//		virtual void forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 		//		virtual void backward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
-	protected:
-		void initVulkanThing(int buffer_num);
-		void createDescriptorSetLayout(int buffer_num);
-		void createDescriptorSet(int buffer_num);
-		void createShaderModule(const uint32_t* spv, size_t sz, const std::string& source = std::string());
-		void createPipeline(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
-		void createCommandBuffer();
-		void recordCommandBuffer(void* push_constants = nullptr, size_t push_constants_size = 0);
-		void runCommandBuffer();
-		virtual void computeGroupCount() = 0;
+		void initVulkanThing(int buffer_num_forward, int buffer_num_backward = -1);
+		void createDescriptorSetLayoutForward(int buffer_num);
+		void createDescriptorSetForward(int buffer_num);
+		void createShaderModuleForward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
+		void createPipelineForward(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
+		void createCommandBufferForward();
+		void recordCommandBufferForward(void* push_constants = nullptr, size_t push_constants_size = 0) const;
+		void runCommandBufferForward() const;
 
-		VkPipeline m_pipeline;
-		VkCommandBuffer m_cmd_buffer;
-		VkDescriptorPool m_descriptor_pool;
-		VkDescriptorSet m_descriptor_set;
+		void createDescriptorSetLayoutBackward(int buffer_num);
+		void createDescriptorSetBackward(int buffer_num);
+		void createShaderModuleBackward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
+		void createPipelineBackward(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
+		void createCommandBufferBackward();
+		void recordCommandBufferBackward(void* push_constants = nullptr, size_t push_constants_size = 0) const;
+		void runCommandBufferBackward() const;
+		
+		virtual void computeGroupCount() = 0;
 		VkDevice m_device;
-		VkDescriptorSetLayout m_descriptor_set_layout;
-		VkPipelineLayout m_pipeline_layout;
-		VkShaderModule m_module;
+		
+		VkPipeline m_pipeline_forward;
+		VkCommandBuffer m_cmd_buffer_forward;
+		VkDescriptorPool m_descriptor_pool_forward;
+		VkDescriptorSet m_descriptor_set_forward;
+		VkDescriptorSetLayout m_descriptor_set_layout_forward;
+		VkPipelineLayout m_pipeline_layout_forward;
+		VkShaderModule m_module_forward;
+
+
+		VkPipeline m_pipeline_backward;
+		VkCommandBuffer m_cmd_buffer_backward;
+		VkDescriptorPool m_descriptor_pool_backward;
+		VkDescriptorSet m_descriptor_set_backward;
+		VkDescriptorSetLayout m_descriptor_set_layout_backward;
+		VkPipelineLayout m_pipeline_layout_backward;
+		VkShaderModule m_module_backward;
+
+		
 		int m_group_x;
 		int m_group_y;
 		int m_group_z;

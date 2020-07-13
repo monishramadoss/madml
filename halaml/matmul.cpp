@@ -43,19 +43,19 @@ namespace kernel
 			auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], w->getShape()[1]});
 			m_output.push_back(y->getId());
 
-			if (m_pipeline == nullptr)
+			if (m_pipeline_forward == nullptr)
 			{
 				m_param = {x->getShape()[0], w->getShape()[1], x->getShape()[1]};
 				computeGroupCount();
-				createShaderModule(shaders::gemm_spv, sizeof(shaders::gemm_spv));
-				createPipeline(sizeof(matmul_param));
+				createShaderModuleForward(shaders::gemm_spv, sizeof(shaders::gemm_spv));
+				createPipelineForward(sizeof(matmul_param));
 			}
 
-			bindTensor(m_device, x, 0, m_descriptor_set);
-			bindTensor(m_device, w, 1, m_descriptor_set);
-			bindTensor(m_device, y, 2, m_descriptor_set);
+			bindTensor(m_device, x, 0, m_descriptor_set_forward);
+			bindTensor(m_device, w, 1, m_descriptor_set_forward);
+			bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
-			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(matmul_param));
+			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(matmul_param));
 			layers.push_back(this);
 			return y;
 		}

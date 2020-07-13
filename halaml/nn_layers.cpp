@@ -476,24 +476,24 @@ namespace kernel
 				m_output.push_back(y->getId());
 				m_output.push_back(hn->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::rnnCell_spv, sizeof(shaders::rnnCell_spv));
-					createPipeline(sizeof(RNN_cell_param));
+					createShaderModuleForward(shaders::rnnCell_spv, sizeof(shaders::rnnCell_spv));
+					createPipelineForward(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, U, 0, m_descriptor_set);
-				bindTensor(m_device, V, 1, m_descriptor_set);
-				bindTensor(m_device, W, 2, m_descriptor_set);
-				bindTensor(m_device, x, 3, m_descriptor_set);
-				bindTensor(m_device, h, 4, m_descriptor_set);
-				bindTensor(m_device, b1, 5, m_descriptor_set);
-				bindTensor(m_device, b2, 6, m_descriptor_set);
-				bindTensor(m_device, y, 7, m_descriptor_set);
-				bindTensor(m_device, hn, 8, m_descriptor_set);
+				bindTensor(m_device, U, 0, m_descriptor_set_forward);
+				bindTensor(m_device, V, 1, m_descriptor_set_forward);
+				bindTensor(m_device, W, 2, m_descriptor_set_forward);
+				bindTensor(m_device, x, 3, m_descriptor_set_forward);
+				bindTensor(m_device, h, 4, m_descriptor_set_forward);
+				bindTensor(m_device, b1, 5, m_descriptor_set_forward);
+				bindTensor(m_device, b2, 6, m_descriptor_set_forward);
+				bindTensor(m_device, y, 7, m_descriptor_set_forward);
+				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 				layers.push_back(this);
 			}
 
@@ -542,26 +542,26 @@ namespace kernel
 				m_output.push_back(hn->getId());
 				m_output.push_back(cn->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::lstmCell_spv, sizeof(shaders::lstmCell_spv));
-					createPipeline(sizeof(RNN_cell_param));
+					createShaderModuleForward(shaders::lstmCell_spv, sizeof(shaders::lstmCell_spv));
+					createPipelineForward(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, U, 0, m_descriptor_set);
-				bindTensor(m_device, V, 1, m_descriptor_set);
-				bindTensor(m_device, W, 2, m_descriptor_set);
-				bindTensor(m_device, x, 3, m_descriptor_set);
-				bindTensor(m_device, h, 4, m_descriptor_set);
-				bindTensor(m_device, c, 5, m_descriptor_set);
-				bindTensor(m_device, b1, 6, m_descriptor_set);
-				bindTensor(m_device, b2, 7, m_descriptor_set);
-				bindTensor(m_device, y, 8, m_descriptor_set);
-				bindTensor(m_device, hn, 9, m_descriptor_set);
-				bindTensor(m_device, cn, 10, m_descriptor_set);
+				bindTensor(m_device, U, 0, m_descriptor_set_forward);
+				bindTensor(m_device, V, 1, m_descriptor_set_forward);
+				bindTensor(m_device, W, 2, m_descriptor_set_forward);
+				bindTensor(m_device, x, 3, m_descriptor_set_forward);
+				bindTensor(m_device, h, 4, m_descriptor_set_forward);
+				bindTensor(m_device, c, 5, m_descriptor_set_forward);
+				bindTensor(m_device, b1, 6, m_descriptor_set_forward);
+				bindTensor(m_device, b2, 7, m_descriptor_set_forward);
+				bindTensor(m_device, y, 8, m_descriptor_set_forward);
+				bindTensor(m_device, hn, 9, m_descriptor_set_forward);
+				bindTensor(m_device, cn, 10, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 				layers.push_back(this);
 			}
 
@@ -607,24 +607,24 @@ namespace kernel
 				m_input.push_back(b2->getId());
 				m_output.push_back(y->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::gruCell_spv, sizeof(shaders::gruCell_spv));
-					createPipeline(sizeof(RNN_cell_param));
+					createShaderModuleForward(shaders::gruCell_spv, sizeof(shaders::gruCell_spv));
+					createPipelineForward(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, U, 0, m_descriptor_set);
-				bindTensor(m_device, V, 1, m_descriptor_set);
-				bindTensor(m_device, W, 2, m_descriptor_set);
-				bindTensor(m_device, x, 3, m_descriptor_set);
-				bindTensor(m_device, h, 4, m_descriptor_set);
-				bindTensor(m_device, b1, 5, m_descriptor_set);
-				bindTensor(m_device, b2, 6, m_descriptor_set);
-				bindTensor(m_device, y, 7, m_descriptor_set);
-				bindTensor(m_device, hn, 8, m_descriptor_set);
+				bindTensor(m_device, U, 0, m_descriptor_set_forward);
+				bindTensor(m_device, V, 1, m_descriptor_set_forward);
+				bindTensor(m_device, W, 2, m_descriptor_set_forward);
+				bindTensor(m_device, x, 3, m_descriptor_set_forward);
+				bindTensor(m_device, h, 4, m_descriptor_set_forward);
+				bindTensor(m_device, b1, 5, m_descriptor_set_forward);
+				bindTensor(m_device, b2, 6, m_descriptor_set_forward);
+				bindTensor(m_device, y, 7, m_descriptor_set_forward);
+				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 				layers.push_back(this);
 			}
 		}

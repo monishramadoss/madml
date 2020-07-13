@@ -22,7 +22,8 @@ namespace kernel
 				bool as_module;
 				bool m_inplace;
 				operator_param m_param;
-				tensor* layer_construct(const uint32_t* shader, size_t codeSize, tensor* x);
+				inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
+				inline tensor* layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x);
 				void computeGroupCount() override;
 
 			public:
@@ -37,7 +38,8 @@ namespace kernel
 				bool as_module;
 				bool m_inplace;
 				operator_param m_param;
-				inline tensor* layer_construct(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w);
+				inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w);
+				inline tensor* layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w);
 				void computeGroupCount() override;
 
 			public:

@@ -37,18 +37,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape());
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param.total = x->count();
 					computeGroupCount();
-					createShaderModule(shader, codeSize);
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shader, codeSize);
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);
@@ -101,18 +101,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape());
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param.total = x->count();
 					computeGroupCount();
-					createShaderModule(shaders::hardtanh_spv, sizeof(shaders::hardtanh_spv));
-					createPipeline(sizeof(two_param));
+					createShaderModuleForward(shaders::hardtanh_spv, sizeof(shaders::hardtanh_spv));
+					createPipelineForward(sizeof(two_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);

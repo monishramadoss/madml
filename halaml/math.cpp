@@ -27,7 +27,7 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			tensor* unary_operator::layer_construct(const uint32_t* shader, size_t codeSize, tensor* x)
+			tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
 			{
 				m_input.push_back(x->getId());
 				tensor* y;
@@ -37,24 +37,52 @@ namespace kernel
 					y = new tensor(0.0, x->getShape());
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shader, codeSize);
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shader, codeSize);
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;
 			}
 
+			tensor* unary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x)
+			{
+				m_input.push_back(x->getId());
+				tensor* y;
+				if (m_inplace)
+					y = x;
+				else
+					y = new tensor(0.0, x->getShape());
+				m_output.push_back(x->getId());
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleBackward(shader, codeSize);
+					createPipelineBackward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, y, 1, m_descriptor_set_backward);
+
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+				layers.push_back(this);
+				if (as_module)
+					add_module(this);
+				return y;
+			}
+			
 			void unary_operator::update_weight()
 			{
 			}
@@ -74,7 +102,7 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			tensor* binary_operator::layer_construct(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
+			tensor* binary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
 			{
 				m_input.push_back(x->getId());
 				m_input.push_back(w->getId());
@@ -85,25 +113,55 @@ namespace kernel
 					y = new tensor(0.0, x->getShape());
 				m_output.push_back(y->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shader, codeSize);
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shader, codeSize);
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, w, 1, m_descriptor_set);
-				bindTensor(m_device, y, 2, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;
 			}
 
+			tensor* binary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
+			{
+				m_input.push_back(x->getId());
+				m_input.push_back(w->getId());
+				tensor* y;
+				if (m_inplace)
+					y = x;
+				else
+					y = new tensor(0.0, x->getShape());
+				m_output.push_back(y->getId());
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleBackward(shader, codeSize);
+					createPipelineBackward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				layers.push_back(this);
+				if (as_module)
+					add_module(this);
+				return y;
+			}
+			
 			void binary_operator::update_weight()
 			{
 			}
@@ -124,7 +182,7 @@ namespace kernel
 
 			tensor* abs::forward(tensor* x)
 			{
-				return layer_construct(shaders::abs_spv, sizeof(shaders::abs_spv), x);
+				return layer_construct_forward(shaders::abs_spv, sizeof(shaders::abs_spv), x);
 			}
 
 			ceil::ceil(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -134,7 +192,7 @@ namespace kernel
 
 			tensor* ceil::forward(tensor* x)
 			{
-				return layer_construct(shaders::ceil_spv, sizeof(shaders::ceil_spv), x);
+				return layer_construct_forward(shaders::ceil_spv, sizeof(shaders::ceil_spv), x);
 			}
 
 			clip::clip(float min, float max, bool in_place, bool as_module) : unary_operator(in_place, as_module), m_min(min),
@@ -153,18 +211,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape());
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::clip_spv, sizeof(shaders::clip_spv));
-					createPipeline(sizeof(clip_operator_param));
+					createShaderModuleForward(shaders::clip_spv, sizeof(shaders::clip_spv));
+					createPipelineForward(sizeof(clip_operator_param));
 				}
 				clip_operator_param param = {m_param.total, m_min, m_max};
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&param), sizeof(clip_operator_param));
+				recordCommandBufferForward(static_cast<void*>(&param), sizeof(clip_operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -176,7 +234,7 @@ namespace kernel
 
 			tensor* exp::forward(tensor* x)
 			{
-				return layer_construct(shaders::exp_spv, sizeof(shaders::exp_spv), x);
+				return layer_construct_forward(shaders::exp_spv, sizeof(shaders::exp_spv), x);
 			}
 
 			floor::floor(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -186,7 +244,7 @@ namespace kernel
 
 			tensor* floor::forward(tensor* x)
 			{
-				return layer_construct(shaders::floor_spv, sizeof(shaders::floor_spv), x);
+				return layer_construct_forward(shaders::floor_spv, sizeof(shaders::floor_spv), x);
 			}
 
 			log::log(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -196,7 +254,7 @@ namespace kernel
 
 			tensor* log::forward(tensor* x)
 			{
-				return layer_construct(shaders::log_spv, sizeof(shaders::log_spv), x);
+				return layer_construct_forward(shaders::log_spv, sizeof(shaders::log_spv), x);
 			}
 
 			round::round(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -206,7 +264,7 @@ namespace kernel
 
 			tensor* round::forward(tensor* x)
 			{
-				return layer_construct(shaders::round_spv, sizeof(shaders::round_spv), x);
+				return layer_construct_forward(shaders::round_spv, sizeof(shaders::round_spv), x);
 			}
 
 			sqrt::sqrt(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -216,7 +274,7 @@ namespace kernel
 
 			tensor* sqrt::forward(tensor* x)
 			{
-				return layer_construct(shaders::sqrt_spv, sizeof(shaders::sqrt_spv), x);
+				return layer_construct_forward(shaders::sqrt_spv, sizeof(shaders::sqrt_spv), x);
 			}
 
 			acos::acos(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -226,7 +284,7 @@ namespace kernel
 
 			tensor* acos::forward(tensor* x)
 			{
-				return layer_construct(shaders::acos_spv, sizeof(shaders::acos_spv), x);
+				return layer_construct_forward(shaders::acos_spv, sizeof(shaders::acos_spv), x);
 			}
 
 			acosh::acosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -236,7 +294,7 @@ namespace kernel
 
 			tensor* acosh::forward(tensor* x)
 			{
-				return layer_construct(shaders::acosh_spv, sizeof(shaders::acosh_spv), x);
+				return layer_construct_forward(shaders::acosh_spv, sizeof(shaders::acosh_spv), x);
 			}
 
 			asin::asin(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -246,7 +304,7 @@ namespace kernel
 
 			tensor* asin::forward(tensor* x)
 			{
-				return layer_construct(shaders::asin_spv, sizeof(shaders::asin_spv), x);
+				return layer_construct_forward(shaders::asin_spv, sizeof(shaders::asin_spv), x);
 			}
 
 			asinh::asinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -256,7 +314,7 @@ namespace kernel
 
 			tensor* asinh::forward(tensor* x)
 			{
-				return layer_construct(shaders::asinh_spv, sizeof(shaders::asinh_spv), x);
+				return layer_construct_forward(shaders::asinh_spv, sizeof(shaders::asinh_spv), x);
 			}
 
 			atan::atan(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -266,7 +324,7 @@ namespace kernel
 
 			tensor* atan::forward(tensor* x)
 			{
-				return layer_construct(shaders::atan_spv, sizeof(shaders::atan_spv), x);
+				return layer_construct_forward(shaders::atan_spv, sizeof(shaders::atan_spv), x);
 			}
 
 			atanh::atanh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -276,7 +334,7 @@ namespace kernel
 
 			tensor* atanh::forward(tensor* x)
 			{
-				return layer_construct(shaders::atanh_spv, sizeof(shaders::atanh_spv), x);
+				return layer_construct_forward(shaders::atanh_spv, sizeof(shaders::atanh_spv), x);
 			}
 
 			cos::cos(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -286,7 +344,7 @@ namespace kernel
 
 			tensor* cos::forward(tensor* x)
 			{
-				return layer_construct(shaders::cos_spv, sizeof(shaders::cos_spv), x);
+				return layer_construct_forward(shaders::cos_spv, sizeof(shaders::cos_spv), x);
 			}
 
 			cosh::cosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -296,7 +354,7 @@ namespace kernel
 
 			tensor* cosh::forward(tensor* x)
 			{
-				return layer_construct(shaders::cosh_spv, sizeof(shaders::cosh_spv), x);
+				return layer_construct_forward(shaders::cosh_spv, sizeof(shaders::cosh_spv), x);
 			}
 
 			sin::sin(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -306,7 +364,7 @@ namespace kernel
 
 			tensor* sin::forward(tensor* x)
 			{
-				return layer_construct(shaders::sin_spv, sizeof(shaders::sin_spv), x);
+				return layer_construct_forward(shaders::sin_spv, sizeof(shaders::sin_spv), x);
 			}
 
 			sinh::sinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -316,7 +374,7 @@ namespace kernel
 
 			tensor* sinh::forward(tensor* x)
 			{
-				return layer_construct(shaders::sinh_spv, sizeof(shaders::sinh_spv), x);
+				return layer_construct_forward(shaders::sinh_spv, sizeof(shaders::sinh_spv), x);
 			}
 
 			tan::tan(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -326,7 +384,7 @@ namespace kernel
 
 			tensor* tan::forward(tensor* x)
 			{
-				return layer_construct(shaders::tan_spv, sizeof(shaders::tan_spv), x);
+				return layer_construct_forward(shaders::tan_spv, sizeof(shaders::tan_spv), x);
 			}
 
 			tanh::tanh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -336,7 +394,7 @@ namespace kernel
 
 			tensor* tanh::forward(tensor* x)
 			{
-				return layer_construct(shaders::tanh_spv, sizeof(shaders::tanh_spv), x);
+				return layer_construct_forward(shaders::tanh_spv, sizeof(shaders::tanh_spv), x);
 			}
 		}
 	}
@@ -355,7 +413,7 @@ namespace kernel
 
 			tensor* add::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::add_spv, sizeof(shaders::add_spv), x, w);
+				return layer_construct_forward(shaders::add_spv, sizeof(shaders::add_spv), x, w);
 			}
 
 			sub::sub(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -365,7 +423,7 @@ namespace kernel
 
 			tensor* sub::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::sub_spv, sizeof(shaders::sub_spv), x, w);
+				return layer_construct_forward(shaders::sub_spv, sizeof(shaders::sub_spv), x, w);
 			}
 
 			mul::mul(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -375,7 +433,7 @@ namespace kernel
 
 			tensor* mul::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::mul_spv, sizeof(shaders::mul_spv), x, w);
+				return layer_construct_forward(shaders::mul_spv, sizeof(shaders::mul_spv), x, w);
 			}
 
 			div::div(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -385,7 +443,7 @@ namespace kernel
 
 			tensor* div::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::div_spv, sizeof(shaders::div_spv), x, w);
+				return layer_construct_forward(shaders::div_spv, sizeof(shaders::div_spv), x, w);
 			}
 
 			mod::mod(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -395,7 +453,7 @@ namespace kernel
 
 			tensor* mod::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::mod_spv, sizeof(shaders::mod_spv), x, w);
+				return layer_construct_forward(shaders::mod_spv, sizeof(shaders::mod_spv), x, w);
 			}
 
 			pow::pow(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -405,7 +463,7 @@ namespace kernel
 
 			tensor* pow::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::pow_spv, sizeof(shaders::pow_spv), x, w);
+				return layer_construct_forward(shaders::pow_spv, sizeof(shaders::pow_spv), x, w);
 			}
 
 			max::max(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -415,7 +473,7 @@ namespace kernel
 
 			tensor* max::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::max_spv, sizeof(shaders::max_spv), x, w);
+				return layer_construct_forward(shaders::max_spv, sizeof(shaders::max_spv), x, w);
 			}
 
 			min::min(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -425,7 +483,7 @@ namespace kernel
 
 			tensor* min::forward(tensor* x, tensor* w)
 			{
-				return layer_construct(shaders::min_spv, sizeof(shaders::min_spv), x, w);
+				return layer_construct_forward(shaders::min_spv, sizeof(shaders::min_spv), x, w);
 			}
 
 			eq::eq(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -443,18 +501,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::equal_spv, sizeof(shaders::equal_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::equal_spv, sizeof(shaders::equal_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -474,18 +532,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::nequal_spv, sizeof(shaders::nequal_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::nequal_spv, sizeof(shaders::nequal_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -505,18 +563,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::less_than_spv, sizeof(shaders::less_than_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::less_than_spv, sizeof(shaders::less_than_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -536,18 +594,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::less_eq_spv, sizeof(shaders::less_eq_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -567,18 +625,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::greater_than_spv, sizeof(shaders::greater_than_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -598,18 +656,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}
@@ -635,18 +693,18 @@ namespace kernel
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
 				m_output.push_back(x->getId());
 
-				if (m_pipeline == nullptr)
+				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
-					createShaderModule(shaders::xor_spv, sizeof(shaders::xor_spv));
-					createPipeline(sizeof(operator_param));
+					createShaderModuleForward(shaders::xor_spv, sizeof(shaders::xor_spv));
+					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set);
-				bindTensor(m_device, y, 1, m_descriptor_set);
+				bindTensor(m_device, x, 0, m_descriptor_set_forward);
+				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
 			}

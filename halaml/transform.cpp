@@ -41,7 +41,7 @@ namespace kernel
 		{
 			m_input.push_back(x->getId());
 
-			if (m_pipeline == nullptr)
+			if (m_pipeline_forward == nullptr)
 			{
 				const int depth = x->getShape()[x->getShape().size() - 3];
 				const int height = x->getShape()[x->getShape().size() - 2];
@@ -57,18 +57,18 @@ namespace kernel
 				m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.
 					stride_w + 1;
 				computeGroupCount();
-				createShaderModule(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
-				createPipeline(sizeof(vol2col_param));
+				createShaderModuleForward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
+				createPipelineForward(sizeof(vol2col_param));
 			}
 
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
 			auto* y = new tensor(0.0, std::vector<int>{output_length * n_out_plane});
 			m_output.push_back(y->getId());
-			bindTensor(m_device, x, 0, m_descriptor_set);
-			bindTensor(m_device, y, 1, m_descriptor_set);
+			bindTensor(m_device, x, 0, m_descriptor_set_forward);
+			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(vol2col_param));
+			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(vol2col_param));
 			layers.push_back(this);
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
@@ -109,7 +109,7 @@ namespace kernel
 		{
 			m_input.push_back(x->getId());
 
-			if (m_pipeline == nullptr)
+			if (m_pipeline_forward == nullptr)
 			{
 				const int depth = x->getShape()[x->getShape().size() - 3];
 				const int height = x->getShape()[x->getShape().size() - 2];
@@ -125,8 +125,8 @@ namespace kernel
 				m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w
 					- 1) + m_param.pad_w + 1;
 				computeGroupCount();
-				createShaderModule(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
-				createPipeline(sizeof(vol2col_param));
+				createShaderModuleForward(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
+				createPipelineForward(sizeof(vol2col_param));
 			}
 			const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 			const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
@@ -134,10 +134,10 @@ namespace kernel
 				                     n_out_plane * (m_param.depth_vol * m_param.height_vol * m_param.width_vol)
 			                     });
 			m_output.push_back(y->getId());
-			bindTensor(m_device, x, 0, m_descriptor_set);
-			bindTensor(m_device, y, 1, m_descriptor_set);
+			bindTensor(m_device, x, 0, m_descriptor_set_forward);
+			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(vol2col_param));
+			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(vol2col_param));
 			layers.push_back(this);
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
