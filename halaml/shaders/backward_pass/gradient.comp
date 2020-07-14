@@ -20,6 +20,6 @@ void main()
 {
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
-        X[i] = X[i] - lr*Y[i];
+        X[i] = X[i] - p.lr*Y[i];
     }
 }

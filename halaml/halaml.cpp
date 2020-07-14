@@ -62,8 +62,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 	}
 }
 
-//#define TEST_MATH
-#define TEST_NN
+#define TEST_MATH
+///#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
 

@@ -4,11 +4,11 @@ layout(push_constant) uniform pushBlock {
       int total;
 } p;
 
-layout(binding = 2) readonly buffer buf1{
+layout(binding = 0) readonly buffer buf1{
     float X[];
 };
 
-layout(binding = 3) writeonly buffer buf2{
+layout(binding = 1) writeonly buffer buf2{
     float Y[];
 };
 

@@ -35,23 +35,26 @@ namespace kernel
 		vkDestroyDescriptorPool(m_device, m_descriptor_pool_forward, nullptr);
 		vkDestroyPipeline(m_device, m_pipeline_forward, nullptr);
 		vkDestroyPipelineLayout(m_device, m_pipeline_layout_forward, nullptr);
-		
+		/*
 		vkDestroyShaderModule(m_device, m_module_backward, nullptr);
 		vkDestroyDescriptorPool(m_device, m_descriptor_pool_backward, nullptr);
 		vkDestroyPipeline(m_device, m_pipeline_backward, nullptr);
 		vkDestroyPipelineLayout(m_device, m_pipeline_layout_backward, nullptr);
+		*/
 	}
 
 	void layer::initVulkanThing(int buffer_num_forward, int buffer_num_backward)
 	{
-		if (buffer_num_backward == -1)
-			buffer_num_backward = buffer_num_forward;
+		
 		createDescriptorSetLayoutForward(buffer_num_forward);
 		createDescriptorSetForward(buffer_num_forward);
 		createCommandBufferForward();
-		createDescriptorSetLayoutBackward(buffer_num_forward);
-		createDescriptorSetBackward(buffer_num_forward);
-		createCommandBufferBackward();
+
+		if (buffer_num_backward == -1)
+			buffer_num_backward = buffer_num_forward;
+		//createDescriptorSetLayoutBackward(buffer_num_forward);
+		//createDescriptorSetBackward(buffer_num_forward);
+		//createCommandBufferBackward();
 	}
 
 	void layer::createDescriptorSetLayoutForward(int buffer_num)
@@ -129,9 +132,9 @@ namespace kernel
 
 		VkDescriptorSetAllocateInfo allocate_info = {};
 		allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocate_info.descriptorPool = m_descriptor_pool_forward;
+		allocate_info.descriptorPool = m_descriptor_pool_backward;
 		allocate_info.descriptorSetCount = 1;
-		allocate_info.pSetLayouts = &m_descriptor_set_layout_forward;
+		allocate_info.pSetLayouts = &m_descriptor_set_layout_backward;
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(m_device, &allocate_info, &m_descriptor_set_backward));
 	}
 
@@ -214,7 +217,7 @@ namespace kernel
 		VkPipelineShaderStageCreateInfo stage_create_info = {};
 		stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		stage_create_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-		stage_create_info.module = m_module_forward;
+		stage_create_info.module = m_module_backward;
 		stage_create_info.pName = "main";
 		stage_create_info.pSpecializationInfo = specialization_info;
 		VkPushConstantRange push_constant_ranges[1] = {};
@@ -279,7 +282,7 @@ namespace kernel
 		kContextMtx.unlock();
 	}
 
-
+	
 	void layer::recordCommandBufferBackward(void* push_constants, size_t push_constants_size) const
 	{
 		VkCommandBufferBeginInfo beginInfo = {};

@@ -1,10 +1,25 @@
 #include <cstdlib>
 
-namespace kernel
-{
-	namespace shaders
-	{
+namespace kernel { 
+	namespace shaders {
+		extern const unsigned int gradient_spv[445];
+		extern const unsigned int d_relu_spv[417];
+		extern const unsigned int d_sigmoid_spv[427];
+		extern const unsigned int binary_operator_spv[474];
 		extern const unsigned int d_MSE_spv[494];
+		extern const unsigned int d_abs_spv[423];
+		extern const unsigned int unary_operator_spv[398];
+		extern const unsigned int d_acos_spv[441];
+		extern const unsigned int d_acosh_spv[437];
+		extern const unsigned int d_asin_spv[437];
+		extern const unsigned int d_asinh_spv[437];
+		extern const unsigned int d_atan_spv[431];
+		extern const unsigned int d_atanh_spv[431];
+		extern const unsigned int d_cos_spv[408];
+		extern const unsigned int d_cosh_spv[404];
+		extern const unsigned int d_sin_spv[438];
+		extern const unsigned int d_sinh_spv[404];
+		extern const unsigned int d_tan_spv[424];
 		extern const unsigned int d_tanh_spv[438];
 		extern const unsigned int gemm_spv[850];
 		extern const unsigned int celu_spv[497];
@@ -37,7 +52,6 @@ namespace kernel
 		extern const unsigned int pow_spv[468];
 		extern const unsigned int sub_spv[466];
 		extern const unsigned int xor_spv[479];
-		extern const unsigned int gradient_spv[496];
 		extern const unsigned int MSE_spv[552];
 		extern const unsigned int gruCell_spv[2295];
 		extern const unsigned int lstmCell_spv[2644];
