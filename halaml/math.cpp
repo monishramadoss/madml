@@ -55,34 +55,7 @@ namespace kernel
 				return y;
 			}
 
-			tensor* unary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x)
-			{
-				m_input.push_back(x->getId());
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape());
-				m_output.push_back(x->getId());
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleBackward(shader, codeSize);
-					createPipelineBackward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
-				bindTensor(m_device, y, 1, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
-				layers.push_back(this);
-				if (as_module)
-					add_module(this);
-				return y;
-			}
-			
+						
 			void unary_operator::update_weight()
 			{
 			}
@@ -132,36 +105,7 @@ namespace kernel
 				return y;
 			}
 
-			tensor* binary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
-			{
-				m_input.push_back(x->getId());
-				m_input.push_back(w->getId());
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape());
-				m_output.push_back(y->getId());
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleBackward(shader, codeSize);
-					createPipelineBackward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-				layers.push_back(this);
-				if (as_module)
-					add_module(this);
-				return y;
-			}
-			
+						
 			void binary_operator::update_weight()
 			{
 			}

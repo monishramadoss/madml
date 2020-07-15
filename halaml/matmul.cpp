@@ -3,15 +3,15 @@
 #include "matmul.h"
 #define MAX_COMPUTE_WORK_GROUP_COUNT 1024
 
-#define TSM 128                     // The tile-size in dvolension M
-#define TSN 128                     // The tile-size in dvolension N
-#define TSK 16                      // The tile-size in dvolension K
-#define WPTM 4                      // The amount of work-per-thread in dvolension M
-#define WPTN 4                      // The amount of work-per-thread in dvolension N
+#define TSM 128                     // The tile-size in dimension M
+#define TSN 128                     // The tile-size in dimension N
+#define TSK 16                      // The tile-size in dimension K
+#define WPTM 4                      // The amount of work-per-thread in dimension M
+#define WPTN 4                      // The amount of work-per-thread in dimension N
 #define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
 #define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
-#define LOCAL_SZ_X 16    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
-#define LOCAL_SZ_Y 16    // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
+#define LOCAL_SZ_X 16    // The reduced tile-size in dimension M (TSM/WPTM number of threads)
+#define LOCAL_SZ_Y 16    // The reduced tile-size in dimension N (TSN/WPTN number of threads)
 
 namespace kernel
 {

@@ -23,6 +23,7 @@ void PrintDiffer(float* data, int size)
 	{
 		diff_freq[data[i]] += 1;
 	}
+		
 	std::cout << "{";
 	for (const auto df : diff_freq)
 	{
@@ -40,6 +41,7 @@ void PrintDiffer(int* data, int size)
 	{
 		diff_freq[static_cast<int>(data[i])] += 1;
 	}
+	
 	std::cout << "{";
 	for (const auto df : diff_freq)
 	{
@@ -63,7 +65,7 @@ void PrintMatrix(float* data, std::vector<int> shape)
 }
 
 #define TEST_MATH
-///#define TEST_NN
+//#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
 
@@ -72,14 +74,14 @@ void test_fn()
 #ifdef TEST_MATH
 	std::cout << "testing add_op" << std::endl;
 	{
-		std::vector<int> shape_x{ 1000 };
+		const std::vector<int> shape_x{ 2000 };
 		auto* t1 = new kernel::tensor(1.0, shape_x);
 		auto* t2 = new kernel::tensor(1.0, shape_x);
-		auto* k1 = new kernel::layers::math::add();
-		auto* t3 = k1->forward(t1, t2);
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 1000);
-		k1->super_run();
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 1000);
+		auto k1 = kernel::layers::math::add();
+		auto* t3 = k1.forward(t1, t2);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
+		k1.runCommandBufferForward();
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
 	}
 #endif
 

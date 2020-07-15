@@ -16,10 +16,9 @@ namespace kernel
 		}
 
 		m_device = kDevice;
-		//m_data = nullptr;
 	}
 
-	tensor::tensor(char* data, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt)
+	tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt)
 	{
 		id = 0;
 		createContext();
@@ -34,7 +33,7 @@ namespace kernel
 		reshape(data, shape);
 	}
 
-	tensor::tensor(float c, std::vector<int> shape, Format fmt) : size_in_byte(0), format(fmt)
+	tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt)
 	{
 		int id = 0;
 		createContext();
@@ -50,7 +49,7 @@ namespace kernel
 			data = std::shared_ptr<char>(fill_memory_shape<int>(shape, static_cast<int>(c)));
 		else
 			data = std::shared_ptr<char>(fill_memory_shape<float>(shape, c));
-
+		
 		reshape(data.get(), shape);
 	}
 
@@ -124,7 +123,7 @@ namespace kernel
 		if (m_device == nullptr)
 			return;
 
-		float* p = static_cast<float*>(map());
+		auto* p = static_cast<float*>(map());
 		const int cnt = count();
 		for (int i = 0; i < cnt; ++i)
 			*p++ = val;

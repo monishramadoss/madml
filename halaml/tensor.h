@@ -13,8 +13,8 @@ namespace kernel
 	{
 	public:
 		tensor(Format fmt = Format::kFormatFp32);
-		tensor(char* data, std::vector<int> shape, Format fmt = Format::kFormatInvalid);
-		tensor(float c, std::vector<int> shape, Format fmt = Format::kFormatFp32);
+		tensor(char* data, const std::vector<int>& shape, Format fmt = Format::kFormatInvalid);
+		tensor(float c, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
 		void* map() const;
 		void unMap() const;
 		Shape getShape() const;
@@ -40,7 +40,6 @@ namespace kernel
 		VkDevice m_device;
 		std::vector<int> m_shape;
 		size_t size_in_byte;
-//		std::shared_ptr<char> m_data;
 		std::shared_ptr<buffer> m_buffer;
 		Format format;
 		static int& get_object_id();

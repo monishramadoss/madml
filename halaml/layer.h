@@ -22,6 +22,7 @@ namespace kernel
 		//		virtual void forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 		//		virtual void backward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 		void initVulkanThing(int buffer_num_forward, int buffer_num_backward = -1);
+		
 		void createDescriptorSetLayoutForward(int buffer_num);
 		void createDescriptorSetForward(int buffer_num);
 		void createShaderModuleForward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
@@ -35,8 +36,8 @@ namespace kernel
 		void createShaderModuleBackward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
 		void createPipelineBackward(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
 		void createCommandBufferBackward();
-		void recordCommandBufferBackward(void* push_constants = nullptr, size_t push_constants_size = 0) const;
-		void runCommandBufferBackward() const;
+		void recordCommandBufferBackward(void* push_constants = nullptr, size_t push_constants_size = 0);
+		void runCommandBufferBackward();
 		
 		virtual void computeGroupCount() = 0;
 		VkDevice m_device;
@@ -48,8 +49,7 @@ namespace kernel
 		VkDescriptorSetLayout m_descriptor_set_layout_forward;
 		VkPipelineLayout m_pipeline_layout_forward;
 		VkShaderModule m_module_forward;
-
-
+				
 		VkPipeline m_pipeline_backward;
 		VkCommandBuffer m_cmd_buffer_backward;
 		VkDescriptorPool m_descriptor_pool_backward;
@@ -57,8 +57,7 @@ namespace kernel
 		VkDescriptorSetLayout m_descriptor_set_layout_backward;
 		VkPipelineLayout m_pipeline_layout_backward;
 		VkShaderModule m_module_backward;
-
-		
+				
 		int m_group_x;
 		int m_group_y;
 		int m_group_z;
@@ -72,10 +71,10 @@ namespace kernel
 		class Module
 		{
 		public:
-			void backward();
+			static void backward();
 			virtual void update_weight() = 0;
 			void execute();
-			void super_run();
+			static void super_run();
 			std::vector<int> m_input;
 			std::vector<int> m_output;
 			std::vector<int> m_weights;

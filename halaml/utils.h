@@ -25,6 +25,7 @@ namespace kernel
 
 	inline size_t elementSize(Format fmt)
 	{
+		auto ret = static_cast<size_t>(fmt);
 		return static_cast<size_t>(fmt);
 	}
 
