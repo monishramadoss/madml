@@ -80,7 +80,7 @@ void test_fn()
 		auto k1 = kernel::layers::math::add();
 		auto* t3 = k1.forward(t1, t2);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
-		k1.runCommandBufferForward();
+		k1.super_run();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
 	}
 #endif

@@ -90,7 +90,7 @@ namespace kernel
 		}
 				
 		if (m_shape != shape) m_shape = shape;
-		if (check_format(fmt) && fmt != format) format = fmt;
+		if (checkFormat(fmt) && fmt != format) format = fmt;
 
 		const size_t new_size = shapeCount(m_shape) * elementSize(format);
 		if (alloc || new_size > size_in_byte)
