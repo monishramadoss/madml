@@ -29,13 +29,13 @@ namespace kernel
 
 			tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -77,14 +77,14 @@ namespace kernel
 
 			tensor* binary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
-				m_input.push_back(w->getId());
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				m_output.push_back(y->getId());
+				outputs.push_back(y->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -147,13 +147,13 @@ namespace kernel
 
 			tensor* clip::forward(tensor* x)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -437,13 +437,13 @@ namespace kernel
 
 			tensor* eq::forward(tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -468,13 +468,13 @@ namespace kernel
 
 			tensor* ne::forward(tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -499,13 +499,13 @@ namespace kernel
 
 			tensor* lt::forward(tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -530,13 +530,13 @@ namespace kernel
 
 			tensor* le::forward(tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -561,13 +561,13 @@ namespace kernel
 
 			tensor* gt::forward(tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -592,13 +592,13 @@ namespace kernel
 
 			tensor* ge::forward(tensor* x, tensor* w)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -629,13 +629,13 @@ namespace kernel
 					return nullptr;
 				}
 
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{

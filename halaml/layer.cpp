@@ -212,7 +212,7 @@ namespace kernel
 		vkDestroyFence(m_device, fence, nullptr);
 	}
 
-	/*
+	
 		void layer::createDescriptorSetLayoutBackward(int buffer_num)
 	{
 		if (buffer_num <= 0)
@@ -355,7 +355,7 @@ namespace kernel
 		VK_CHECK_RESULT(vkWaitForFences(m_device, 1, &fence, VK_TRUE, 100000000000));
 		vkDestroyFence(m_device, fence, nullptr);
 	}
-	*/
+
 
 	
 	namespace layers
@@ -405,11 +405,6 @@ namespace kernel
 			auto& t = get_tensors();
 			t.push_back(T);
 		}
-
-		void Module::set_io(Module* m)
-		{
-			m_input.insert(m_input.end(), m->m_input.begin(), m->m_input.end());
-			m_output.insert(m_output.end(), m->m_output.begin(), m->m_output.begin());
-		}
+			
 	}
 }

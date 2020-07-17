@@ -59,25 +59,27 @@ namespace kernel
 				layers.push_back(kernel);
 				layers.push_back(mm);
 
+				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
+				
 				auto* ir_vol2col = kernel->forward(x); //27 9
-				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, ir_vol2col->getShape()[0]});
 				auto* y = mm->forward(w, ir_vol2col);
-
-				auto out = kernel->output_shape();
-				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
-
-				set_io(kernel);
-				set_io(mm);
-
+				
 				if (USE_BIAS)
 				{
 					auto* bias = new math::add();
 					layers.push_back(bias);
-
 					auto* b = new tensor(1.0, y->getShape());
 					y = bias->forward(y, b);
-					set_io(bias);
+					biases.push_back(b->getId());
 				}
+
+				inputs.push_back(x->getId());
+				weights.push_back(w->getId());
+				temporaries.push_back(ir_vol2col->getId());
+				outputs.push_back(y->getId());
+
+				auto out = kernel->output_shape();
+				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
 
 				add_module(this);
 				return y;
@@ -99,25 +101,28 @@ namespace kernel
 				layers.push_back(kernel);
 				layers.push_back(mm);
 
+				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
+
 				auto* ir_col2vol = kernel->forward(x);
-				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, ir_col2vol->getShape()[0]});
 				auto* y = mm->forward(w, ir_col2vol);
-
-				auto out = kernel->output_shape();
-				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
-
-				set_io(kernel);
-				set_io(mm);
 
 				if (USE_BIAS)
 				{
 					auto* bias = new math::add();
 					layers.push_back(bias);
-
 					auto* b = new tensor(1.0, y->getShape());
 					y = bias->forward(y, b);
-					set_io(bias);
+					biases.push_back(b->getId());
 				}
+
+				inputs.push_back(x->getId());
+				weights.push_back(w->getId());
+				temporaries.push_back(ir_col2vol->getId());
+				outputs.push_back(y->getId());
+				
+				auto out = kernel->output_shape();
+				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
+								
 				add_module(this);
 				return y;
 			}
@@ -147,17 +152,24 @@ namespace kernel
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input}));
+						weights.push_back(weights_biases.back()->getId());
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size}));
+						weights.push_back(weights_biases.back()->getId());
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size}));
+						weights.push_back(weights_biases.back()->getId());
 						if (USE_BIAS)
 						{
 							weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size}));
+							biases.push_back(weights_biases.back()->getId());
 							weights_biases.push_back(new tensor(1.0, std::vector<int>{output}));
+							biases.push_back(weights_biases.back()->getId());
 						}
 						else
 						{
 							weights_biases.push_back(new tensor(0.0, std::vector<int>{m_hidden_size}));
+							biases.push_back(weights_biases.back()->getId());
 							weights_biases.push_back(new tensor(0.0, std::vector<int>{output}));
+							biases.push_back(weights_biases.back()->getId());
 						}
 						for (int i = 0; i < seq_length; ++i)
 							cells.push_back(new RNNCell(input, m_hidden_size, output));
@@ -216,12 +228,11 @@ namespace kernel
 					}
 				}
 
+				inputs.push_back(x->getId());
+				outputs.push_back(cache[cache.size() - 2]->getId());
+				outputs.push_back( cache.back()->getId());
+					
 
-				for (auto l : cells)
-				{
-					layers.push_back(l);
-					set_io(l);
-				}
 				add_module(this);
 				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
@@ -245,17 +256,25 @@ namespace kernel
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input, 4}));
+						weights.push_back(weights_biases.back()->getId());
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4}));
+						weights.push_back(weights_biases.back()->getId());
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size, 4}));
+						weights.push_back(weights_biases.back()->getId());
+												
 						if (USE_BIAS)
 						{
 							weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, 4}));
+							biases.push_back(weights_biases.back()->getId());
 							weights_biases.push_back(new tensor(1.0, std::vector<int>{output}));
+							biases.push_back(weights_biases.back()->getId());
 						}
 						else
 						{
 							weights_biases.push_back(new tensor(0.0, std::vector<int>{m_hidden_size, 4}));
+							biases.push_back(weights_biases.back()->getId());
 							weights_biases.push_back(new tensor(0.0, std::vector<int>{output}));
+							biases.push_back(weights_biases.back()->getId());
 						}
 						for (int i = 0; i < seq_length; ++i)
 							cells.push_back(new LSTMCell(input, m_hidden_size, output));
@@ -318,12 +337,11 @@ namespace kernel
 					}
 				}
 
+				inputs.push_back(x->getId());
+				outputs.push_back(cache[cache.size() - 3]->getId());
+				outputs.push_back(cache[cache.size() - 2]->getId());
+				outputs.push_back(cache.back()->getId());
 
-				for (auto l : cells)
-				{
-					layers.push_back(l);
-					set_io(l);
-				}
 				add_module(this);
 				return std::make_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
@@ -346,17 +364,25 @@ namespace kernel
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input, 3}));
+						weights.push_back(weights_biases.back()->getId());
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3}));
+						weights.push_back(weights_biases.back()->getId());
 						weights_biases.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size, 3}));
+						weights.push_back(weights_biases.back()->getId());
+						
 						if (USE_BIAS)
 						{
 							weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, 3}));
+							biases.push_back(weights_biases.back()->getId());
 							weights_biases.push_back(new tensor(1.0, std::vector<int>{output}));
+							biases.push_back(weights_biases.back()->getId());
 						}
 						else
 						{
 							weights_biases.push_back(new tensor(0.0, std::vector<int>{m_hidden_size, 3}));
+							biases.push_back(weights_biases.back()->getId());
 							weights_biases.push_back(new tensor(0.0, std::vector<int>{output}));
+							biases.push_back(weights_biases.back()->getId());
 						}
 						for (int i = 0; i < seq_length; ++i)
 							cells.push_back(new GRUCell(input, m_hidden_size, output));
@@ -415,12 +441,11 @@ namespace kernel
 						}
 					}
 				}
+				inputs.push_back(x->getId());
+				
+				outputs.push_back(cache[cache.size() - 2]->getId());
+				outputs.push_back(cache.back()->getId());
 
-				for (auto* l : cells)
-				{
-					layers.push_back(l);
-					set_io(l);
-				}
 				add_module(this);
 				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
@@ -466,15 +491,15 @@ namespace kernel
 				m_param.weight_offset = weight_offset;
 				m_param.output_offset = output_offset;
 
-				m_input.push_back(x->getId());
-				m_input.push_back(h->getId());
-				m_input.push_back(U->getId());
-				m_input.push_back(W->getId());
-				m_input.push_back(V->getId());
-				m_input.push_back(b1->getId());
-				m_input.push_back(b2->getId());
-				m_output.push_back(y->getId());
-				m_output.push_back(hn->getId());
+				inputs.push_back(x->getId());
+				inputs.push_back(h->getId());
+				inputs.push_back(U->getId());
+				inputs.push_back(W->getId());
+				inputs.push_back(V->getId());
+				inputs.push_back(b1->getId());
+				inputs.push_back(b2->getId());
+				outputs.push_back(y->getId());
+				outputs.push_back(hn->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -530,17 +555,17 @@ namespace kernel
 				m_param.weight_offset = weight_offset;
 				m_param.output_offset = output_offset;
 
-				m_input.push_back(x->getId());
-				m_input.push_back(h->getId());
-				m_input.push_back(c->getId());
-				m_input.push_back(U->getId());
-				m_input.push_back(W->getId());
-				m_input.push_back(V->getId());
-				m_input.push_back(b1->getId());
-				m_input.push_back(b2->getId());
-				m_output.push_back(y->getId());
-				m_output.push_back(hn->getId());
-				m_output.push_back(cn->getId());
+				inputs.push_back(x->getId());
+				inputs.push_back(h->getId());
+				inputs.push_back(c->getId());
+				inputs.push_back(U->getId());
+				inputs.push_back(W->getId());
+				inputs.push_back(V->getId());
+				inputs.push_back(b1->getId());
+				inputs.push_back(b2->getId());
+				outputs.push_back(y->getId());
+				outputs.push_back(hn->getId());
+				outputs.push_back(cn->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -598,14 +623,14 @@ namespace kernel
 				m_param.output_offset = output_offset;
 
 
-				m_input.push_back(x->getId());
-				m_input.push_back(h->getId());
-				m_input.push_back(U->getId());
-				m_input.push_back(W->getId());
-				m_input.push_back(V->getId());
-				m_input.push_back(b1->getId());
-				m_input.push_back(b2->getId());
-				m_output.push_back(y->getId());
+				inputs.push_back(x->getId());
+				inputs.push_back(h->getId());
+				inputs.push_back(U->getId());
+				inputs.push_back(W->getId());
+				inputs.push_back(V->getId());
+				inputs.push_back(b1->getId());
+				inputs.push_back(b2->getId());
+				outputs.push_back(y->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{

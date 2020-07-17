@@ -39,7 +39,7 @@ namespace kernel
 
 		tensor* vol2col::forward(tensor* x)
 		{
-			m_input.push_back(x->getId());
+			inputs.push_back(x->getId());
 
 			if (m_pipeline_forward == nullptr)
 			{
@@ -64,7 +64,7 @@ namespace kernel
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
 			auto* y = new tensor(0.0, std::vector<int>{output_length * n_out_plane});
-			m_output.push_back(y->getId());
+			outputs.push_back(y->getId());
 			bindTensor(m_device, x, 0, m_descriptor_set_forward);
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
@@ -107,7 +107,7 @@ namespace kernel
 
 		tensor* col2vol::forward(tensor* x)
 		{
-			m_input.push_back(x->getId());
+			inputs.push_back(x->getId());
 
 			if (m_pipeline_forward == nullptr)
 			{
@@ -133,7 +133,7 @@ namespace kernel
 			auto* y = new tensor(0.0, std::vector<int>{
 				                     n_out_plane * (m_param.depth_vol * m_param.height_vol * m_param.width_vol)
 			                     });
-			m_output.push_back(y->getId());
+			outputs.push_back(y->getId());
 			bindTensor(m_device, x, 0, m_descriptor_set_forward);
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 

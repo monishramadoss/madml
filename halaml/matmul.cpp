@@ -38,10 +38,10 @@ namespace kernel
 		{
 			if (x->getShape()[1] != w->getShape()[0])
 				std::cerr << "Mat mul dim ERROR" << std::endl;
-			m_input.push_back(x->getId());
-			m_input.push_back(w->getId());
+			inputs.push_back(x->getId());
+			inputs.push_back(w->getId());
 			auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], w->getShape()[1]});
-			m_output.push_back(y->getId());
+			outputs.push_back(y->getId());
 
 			if (m_pipeline_forward == nullptr)
 			{

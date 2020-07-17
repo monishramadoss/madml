@@ -75,10 +75,11 @@ namespace kernel
 			virtual void update_weight() = 0;
 			void execute();
 			static void super_run();
-			std::vector<int> m_input;
-			std::vector<int> m_output;
-			std::vector<int> m_weights;
-			std::vector<int> m_bias;
+			std::vector<int> inputs;
+			std::vector<int> outputs;
+			std::vector<int> weights;
+			std::vector<int> biases;
+			std::vector<int> temporaries;
 
 		protected:
 			std::vector<layer*> layers;
@@ -86,8 +87,7 @@ namespace kernel
 			static std::vector<tensor*>& get_tensors();
 			static void add_tensor(tensor* T);
 			static void add_module(Module* M);
-			void set_io(Module* m);
-
+			
 			int batch_size = 0;
 			float lr = 0.0001f;
 

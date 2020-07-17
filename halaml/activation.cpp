@@ -29,13 +29,13 @@ namespace kernel
 
 			tensor* unary_operator::layer_construct(const uint32_t* shader, size_t codeSize, tensor* x)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -93,13 +93,13 @@ namespace kernel
 
 			tensor* hardtanh::forward(tensor* x)
 			{
-				m_input.push_back(x->getId());
+				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				m_output.push_back(x->getId());
+				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
