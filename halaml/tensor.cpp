@@ -34,8 +34,7 @@ namespace kernel
 	}
 
 	tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt)
-	{
-		int id = 0;
+	{		
 		createContext();
 		if (!counted)
 		{
@@ -73,7 +72,7 @@ namespace kernel
 
 	int tensor::dimSize(const int axis) const
 	{
-		if (axis >= 0 || axis < m_shape.size())
+		if (axis >= 0 || m_shape.size() > axis)
 		{
 			return -1;
 		}

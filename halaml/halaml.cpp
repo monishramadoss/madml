@@ -4,16 +4,11 @@
 #include <map>
 #include <chrono>
 #include <future>
-#include <pybind11/pybind11.h>
 
-#include "madml.h"
 
-namespace py = pybind11;
+#include "halmal.h"
+
 using namespace std::chrono;
-
-#define X M*K
-#define Y K*N
-#define Z M*N
 
 void PrintDiffer(float* data, int size)
 {
@@ -64,8 +59,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 	}
 }
 
-#define TEST_MATH
-//#define TEST_NN
+//#define TEST_MATH
+#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
 
@@ -98,6 +93,9 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
 		layer->super_run();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
+		for (int i = 0; i < 100; ++i) {
+			layer->super_run();
+		}
 	}
 #endif
 #ifdef TEST_CNN
@@ -115,6 +113,9 @@ void test_fn()
 		cnn_layer_1->super_run();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		for (int i = 0; i < 100; ++i) {
+			cnn_layer_1->super_run();
+		}
 	}
 #endif
 #ifdef TEST_RNN
@@ -138,6 +139,9 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
+		for (int i = 0; i < 100; ++i) {
+			rnn_layer_1->super_run();
+		}
 		
 	}
 	std::cout << "testing lstm" << std::endl;
@@ -163,6 +167,9 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		std::cout << std::endl;
+		for (int i = 0; i < 100; ++i) {
+			rnn_layer_1->super_run();
+		}
 		
 	}
 	std::cout << "testing gru" << std::endl;

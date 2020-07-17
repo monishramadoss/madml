@@ -31,6 +31,7 @@
     <ClInclude Include="..\halaml\tensor.h" />
     <ClInclude Include="..\halaml\transform.h" />
     <ClInclude Include="..\halaml\utils.h" />
+    <ClInclude Include="halmal.h" />
     <ClInclude Include="math.h" />
   </ItemGroup>
   <ItemGroup>
