@@ -9,7 +9,11 @@ layout(binding = 0) readonly buffer buf1{
     float X[];
 };
 
-layout(binding = 1) writeonly buffer buf2{
+layout(binding = 1) readonly buffer buf2{
+    float alpha[];
+};
+
+layout(binding = 2) writeonly buffer buf3{
     float Y[];
 };
 
@@ -19,6 +23,9 @@ void main()
 {
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
-        Y[i] = max(0, X[i]) + min(0, p.alpha * (exp(X[i] / p.alpha) - 1));
+        if(X[i] >= 0)
+            Y[i] = X[i];
+        else
+            Y[i] = alpha[i] * (exp(X[i]/alpha[i]) - 1);
     }
 }

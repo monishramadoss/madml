@@ -72,7 +72,7 @@ namespace kernel
 				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 				bindTensor(m_device, x, 1, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 		
 			}
 						
@@ -131,9 +131,7 @@ namespace kernel
 				tensor* x = get_grad(inputs[0]);
 				tensor* w = get_grad(inputs[1]);
 				tensor* y = get_grad(outputs[0]);
-
-				
-			
+						
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = { x->count() };
@@ -142,11 +140,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));			
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));			
 			}
 						
 			void binary_operator::update_weight()
@@ -634,7 +632,8 @@ namespace kernel
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 
@@ -658,11 +657,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			ne::ne(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -712,11 +711,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			lt::lt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -766,11 +765,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			le::le(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -820,11 +819,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			gt::gt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -875,11 +874,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			ge::ge(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -929,11 +928,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			xr::xr(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -989,11 +988,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 		}
 	}

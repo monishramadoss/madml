@@ -20,8 +20,8 @@ void main()
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
         if(X[i] >= 0)
-            Y[i] = X[i];
+            Y[i] = 1.0;
         else
-            Y[i] = p.alpha * (exp(X[i] - 1));
+            Y[i] = p.alpha * exp(X[i]);
     }
 }
