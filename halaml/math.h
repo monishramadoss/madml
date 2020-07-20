@@ -23,7 +23,7 @@ namespace kernel
 				bool m_inplace;
 				operator_param m_param;
 				inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
-				inline tensor* layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x);
+				inline void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
 
 			public:
@@ -39,7 +39,7 @@ namespace kernel
 				bool m_inplace;
 				operator_param m_param;
 				inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w);
-				inline tensor* layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w);
+				inline void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
 
 			public:
@@ -63,6 +63,7 @@ namespace kernel
 			public:
 				abs(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class ceil : public unary_operator
@@ -70,6 +71,7 @@ namespace kernel
 			public:
 				ceil(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			struct clip_operator_param
@@ -86,6 +88,7 @@ namespace kernel
 			public:
 				clip(float min = 0.0f, float max = 1.0f, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class exp : public unary_operator
@@ -93,6 +96,7 @@ namespace kernel
 			public:
 				exp(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class floor : public unary_operator
@@ -100,13 +104,15 @@ namespace kernel
 			public:
 				floor(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
-			class log : public unary_operator
+			class ln : public unary_operator
 			{
 			public:
-				log(bool in_place = false, bool as_module = true);
+				ln(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class round : public unary_operator
@@ -114,6 +120,7 @@ namespace kernel
 			public:
 				round(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class sqrt : public unary_operator
@@ -121,6 +128,7 @@ namespace kernel
 			public:
 				sqrt(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class acos : public unary_operator
@@ -128,6 +136,7 @@ namespace kernel
 			public:
 				acos(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class acosh : public unary_operator
@@ -135,6 +144,7 @@ namespace kernel
 			public:
 				acosh(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class asin : public unary_operator
@@ -142,6 +152,7 @@ namespace kernel
 			public:
 				asin(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class asinh : public unary_operator
@@ -149,6 +160,7 @@ namespace kernel
 			public:
 				asinh(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class atan : public unary_operator
@@ -156,6 +168,7 @@ namespace kernel
 			public:
 				atan(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class atanh : public unary_operator
@@ -163,6 +176,7 @@ namespace kernel
 			public:
 				atanh(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class cos : public unary_operator
@@ -170,6 +184,7 @@ namespace kernel
 			public:
 				cos(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class cosh : public unary_operator
@@ -177,6 +192,7 @@ namespace kernel
 			public:
 				cosh(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class sin : public unary_operator
@@ -184,6 +200,7 @@ namespace kernel
 			public:
 				sin(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class sinh : public unary_operator
@@ -191,6 +208,7 @@ namespace kernel
 			public:
 				sinh(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class tan : public unary_operator
@@ -198,6 +216,7 @@ namespace kernel
 			public:
 				tan(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class tanh : public unary_operator
@@ -205,6 +224,7 @@ namespace kernel
 			public:
 				tanh(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			// BINARY OPERATORS
@@ -213,6 +233,7 @@ namespace kernel
 			public:
 				add(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class sub : public binary_operator
@@ -220,6 +241,7 @@ namespace kernel
 			public:
 				sub(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class mul : public binary_operator
@@ -227,6 +249,7 @@ namespace kernel
 			public:
 				mul(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class div : public binary_operator
@@ -234,6 +257,7 @@ namespace kernel
 			public:
 				div(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class mod : public binary_operator
@@ -241,6 +265,7 @@ namespace kernel
 			public:
 				mod(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class pow : public binary_operator
@@ -248,6 +273,7 @@ namespace kernel
 			public:
 				pow(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class max : public binary_operator
@@ -255,6 +281,7 @@ namespace kernel
 			public:
 				max(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class min : public binary_operator
@@ -262,6 +289,7 @@ namespace kernel
 			public:
 				min(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class eq : public binary_operator
@@ -269,6 +297,7 @@ namespace kernel
 			public:
 				eq(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class ne : public binary_operator
@@ -276,6 +305,7 @@ namespace kernel
 			public:
 				ne(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class lt : public binary_operator
@@ -283,6 +313,7 @@ namespace kernel
 			public:
 				lt(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class le : public binary_operator
@@ -290,6 +321,7 @@ namespace kernel
 			public:
 				le(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class gt : public binary_operator
@@ -297,6 +329,7 @@ namespace kernel
 			public:
 				gt(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class ge : public binary_operator
@@ -304,6 +337,7 @@ namespace kernel
 			public:
 				ge(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 
 			class xr : public binary_operator
@@ -311,6 +345,7 @@ namespace kernel
 			public:
 				xr(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x, tensor* y) override;
+				void back_propagate() override;
 			};
 		}
 	}

@@ -16,7 +16,7 @@ namespace kernel
 		m_pipeline_layout_forward = nullptr;
 		m_module_forward = nullptr;
 		
-		/*
+		
 		m_pipeline_backward = nullptr;
 		m_cmd_buffer_backward = nullptr;
 		m_descriptor_pool_backward = nullptr;
@@ -24,8 +24,7 @@ namespace kernel
 		m_descriptor_set_layout_backward = nullptr;
 		m_pipeline_layout_backward = nullptr;
 		m_module_backward = nullptr;
-		*/
-		
+				
 		m_group_x = 1;
 		m_group_y = 1;
 		m_group_z = 1;
@@ -362,7 +361,10 @@ namespace kernel
 	{
 		void Module::backward()
 		{
-			//tensor* grad;
+			auto tmp = get_module();
+			for (Module* m : tmp) {
+				m->back_propagate();
+			}
 		}
 
 		void Module::execute()
@@ -376,9 +378,8 @@ namespace kernel
 		void Module::super_run()
 		{
 			auto tmp = get_module();
-			for (Module* m : tmp)
-			{
-				m->execute();
+			for (size_t i = tmp.size() - 1; i >= 0; --i) {
+				tmp[i]->back_propagate();
 			}
 		}
 
@@ -394,6 +395,18 @@ namespace kernel
 			return T;
 		}
 
+		std::vector<tensor*>& Module::get_gradients()
+		{
+			static std::vector<tensor*> G;
+			return G;
+		}
+
+		tensor* Module::get_grad(int id) 
+		{
+			auto T = get_gradients();
+			return T[id];
+		}
+
 		void Module::add_module(Module* M)
 		{
 			auto& m = get_module();
@@ -405,6 +418,22 @@ namespace kernel
 			auto& t = get_tensors();
 			t.push_back(T);
 		}
+
+		void Module::add_gradient(tensor* G) 
+		{
+			auto& g = get_gradients();
+			g.push_back(G);
+		}
 			
+		void Module::zero_grad() 
+		{
+			auto& G = get_gradients();
+			auto& T = get_tensors();
+			if(G.size() != T.size()){
+				for (auto t : T) {
+					G.push_back(new tensor(0.0, t->getShape()));
+				}
+			}
+		}
 	}
 }

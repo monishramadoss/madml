@@ -85,11 +85,19 @@ namespace kernel
 			std::vector<layer*> layers;
 			static std::vector<Module*>& get_module();
 			static std::vector<tensor*>& get_tensors();
+			static std::vector<tensor*>& get_gradients();
+			static tensor* get_grad(int id);
+
+			static void zero_grad();
+
 			static void add_tensor(tensor* T);
 			static void add_module(Module* M);
-			
+			static void add_gradient(tensor* G);
+
 			int batch_size = 0;
 			float lr = 0.0001f;
+
+			virtual void back_propagate() {};
 
 			friend class tensor;
 		};

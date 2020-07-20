@@ -10,7 +10,7 @@ layout(binding = 0) buffer buf1{
     float X[];
 };
 
-layout(binding = 1) readonly buffer buf2{
+layout(binding = 1) buffer buf2{
     float Y[];
 };
 
@@ -21,5 +21,6 @@ void main()
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
         X[i] = X[i] - p.lr*Y[i];
+	Y[i] = 0.0;
     }
 }

@@ -2,12 +2,15 @@
 
 namespace kernel { 
 	namespace shaders {
-		extern const unsigned int gradient_spv[445];
+		extern const unsigned int gradient_spv[458];
 		extern const unsigned int d_relu_spv[417];
 		extern const unsigned int d_sigmoid_spv[427];
 		extern const unsigned int binary_operator_spv[474];
 		extern const unsigned int d_MSE_spv[494];
 		extern const unsigned int d_abs_spv[423];
+		extern const unsigned int d_exp_spv[404];
+		extern const unsigned int d_ln_spv[407];
+		extern const unsigned int d_sqrt_spv[413];
 		extern const unsigned int unary_operator_spv[398];
 		extern const unsigned int d_acos_spv[441];
 		extern const unsigned int d_acosh_spv[437];
@@ -64,7 +67,7 @@ namespace kernel {
 		extern const unsigned int clip_spv[456];
 		extern const unsigned int exp_spv[404];
 		extern const unsigned int floor_spv[404];
-		extern const unsigned int log_spv[404];
+		extern const unsigned int ln_spv[404];
 		extern const unsigned int round_spv[404];
 		extern const unsigned int sqrt_spv[472];
 		extern const unsigned int acos_spv[404];

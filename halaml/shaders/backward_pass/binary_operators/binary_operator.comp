@@ -5,7 +5,7 @@ layout(push_constant) uniform pushBlock {
       int total;
 } p;
 
-layout(binding = 0) readonly buffer buf1{
+layout(binding = 0) writeonly buffer buf1{
     float X[];
 };
 
@@ -13,7 +13,7 @@ layout(binding = 1) writeonly buffer buf2{
     float Y[];
 };
 
-layout(binding = 2) writeonly buffer buf3{
+layout(binding = 2) readonly buffer buf3{
     float Z[];
 };
 
@@ -23,7 +23,7 @@ void main()
 {
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
-        Y[i] = X[i];
-        Z[i] = X[i];
+        X[i] = Z[i];
+        Y[i] = Z[i];
     }
 }

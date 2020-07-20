@@ -35,7 +35,7 @@ namespace kernel
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				outputs.push_back(x->getId());
+				outputs.push_back(y->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -55,16 +55,11 @@ namespace kernel
 				return y;
 			}
 
-			tensor* unary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x)
+			void unary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize)
 			{
-				//inputs.push_back(x->getId());
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape());
-				//outputs.push_back(x->getId());
-
+				tensor* x = get_grad(inputs[0]);
+				tensor* y = get_grad(outputs[0]);
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = { x->count() };
@@ -73,14 +68,11 @@ namespace kernel
 					createPipelineForward(sizeof(operator_param));
 				}
 
-				bindTensor(m_device, x, 0, m_descriptor_set_backward);
-				bindTensor(m_device, y, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 1, m_descriptor_set_backward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-				/*layers.push_back(this);
-				if (as_module)
-					add_module(this);*/
-				return y;
+		
 			}
 						
 			void unary_operator::update_weight()
@@ -132,16 +124,14 @@ namespace kernel
 				return y;
 			}
 
-			tensor* binary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
+			void binary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize)
 			{
-				//inputs.push_back(x->getId());
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape());
-				//outputs.push_back(x->getId());
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
 
+				
+			
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = { x->count() };
@@ -154,11 +144,7 @@ namespace kernel
 				bindTensor(m_device, w, 1, m_descriptor_set_backward);
 				bindTensor(m_device, y, 2, m_descriptor_set_backward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-				/*layers.push_back(this);
-				if (as_module)
-					add_module(this);*/
-				return y;
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));			
 			}
 						
 			void binary_operator::update_weight()
@@ -184,6 +170,11 @@ namespace kernel
 				return layer_construct_forward(shaders::abs_spv, sizeof(shaders::abs_spv), x);
 			}
 
+			void abs::back_propagate() 
+			{
+				layer_construct_backward(shaders::d_abs_spv, sizeof(shaders::d_abs_spv));
+			}
+
 			ceil::ceil(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "ceil";
@@ -192,6 +183,11 @@ namespace kernel
 			tensor* ceil::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::ceil_spv, sizeof(shaders::ceil_spv), x);
+			}
+
+			void ceil::back_propagate()
+			{
+				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv));
 			}
 
 			clip::clip(float min, float max, bool in_place, bool as_module) : unary_operator(in_place, as_module), m_min(min),
@@ -226,6 +222,11 @@ namespace kernel
 				return y;
 			}
 
+			void clip::back_propagate()
+			{
+				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv));
+			}
+
 			exp::exp(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "exp";
@@ -234,6 +235,11 @@ namespace kernel
 			tensor* exp::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::exp_spv, sizeof(shaders::exp_spv), x);
+			}
+
+			void exp::back_propagate() 
+			{
+				layer_construct_backward(shaders::d_exp_spv, sizeof(shaders::d_exp_spv));
 			}
 
 			floor::floor(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -246,14 +252,24 @@ namespace kernel
 				return layer_construct_forward(shaders::floor_spv, sizeof(shaders::floor_spv), x);
 			}
 
-			log::log(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			void floor::back_propagate()
 			{
-				m_type = "log";
+				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv));
 			}
 
-			tensor* log::forward(tensor* x)
+			ln::ln(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
-				return layer_construct_forward(shaders::log_spv, sizeof(shaders::log_spv), x);
+				m_type = "ln";
+			}
+
+			tensor* ln::forward(tensor* x)
+			{
+				return layer_construct_forward(shaders::ln_spv, sizeof(shaders::ln_spv), x);
+			}
+
+			void ln::back_propagate() 
+			{
+				layer_construct_backward(shaders::d_ln_spv, sizeof(shaders::d_ln_spv));
 			}
 
 			round::round(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -266,14 +282,22 @@ namespace kernel
 				return layer_construct_forward(shaders::round_spv, sizeof(shaders::round_spv), x);
 			}
 
+			void round::back_propagate() {
+				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv));
+			}
+
 			sqrt::sqrt(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "sqrt";
 			}
-
+		
 			tensor* sqrt::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::sqrt_spv, sizeof(shaders::sqrt_spv), x);
+			}
+
+			void sqrt::back_propagate() {
+				layer_construct_backward(shaders::d_sqrt_spv, sizeof(shaders::d_sqrt_spv));
 			}
 
 			acos::acos(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -286,6 +310,10 @@ namespace kernel
 				return layer_construct_forward(shaders::acos_spv, sizeof(shaders::acos_spv), x);
 			}
 
+			void acos::back_propagate() {
+				layer_construct_backward(shaders::d_acos_spv, sizeof(shaders::d_acos_spv));
+			}
+
 			acosh::acosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "acosh";
@@ -294,6 +322,10 @@ namespace kernel
 			tensor* acosh::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::acosh_spv, sizeof(shaders::acosh_spv), x);
+			}
+
+			void acosh::back_propagate() {
+				layer_construct_backward(shaders::d_acosh_spv, sizeof(shaders::d_acosh_spv));
 			}
 
 			asin::asin(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -306,6 +338,11 @@ namespace kernel
 				return layer_construct_forward(shaders::asin_spv, sizeof(shaders::asin_spv), x);
 			}
 
+			void asin::back_propagate() 
+			{
+				layer_construct_backward(shaders::d_asin_spv, sizeof(shaders::d_asin_spv));
+			}
+
 			asinh::asinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "asinh";
@@ -314,6 +351,11 @@ namespace kernel
 			tensor* asinh::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::asinh_spv, sizeof(shaders::asinh_spv), x);
+			}
+
+			void asinh::back_propagate() 
+			{
+				layer_construct_backward(shaders::d_asinh_spv, sizeof(shaders::d_asinh_spv));
 			}
 
 			atan::atan(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -326,6 +368,10 @@ namespace kernel
 				return layer_construct_forward(shaders::atan_spv, sizeof(shaders::atan_spv), x);
 			}
 
+			void atan::back_propagate() {
+				layer_construct_backward(shaders::d_atan_spv, sizeof(shaders::d_atan_spv));
+			}
+
 			atanh::atanh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "atan";
@@ -334,6 +380,10 @@ namespace kernel
 			tensor* atanh::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::atanh_spv, sizeof(shaders::atanh_spv), x);
+			}
+
+			void atanh::back_propagate() {
+				layer_construct_backward(shaders::d_atanh_spv, sizeof(shaders::d_atanh_spv));
 			}
 
 			cos::cos(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -346,6 +396,10 @@ namespace kernel
 				return layer_construct_forward(shaders::cos_spv, sizeof(shaders::cos_spv), x);
 			}
 
+			void cos::back_propagate() {
+				layer_construct_backward(shaders::d_cos_spv, sizeof(shaders::d_cos_spv));
+			}
+
 			cosh::cosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "cosh";
@@ -354,6 +408,10 @@ namespace kernel
 			tensor* cosh::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::cosh_spv, sizeof(shaders::cosh_spv), x);
+			}
+
+			void cosh::back_propagate() {
+				layer_construct_backward(shaders::d_cosh_spv, sizeof(shaders::d_cosh_spv));
 			}
 
 			sin::sin(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -366,6 +424,10 @@ namespace kernel
 				return layer_construct_forward(shaders::sin_spv, sizeof(shaders::sin_spv), x);
 			}
 
+			void sin::back_propagate() {
+				layer_construct_backward(shaders::d_sin_spv, sizeof(shaders::d_sin_spv));
+			}
+
 			sinh::sinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "sinh";
@@ -374,6 +436,10 @@ namespace kernel
 			tensor* sinh::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::sinh_spv, sizeof(shaders::sinh_spv), x);
+			}
+
+			void sinh::back_propagate() {
+				layer_construct_backward(shaders::d_sinh_spv, sizeof(shaders::d_sinh_spv));
 			}
 
 			tan::tan(bool in_place, bool as_module) : unary_operator(in_place, as_module)
@@ -386,6 +452,10 @@ namespace kernel
 				return layer_construct_forward(shaders::tan_spv, sizeof(shaders::tan_spv), x);
 			}
 
+			void tan::back_propagate() {
+				layer_construct_backward(shaders::d_tan_spv, sizeof(shaders::d_tan_spv));
+			}
+
 			tanh::tanh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
 			{
 				m_type = "tanh";
@@ -394,6 +464,10 @@ namespace kernel
 			tensor* tanh::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::tanh_spv, sizeof(shaders::tanh_spv), x);
+			}
+
+			void tanh::back_propagate() {
+				layer_construct_backward(shaders::d_tanh_spv, sizeof(shaders::d_tanh_spv));
 			}
 		}
 	}
@@ -415,6 +489,11 @@ namespace kernel
 				return layer_construct_forward(shaders::add_spv, sizeof(shaders::add_spv), x, w);
 			}
 
+			void add::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+			}
+
 			sub::sub(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "sub";
@@ -423,6 +502,11 @@ namespace kernel
 			tensor* sub::forward(tensor* x, tensor* w)
 			{
 				return layer_construct_forward(shaders::sub_spv, sizeof(shaders::sub_spv), x, w);
+			}
+
+			void sub::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			mul::mul(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -435,6 +519,12 @@ namespace kernel
 				return layer_construct_forward(shaders::mul_spv, sizeof(shaders::mul_spv), x, w);
 			}
 
+			void mul::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+			}
+
+
 			div::div(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "div";
@@ -443,6 +533,11 @@ namespace kernel
 			tensor* div::forward(tensor* x, tensor* w)
 			{
 				return layer_construct_forward(shaders::div_spv, sizeof(shaders::div_spv), x, w);
+			}
+
+			void div::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			mod::mod(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -455,6 +550,11 @@ namespace kernel
 				return layer_construct_forward(shaders::mod_spv, sizeof(shaders::mod_spv), x, w);
 			}
 
+			void mod::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+			}
+
 			pow::pow(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "pow";
@@ -463,6 +563,11 @@ namespace kernel
 			tensor* pow::forward(tensor* x, tensor* w)
 			{
 				return layer_construct_forward(shaders::pow_spv, sizeof(shaders::pow_spv), x, w);
+			}
+
+			void pow::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			max::max(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -475,14 +580,30 @@ namespace kernel
 				return layer_construct_forward(shaders::max_spv, sizeof(shaders::max_spv), x, w);
 			}
 
+			void max::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+			}
+
+
 			min::min(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "min";
 			}
 
+			void min::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+			}
+
 			tensor* min::forward(tensor* x, tensor* w)
 			{
 				return layer_construct_forward(shaders::min_spv, sizeof(shaders::min_spv), x, w);
+			}
+
+			void min::back_propagate()
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			eq::eq(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -516,6 +637,26 @@ namespace kernel
 				return y;
 			}
 
+			void eq::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+			}
+
 			ne::ne(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "ne";
@@ -545,6 +686,26 @@ namespace kernel
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
+			}
+
+			void ne::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			lt::lt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -578,6 +739,26 @@ namespace kernel
 				return y;
 			}
 
+			void lt::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+			}
+
 			le::le(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "le";
@@ -607,6 +788,26 @@ namespace kernel
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
+			}
+
+			void le::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			gt::gt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -640,6 +841,27 @@ namespace kernel
 				return y;
 			}
 
+
+			void gt::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+			}
+
 			ge::ge(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "greater_eq";
@@ -669,6 +891,27 @@ namespace kernel
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
+			}
+
+
+			void ge::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			xr::xr(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -706,6 +949,26 @@ namespace kernel
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 				layers.push_back(this);
 				return y;
+			}
+
+			void xr::back_propagate() {
+				tensor* x = get_grad(inputs[0]);
+				tensor* w = get_grad(inputs[1]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, x, 0, m_descriptor_set_backward);
+				bindTensor(m_device, w, 1, m_descriptor_set_backward);
+				bindTensor(m_device, y, 2, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 		}
 	}
