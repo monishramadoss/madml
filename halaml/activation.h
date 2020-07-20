@@ -25,7 +25,8 @@ namespace kernel
 				bool m_inplace;
 				float m_alpha;
 				operator_param m_param;
-				tensor* layer_construct(const uint32_t* shader, size_t codeSize, tensor* x);
+				tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
+				void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
 
 			public:
@@ -40,6 +41,7 @@ namespace kernel
 			public:
 				explicit celu(float alpha, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class elu : public unary_operator
@@ -47,6 +49,7 @@ namespace kernel
 			public:
 				explicit elu(float alpha, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class hardshrink : public unary_operator
@@ -54,6 +57,7 @@ namespace kernel
 			public:
 				explicit hardshrink(float lambda, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			struct two_param
@@ -69,6 +73,7 @@ namespace kernel
 			public:
 				explicit hardtanh(float min_val = -1, float max_val = 1, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 
@@ -77,6 +82,7 @@ namespace kernel
 			public:
 				explicit leakyrelu(float slope = -0.01, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 
@@ -85,6 +91,7 @@ namespace kernel
 			public:
 				explicit logsigmoid(float alpha = -0.01, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 
@@ -93,6 +100,7 @@ namespace kernel
 			public:
 				explicit prelu(float alpha = -0.01, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class relu : public unary_operator
@@ -100,6 +108,7 @@ namespace kernel
 			public:
 				explicit relu(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class relu6 : public unary_operator
@@ -107,6 +116,7 @@ namespace kernel
 			public:
 				explicit relu6(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class selu : public unary_operator
@@ -114,6 +124,7 @@ namespace kernel
 			public:
 				explicit selu(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class sigmoid : public unary_operator
@@ -121,6 +132,7 @@ namespace kernel
 			public:
 				explicit sigmoid(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class softplus : public unary_operator
@@ -128,6 +140,7 @@ namespace kernel
 			public:
 				explicit softplus(float alpha, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class softshrink : public unary_operator
@@ -135,6 +148,7 @@ namespace kernel
 			public:
 				explicit softshrink(float alpha, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class softsign : public unary_operator
@@ -142,6 +156,7 @@ namespace kernel
 			public:
 				explicit softsign(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 
 			class tanhshrink : public unary_operator
@@ -149,6 +164,7 @@ namespace kernel
 			public:
 				explicit tanhshrink(bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;
+				void back_propagate() override;
 			};
 		}
 	}

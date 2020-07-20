@@ -29,14 +29,12 @@ namespace kernel
 
 			tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				outputs.push_back(y->getId());
-
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -49,6 +47,9 @@ namespace kernel
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				
+				inputs.push_back(x->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);
@@ -95,16 +96,13 @@ namespace kernel
 			}
 
 			tensor* binary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
-			{
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
+			{				
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				outputs.push_back(y->getId());
-
+			
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -118,6 +116,10 @@ namespace kernel
 				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);
@@ -198,14 +200,12 @@ namespace kernel
 
 			tensor* clip::forward(tensor* x)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				outputs.push_back(x->getId());
-
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -213,11 +213,15 @@ namespace kernel
 					createShaderModuleForward(shaders::clip_spv, sizeof(shaders::clip_spv));
 					createPipelineForward(sizeof(clip_operator_param));
 				}
+
 				clip_operator_param param = {m_param.total, m_min, m_max};
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&param), sizeof(clip_operator_param));
+
+				inputs.push_back(x->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -282,7 +286,8 @@ namespace kernel
 				return layer_construct_forward(shaders::round_spv, sizeof(shaders::round_spv), x);
 			}
 
-			void round::back_propagate() {
+			void round::back_propagate() 
+			{
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv));
 			}
 
@@ -296,7 +301,8 @@ namespace kernel
 				return layer_construct_forward(shaders::sqrt_spv, sizeof(shaders::sqrt_spv), x);
 			}
 
-			void sqrt::back_propagate() {
+			void sqrt::back_propagate() 
+			{
 				layer_construct_backward(shaders::d_sqrt_spv, sizeof(shaders::d_sqrt_spv));
 			}
 
@@ -613,14 +619,12 @@ namespace kernel
 
 			tensor* eq::forward(tensor* x, tensor* w)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
-
+			
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -633,6 +637,10 @@ namespace kernel
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -664,14 +672,12 @@ namespace kernel
 
 			tensor* ne::forward(tensor* x, tensor* w)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
-
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -681,9 +687,14 @@ namespace kernel
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -714,15 +725,13 @@ namespace kernel
 			}
 
 			tensor* lt::forward(tensor* x, tensor* w)
-			{
-				inputs.push_back(x->getId());
+			{				
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
-
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -732,9 +741,14 @@ namespace kernel
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -766,14 +780,12 @@ namespace kernel
 
 			tensor* le::forward(tensor* x, tensor* w)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
-
+			
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -783,9 +795,14 @@ namespace kernel
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -817,14 +834,12 @@ namespace kernel
 
 			tensor* gt::forward(tensor* x, tensor* w)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
-
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -834,9 +849,14 @@ namespace kernel
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -869,14 +889,12 @@ namespace kernel
 
 			tensor* ge::forward(tensor* x, tensor* w)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
-
+			
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
@@ -884,11 +902,15 @@ namespace kernel
 					createShaderModuleForward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv));
 					createPipelineForward(sizeof(operator_param));
 				}
-
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}
@@ -927,13 +949,11 @@ namespace kernel
 					return nullptr;
 				}
 
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				outputs.push_back(x->getId());
 
 				if (m_pipeline_forward == nullptr)
 				{
@@ -944,9 +964,14 @@ namespace kernel
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
+				bindTensor(m_device, w, 1, m_descriptor_set_forward);
+				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+
+				inputs.push_back(x->getId());
+				inputs.push_back(w->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				return y;
 			}

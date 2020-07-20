@@ -27,16 +27,14 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			tensor* unary_operator::layer_construct(const uint32_t* shader, size_t codeSize, tensor* x)
+			tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
 			{
-				inputs.push_back(x->getId());
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
 					y = new tensor(0.0, x->getShape());
-				outputs.push_back(x->getId());
-
+				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param.total = x->count();
@@ -49,10 +47,32 @@ namespace kernel
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				
+				inputs.push_back(x->getId());
+				outputs.push_back(y->getId());
 				layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;
+			}
+
+			void unary_operator::layer_construct_backward(const uint32_t* shader, size_t codeSize)
+			{
+				tensor* x = get_grad(inputs[0]);
+				tensor* y = get_grad(outputs[0]);
+
+				if (m_pipeline_forward == nullptr)
+				{
+					m_param = { x->count() };
+					computeGroupCount();
+					createShaderModuleForward(shader, codeSize);
+					createPipelineForward(sizeof(operator_param));
+				}
+
+				bindTensor(m_device, y, 0, m_descriptor_set_backward);
+				bindTensor(m_device, x, 1, m_descriptor_set_backward);
+
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
 			}
 
 			celu::celu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -62,7 +82,7 @@ namespace kernel
 
 			tensor* celu::forward(tensor* x)
 			{
-				return layer_construct(shaders::celu_spv, sizeof(shaders::celu_spv), x);
+				return layer_construct_forward(shaders::celu_spv, sizeof(shaders::celu_spv), x);
 			}
 
 			elu::elu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -72,7 +92,7 @@ namespace kernel
 
 			tensor* elu::forward(tensor* x)
 			{
-				return layer_construct(shaders::elu_spv, sizeof(shaders::elu_spv), x);
+				return layer_construct_forward(shaders::elu_spv, sizeof(shaders::elu_spv), x);
 			}
 
 			hardshrink::hardshrink(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -82,7 +102,7 @@ namespace kernel
 
 			tensor* hardshrink::forward(tensor* x)
 			{
-				return layer_construct(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x);
+				return layer_construct_forward(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x);
 			}
 
 			hardtanh::hardtanh(float min_val, float max_val, bool in_place, bool as_module) :
@@ -127,7 +147,7 @@ namespace kernel
 
 			tensor* leakyrelu::forward(tensor* x)
 			{
-				return layer_construct(shaders::leakyrelu_spv, sizeof(shaders::leakyrelu_spv), x);
+				return layer_construct_forward(shaders::leakyrelu_spv, sizeof(shaders::leakyrelu_spv), x);
 			}
 
 			logsigmoid::logsigmoid(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -137,7 +157,7 @@ namespace kernel
 
 			tensor* logsigmoid::forward(tensor* x)
 			{
-				return layer_construct(shaders::logsigmoid_spv, sizeof(shaders::logsigmoid_spv), x);
+				return layer_construct_forward(shaders::logsigmoid_spv, sizeof(shaders::logsigmoid_spv), x);
 			}
 
 			prelu::prelu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -147,7 +167,7 @@ namespace kernel
 
 			tensor* prelu::forward(tensor* x)
 			{
-				return layer_construct(shaders::prelu_spv, sizeof(shaders::prelu_spv), x);
+				return layer_construct_forward(shaders::prelu_spv, sizeof(shaders::prelu_spv), x);
 			}
 
 			relu::relu(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
@@ -157,7 +177,11 @@ namespace kernel
 
 			tensor* relu::forward(tensor* x)
 			{
-				return layer_construct(shaders::relu_spv, sizeof(shaders::relu_spv), x);
+				return layer_construct_forward(shaders::relu_spv, sizeof(shaders::relu_spv), x);
+			}
+
+			void relu::back_propagate() {
+				layer_construct_backward(shaders::d_relu_spv, sizeof(shaders::d_relu_spv));
 			}
 
 			relu6::relu6(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
@@ -167,7 +191,7 @@ namespace kernel
 
 			tensor* relu6::forward(tensor* x)
 			{
-				return layer_construct(shaders::relu6_spv, sizeof(shaders::relu6_spv), x);
+				return layer_construct_forward(shaders::relu6_spv, sizeof(shaders::relu6_spv), x);
 			}
 
 			selu::selu(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
@@ -177,7 +201,7 @@ namespace kernel
 
 			tensor* selu::forward(tensor* x)
 			{
-				return layer_construct(shaders::selu_spv, sizeof(shaders::selu_spv), x);
+				return layer_construct_forward(shaders::selu_spv, sizeof(shaders::selu_spv), x);
 			}
 
 			sigmoid::sigmoid(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
@@ -187,7 +211,11 @@ namespace kernel
 
 			tensor* sigmoid::forward(tensor* x)
 			{
-				return layer_construct(shaders::sigmoid_spv, sizeof(shaders::sigmoid_spv), x);
+				return layer_construct_forward(shaders::sigmoid_spv, sizeof(shaders::sigmoid_spv), x);
+			}
+
+			void sigmoid::back_propagate() {
+				layer_construct_backward(shaders::d_sigmoid_spv, sizeof(shaders::d_sigmoid_spv));
 			}
 
 			softplus::softplus(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -197,7 +225,7 @@ namespace kernel
 
 			tensor* softplus::forward(tensor* x)
 			{
-				return layer_construct(shaders::softplus_spv, sizeof(shaders::softplus_spv), x);
+				return layer_construct_forward(shaders::softplus_spv, sizeof(shaders::softplus_spv), x);
 			}
 
 			softshrink::softshrink(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
@@ -207,7 +235,7 @@ namespace kernel
 
 			tensor* softshrink::forward(tensor* x)
 			{
-				return layer_construct(shaders::softshrink_spv, sizeof(shaders::softshrink_spv), x);
+				return layer_construct_forward(shaders::softshrink_spv, sizeof(shaders::softshrink_spv), x);
 			}
 
 			softsign::softsign(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
@@ -217,7 +245,7 @@ namespace kernel
 
 			tensor* softsign::forward(tensor* x)
 			{
-				return layer_construct(shaders::softsign_spv, sizeof(shaders::softsign_spv), x);
+				return layer_construct_forward(shaders::softsign_spv, sizeof(shaders::softsign_spv), x);
 			}
 
 			tanhshrink::tanhshrink(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
@@ -227,7 +255,7 @@ namespace kernel
 
 			tensor* tanhshrink::forward(tensor* x)
 			{
-				return layer_construct(shaders::tanhshrink_spv, sizeof(shaders::tanhshrink_spv), x);
+				return layer_construct_forward(shaders::tanhshrink_spv, sizeof(shaders::tanhshrink_spv), x);
 			}
 		}
 	}
