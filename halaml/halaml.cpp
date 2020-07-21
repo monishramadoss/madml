@@ -91,10 +91,10 @@ void test_fn()
 		auto* layer = new kernel::layers::nn::dense(N, false);
 		auto* t3 = layer->forward(t1);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
-		layer->super_run();
+		layer->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
 		for (int i = 0; i < 100; ++i) {
-			layer->super_run();
+			layer->execute();
 		}
 	}
 #endif
@@ -110,11 +110,11 @@ void test_fn()
 		auto* t4 = cnn_layer_2->forward(t3);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		cnn_layer_1->super_run();
+		cnn_layer_1->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		for (int i = 0; i < 100; ++i) {
-			cnn_layer_1->super_run();
+			cnn_layer_1->execute();
 		}
 	}
 #endif
@@ -133,14 +133,14 @@ void test_fn()
 		auto* t4 = std::get<1>(tup);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		rnn_layer_1->super_run();
+		rnn_layer_1->execute();
 		std::cout << std::endl;
 
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
 		for (int i = 0; i < 100; ++i) {
-			rnn_layer_1->super_run();
+			rnn_layer_1->execute();
 		}
 		
 	}
@@ -161,14 +161,14 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
-		rnn_layer_1->super_run();
+		rnn_layer_1->execute();
 		std::cout << std::endl;
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		std::cout << std::endl;
 		for (int i = 0; i < 100; ++i) {
-			rnn_layer_1->super_run();
+			rnn_layer_1->execute();
 		}
 		
 	}
@@ -187,13 +187,13 @@ void test_fn()
 		auto* t4 = std::get<1>(tup);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		rnn_layer_1->super_run();
+		rnn_layer_1->execute();
 		std::cout << std::endl;
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
 		for (int i = 0; i < 100; ++i) {
-			rnn_layer_1->super_run();
+			rnn_layer_1->execute();
 		}
 		std::cout << "DONE STRESS TESTING" << std::endl;
 	}

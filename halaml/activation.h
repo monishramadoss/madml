@@ -25,7 +25,7 @@ namespace kernel
 				bool m_inplace;
 				float m_alpha;
 				operator_param m_param;
-				tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
+				template<typename T = operator_param> tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
 				void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
 

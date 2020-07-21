@@ -27,30 +27,30 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
+			template<typename T> tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, Format fmt)
 			{
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape());
+					y = new tensor(0.0, x->getShape(), fmt);
 				
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModuleForward(shader, codeSize);
-					createPipelineForward(sizeof(operator_param));
+					createPipelineForward(sizeof(T));
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
 				
 				inputs.push_back(x->getId());
 				outputs.push_back(y->getId());
-				layers.push_back(this);
+				forward_layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;
@@ -73,7 +73,7 @@ namespace kernel
 				bindTensor(m_device, x, 1, m_descriptor_set_backward);
 
 				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
-		
+				backward_layers.push_back(this);		
 			}
 						
 			void unary_operator::update_weight()
@@ -95,32 +95,32 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			tensor* binary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w)
+			template<typename T> tensor* binary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, Format fmt)
 			{				
 				tensor* y;
 				if (m_inplace)
 					y = x;
 				else
-					y = new tensor(0.0, x->getShape());
+					y = new tensor(0.0, x->getShape(), fmt);
 			
 				if (m_pipeline_forward == nullptr)
 				{
 					m_param = {x->count()};
 					computeGroupCount();
 					createShaderModuleForward(shader, codeSize);
-					createPipelineForward(sizeof(operator_param));
+					createPipelineForward(sizeof(T));
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
 				bindTensor(m_device, w, 1, m_descriptor_set_forward);
 				bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
 
 				inputs.push_back(x->getId());
 				inputs.push_back(w->getId());
 				outputs.push_back(y->getId());
-				layers.push_back(this);
+				forward_layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;
@@ -145,6 +145,7 @@ namespace kernel
 				bindTensor(m_device, x, 2, m_descriptor_set_backward);
 
 				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));			
+				backward_layers.push_back(this);
 			}
 						
 			void binary_operator::update_weight()
@@ -198,30 +199,7 @@ namespace kernel
 
 			tensor* clip::forward(tensor* x)
 			{
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape());
-				
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::clip_spv, sizeof(shaders::clip_spv));
-					createPipelineForward(sizeof(clip_operator_param));
-				}
-
-				clip_operator_param param = {m_param.total, m_min, m_max};
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, y, 1, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&param), sizeof(clip_operator_param));
-
-				inputs.push_back(x->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward<clip_operator_param>(shaders::clip_spv, sizeof(shaders::clip_spv), x);
 			}
 
 			void clip::back_propagate()
@@ -595,11 +573,6 @@ namespace kernel
 				m_type = "min";
 			}
 
-			void min::back_propagate()
-			{
-				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-			}
-
 			tensor* min::forward(tensor* x, tensor* w)
 			{
 				return layer_construct_forward(shaders::min_spv, sizeof(shaders::min_spv), x, w);
@@ -617,51 +590,12 @@ namespace kernel
 
 			tensor* eq::forward(tensor* x, tensor* w)
 			{
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-			
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::equal_spv, sizeof(shaders::equal_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::equal_spv, sizeof(shaders::equal_spv), x, w, kFormatBool);
 			}
 
-			void eq::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+			void eq::back_propagate() 
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			ne::ne(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -671,51 +605,12 @@ namespace kernel
 
 			tensor* ne::forward(tensor* x, tensor* w)
 			{
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::nequal_spv, sizeof(shaders::nequal_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::nequal_spv, sizeof(shaders::nequal_spv), x, w, kFormatBool);
 			}
 
-			void ne::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+			void ne::back_propagate() 
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			lt::lt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -725,51 +620,12 @@ namespace kernel
 
 			tensor* lt::forward(tensor* x, tensor* w)
 			{				
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::less_than_spv, sizeof(shaders::less_than_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w, kFormatBool);
 			}
 
-			void lt::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+			void lt::back_propagate() 
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			le::le(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -779,51 +635,12 @@ namespace kernel
 
 			tensor* le::forward(tensor* x, tensor* w)
 			{
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-			
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv), x, w, kFormatBool);
 			}
 
-			void le::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+			void le::back_propagate() 
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			gt::gt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -833,52 +650,13 @@ namespace kernel
 
 			tensor* gt::forward(tensor* x, tensor* w)
 			{
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-				
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w, kFormatBool);
 			}
 
 
-			void gt::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+			void gt::back_propagate() 
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			ge::ge(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -888,51 +666,13 @@ namespace kernel
 
 			tensor* ge::forward(tensor* x, tensor* w)
 			{
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-			
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w, kFormatBool);
 			}
 
 
-			void ge::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+			void ge::back_propagate() 
+			{
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 
 			xr::xr(bool in_place, bool as_module) : binary_operator(in_place, as_module)
@@ -948,51 +688,12 @@ namespace kernel
 					return nullptr;
 				}
 
-				tensor* y;
-				if (m_inplace)
-					y = x;
-				else
-					y = new tensor(0.0, x->getShape(), Format::kFormatBool);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = {x->count()};
-					computeGroupCount();
-					createShaderModuleForward(shaders::xor_spv, sizeof(shaders::xor_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 0, m_descriptor_set_forward);
-				bindTensor(m_device, w, 1, m_descriptor_set_forward);
-				bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
-
-				inputs.push_back(x->getId());
-				inputs.push_back(w->getId());
-				outputs.push_back(y->getId());
-				layers.push_back(this);
-				return y;
+				return layer_construct_forward(shaders::xor_spv, sizeof(shaders::xor_spv), x, w, kFormatBool);
+				
 			}
 
 			void xr::back_propagate() {
-				tensor* x = get_grad(inputs[0]);
-				tensor* w = get_grad(inputs[1]);
-				tensor* y = get_grad(outputs[0]);
-
-				if (m_pipeline_forward == nullptr)
-				{
-					m_param = { x->count() };
-					computeGroupCount();
-					createShaderModuleForward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
-					createPipelineForward(sizeof(operator_param));
-				}
-
-				bindTensor(m_device, x, 2, m_descriptor_set_backward);
-				bindTensor(m_device, w, 1, m_descriptor_set_backward);
-				bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-				recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(operator_param));
+				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv));
 			}
 		}
 	}

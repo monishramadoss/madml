@@ -56,8 +56,10 @@ namespace kernel
 			bindTensor(m_device, y, 2, m_descriptor_set_forward);
 
 			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(matmul_param));
-			layers.push_back(this);
+			forward_layers.push_back(this);
 			return y;
 		}
+
+		void matmul::back_propagate() {	}
 	}
 }

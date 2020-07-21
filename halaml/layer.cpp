@@ -362,24 +362,22 @@ namespace kernel
 		void Module::backward()
 		{
 			auto tmp = get_module();
-			for (Module* m : tmp) {
-				m->back_propagate();
+			for(size_t i = tmp.size() - 1; i >= 0; --i) {
+				tmp[i]->back_propagate();
 			}
+
+
+
 		}
 
 		void Module::execute()
 		{
-			for (auto& layer : layers)
-			{
-				layer->runCommandBufferForward(); //inconsitencies in layer allocations;
-			}
-		}
-
-		void Module::super_run()
-		{
 			auto tmp = get_module();
-			for (size_t i = tmp.size() - 1; i >= 0; --i) {
-				tmp[i]->back_propagate();
+			for (auto m : tmp){
+				for (auto& layer : m->forward_layers)
+				{
+					layer->runCommandBufferForward(); //inconsitencies in layer allocations;
+				}
 			}
 		}
 

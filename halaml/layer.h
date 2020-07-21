@@ -74,7 +74,6 @@ namespace kernel
 			static void backward();
 			virtual void update_weight() = 0;
 			void execute();
-			static void super_run();
 			std::vector<int> inputs;
 			std::vector<int> outputs;
 			std::vector<int> weights;
@@ -82,7 +81,8 @@ namespace kernel
 			std::vector<int> temporaries;
 
 		protected:
-			std::vector<layer*> layers;
+			std::vector<layer*> forward_layers;
+			std::vector<layer*> backward_layers;
 			static std::vector<Module*>& get_module();
 			static std::vector<tensor*>& get_tensors();
 			static std::vector<tensor*>& get_gradients();

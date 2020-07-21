@@ -27,7 +27,7 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
+			template<typename T> tensor* unary_operator::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x)
 			{
 				tensor* y;
 				if (m_inplace)
@@ -40,17 +40,17 @@ namespace kernel
 					m_param.total = x->count();
 					computeGroupCount();
 					createShaderModuleForward(shader, codeSize);
-					createPipelineForward(sizeof(operator_param));
+					createPipelineForward(sizeof(T));
 				}
 
 				bindTensor(m_device, x, 0, m_descriptor_set_forward);
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(operator_param));
+				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
 				
 				inputs.push_back(x->getId());
 				outputs.push_back(y->getId());
-				layers.push_back(this);
+				forward_layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;
@@ -107,7 +107,7 @@ namespace kernel
 				inputs.push_back(x->getId());
 				inputs.push_back(alpha->getId());
 				outputs.push_back(y->getId());
-				layers.push_back(this);
+				forward_layers.push_back(this);
 				if (as_module)
 					add_module(this);
 
@@ -193,7 +193,7 @@ namespace kernel
 				bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(two_param));
-				layers.push_back(this);
+				forward_layers.push_back(this);
 				if (as_module)
 					add_module(this);
 				return y;

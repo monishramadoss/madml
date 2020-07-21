@@ -16,7 +16,7 @@ namespace kernel
 			public:
 				dense(int size, bool use_bias);
 				tensor* forward(tensor* x);
-
+				void back_propagate() override;
 				void update_weight() override
 				{
 				};

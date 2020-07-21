@@ -22,7 +22,7 @@ namespace kernel
 				bool as_module;
 				bool m_inplace;
 				operator_param m_param;
-				inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
+				template <typename T = operator_param>inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, Format fmt = kFormatFp32);
 				inline void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
 
@@ -38,7 +38,7 @@ namespace kernel
 				bool as_module;
 				bool m_inplace;
 				operator_param m_param;
-				inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w);
+				template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, Format fmt = kFormatFp32);
 				inline void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
 

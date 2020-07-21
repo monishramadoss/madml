@@ -23,7 +23,7 @@ namespace kernel
 		public:
 			matmul();
 			tensor* forward(tensor* x, tensor* w);
-
+			void back_propagate() override;
 			void update_weight() override
 			{
 			};

@@ -69,7 +69,7 @@ namespace kernel
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(vol2col_param));
-			layers.push_back(this);
+			forward_layers.push_back(this);
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
@@ -138,7 +138,7 @@ namespace kernel
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
 			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(vol2col_param));
-			layers.push_back(this);
+			forward_layers.push_back(this);
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}

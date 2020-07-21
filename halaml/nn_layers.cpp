@@ -22,19 +22,38 @@ namespace kernel
 				auto* mm = new matmul();
 				auto* w = new tensor(1.0, std::vector<int>{input_shape[1], m_size});
 				auto* y = mm->forward(x, w);
-				layers.push_back(mm);
+				forward_layers.push_back(mm);
 
 				if (USE_BIAS)
 				{
 					auto* b = new tensor(1.0, y->getShape());
 					auto* bias = new math::add();
 					y = bias->forward(y, b);
-					layers.push_back(bias);
+					biases.push_back(b->getId());
+					forward_layers.push_back(bias);
 				}
-
+				inputs.push_back(x->getId());
+				weights.push_back(w->getId());
+				outputs.push_back(y->getId());
 				add_module(this);
 				return y;
 			}
+
+			void dense::back_propagate() {
+				auto* mm_1 = new matmul();
+				auto* mm_2 = new matmul();
+				tensor* dx = get_grad(inputs[0]); //MxK
+				tensor* dw = get_grad(weights[0]); //KxN
+				tensor* dy = get_grad(outputs[0]); //MxN
+				tensor* db = get_grad(biases[0]);
+
+				// MxK KxN = MxN
+				// dw =  dy * x.T / M
+				// db = mean(dy) 
+				// dx = W.T * dy
+
+			}
+
 		}
 	}
 }
@@ -56,8 +75,8 @@ namespace kernel
 				auto input_shape = x->getShape();
 				auto* kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				auto* mm = new matmul();
-				layers.push_back(kernel);
-				layers.push_back(mm);
+				forward_layers.push_back(kernel);
+				forward_layers.push_back(mm);
 
 				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
 				
@@ -67,7 +86,7 @@ namespace kernel
 				if (USE_BIAS)
 				{
 					auto* bias = new math::add();
-					layers.push_back(bias);
+					forward_layers.push_back(bias);
 					auto* b = new tensor(1.0, y->getShape());
 					y = bias->forward(y, b);
 					biases.push_back(b->getId());
@@ -98,8 +117,8 @@ namespace kernel
 				auto input_shape = x->getShape();
 				auto* kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				auto* mm = new matmul();
-				layers.push_back(kernel);
-				layers.push_back(mm);
+				forward_layers.push_back(kernel);
+				forward_layers.push_back(mm);
 
 				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
 
@@ -109,7 +128,7 @@ namespace kernel
 				if (USE_BIAS)
 				{
 					auto* bias = new math::add();
-					layers.push_back(bias);
+					forward_layers.push_back(bias);
 					auto* b = new tensor(1.0, y->getShape());
 					y = bias->forward(y, b);
 					biases.push_back(b->getId());
@@ -519,7 +538,7 @@ namespace kernel
 				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
-				layers.push_back(this);
+				forward_layers.push_back(this);
 			}
 
 			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : m_param({
@@ -587,7 +606,7 @@ namespace kernel
 				bindTensor(m_device, cn, 10, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
-				layers.push_back(this);
+				forward_layers.push_back(this);
 			}
 
 			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : m_param({
@@ -650,7 +669,7 @@ namespace kernel
 				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
-				layers.push_back(this);
+				forward_layers.push_back(this);
 			}
 		}
 	}
