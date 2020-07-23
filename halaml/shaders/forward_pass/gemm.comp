@@ -12,6 +12,7 @@
 #define DIV2(x,y) ((x) / (y))
 
 layout(push_constant) uniform pushBlock {
+      int total;
       int M;
       int N;
       int K;

@@ -13,6 +13,10 @@ namespace kernel
 	}
 
 	class context;
+	struct operator_param 
+	{
+		int total;
+	};
 
 	class layer
 	{
@@ -38,7 +42,6 @@ namespace kernel
 		void createCommandBufferBackward();
 		void recordCommandBufferBackward(void* push_constants = nullptr, size_t push_constants_size = 0);
 		void runCommandBufferBackward();
-		
 		virtual void computeGroupCount() = 0;
 		VkDevice m_device;
 		
@@ -62,8 +65,6 @@ namespace kernel
 		int m_group_y;
 		int m_group_z;
 		std::string m_type;
-
-		friend class layers::Module;
 	};
 
 	namespace layers
@@ -100,8 +101,127 @@ namespace kernel
 			virtual void back_propagate() {};
 
 			friend class tensor;
+		
 		};
 	}
+
+
+	class Base_Layer : public layer, public layers::Module
+	{		
+	public:
+		Base_Layer(int forward_buffers, int backward_buffers = -1, bool as_module = true, bool in_place = false);
+
+	protected:		
+		bool m_as_module, m_in_place;
+		operator_param m_param;
+		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt = kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt = kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
+
+	};
+
+}
+
+
+namespace kernel {
+	template<class T>
+	tensor* Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt, std::vector<int> output_shape)
+	{
+		tensor* y;
+		if (m_in_place && output_shape.size() == 0)
+			y = x;
+		else {
+			if (output_shape.size() != 0)
+				y = new tensor(0.0, output_shape, fmt);
+			else
+				y = new tensor(0.0, x->getShape());
+		}
+
+		if (m_pipeline_forward == nullptr)
+		{
+			m_param.total = x->count();
+			computeGroupCount();
+			createShaderModuleForward(shader, codeSize);
+			createPipelineForward(sizeof(T));
+		}
+
+		bindTensor(m_device, x, 0, m_descriptor_set_forward);
+		bindTensor(m_device, y, 1, m_descriptor_set_forward);
+
+		recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
+
+		inputs.push_back(x->getId());
+		outputs.push_back(y->getId());
+		forward_layers.push_back(this);
+		return y;
+	}
+
+	template<class T>
+	tensor* Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt, std::vector<int> output_shape)
+	{
+		tensor* y;
+		if (m_in_place && output_shape.size() == 0)
+			y = x;
+		else {
+			if (output_shape.size() != 0)
+				y = new tensor(0.0, output_shape, fmt);
+			else
+				y = new tensor(0.0, x->getShape());
+		}
+
+		if (m_pipeline_forward == nullptr)
+		{
+			m_param.total = x->count();
+			computeGroupCount();
+			createShaderModuleForward(shader, codeSize);
+			createPipelineForward(sizeof(T));
+		}
+
+		bindTensor(m_device, x, 0, m_descriptor_set_forward);
+		bindTensor(m_device, w, 1, m_descriptor_set_forward);
+		bindTensor(m_device, y, 2, m_descriptor_set_forward);
+
+		recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
+
+		inputs.push_back(x->getId());
+		inputs.push_back(w->getId());
+		outputs.push_back(y->getId());
+		forward_layers.push_back(this);
+		return y;
+	}
+
+	template<class T>
+	void Base_Layer::layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param)
+	{
+		if (m_pipeline_forward == nullptr)
+		{
+			computeGroupCount();
+			createShaderModuleForward(shader, codeSize);
+			createPipelineForward(sizeof(T));
+		}
+
+		int binding = 0;
+		for (int o : outputs)
+		{
+			bindTensor(m_device, get_grad(o), binding++, m_descriptor_set_backward);
+		}
+		for (int w : weights)
+		{
+			bindTensor(m_device, get_grad(w), binding++, m_descriptor_set_backward);
+		}
+		for (int b : biases)
+		{
+			bindTensor(m_device, get_grad(b), binding++, m_descriptor_set_backward);
+		}
+		for (int i : inputs)
+		{
+			bindTensor(m_device, get_grad(i), binding++, m_descriptor_set_backward);
+		}
+
+		recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(T));
+		backward_layers.push_back(this);
+	}
+
 }
 
 #endif

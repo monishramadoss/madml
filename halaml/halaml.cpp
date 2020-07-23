@@ -60,22 +60,22 @@ void PrintMatrix(float* data, std::vector<int> shape)
 }
 
 //#define TEST_MATH
-#define TEST_NN
+//#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
-
+#define TEST_MNIST
 void test_fn()
 {
 #ifdef TEST_MATH
 	std::cout << "testing add_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2000 };
-		auto* t1 = new kernel::tensor(1.0, shape_x);
+		auto* t1 = new kernel::tensor(6.0, shape_x);
 		auto* t2 = new kernel::tensor(1.0, shape_x);
 		auto k1 = kernel::layers::math::add();
 		auto* t3 = k1.forward(t1, t2);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
-		k1.super_run();
+		k1.execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
 	}
 #endif
@@ -113,7 +113,7 @@ void test_fn()
 		cnn_layer_1->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		for (int i = 0; i < 100; ++i) {
+		for (int i = 0; i < 10000; ++i) {
 			cnn_layer_1->execute();
 		}
 	}
@@ -199,14 +199,14 @@ void test_fn()
 	}
 #endif
 #ifdef TEST_MNIST
-	auto l1 = kernel::layers::nn::Dense(64);
+	auto l1 = kernel::layers::nn::dense(64, false);
 	auto l2 = kernel::layers::activation::relu();
-	auto l3 = kernel::layers::nn::Dense(64);
+	auto l3 = kernel::layers::nn::dense(64, false);
 	auto l4 = kernel::layers::activation::relu();
-	auto l5 = kernel::layers::nn::Dense(10);
-	auto l6 = kernel::layers:::activation::sigmoid();
+	auto l5 = kernel::layers::nn::dense(10, false);
+	auto l6 = kernel::layers::activation::sigmoid();
 
-	auto* t1 = new kernel::tensor(1.0, std::vector<int>{784});
+	auto* t1 = new kernel::tensor(1.0, std::vector<int>{1, 784});
 	auto* t2 = l1.forward(t1);
 	auto* t3 = l2.forward(t2);
 	auto* t4 = l3.forward(t3);
@@ -214,6 +214,9 @@ void test_fn()
 	auto* t6 = l5.forward(t5);
 	auto* t7 = l6.forward(t6);
 	
+	for (int i = 0; i < 10000; ++i) {
+		l4.execute();
+	}
 #endif
 
 	std::cin.get();

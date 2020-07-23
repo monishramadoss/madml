@@ -10,12 +10,13 @@ namespace kernel
 	{
 		struct matmul_param
 		{
+			int total;
 			int m;
 			int n;
 			int k;
 		};
 
-		class matmul : public layer, public Module
+		class matmul : public Base_Layer
 		{
 		private:
 			void computeGroupCount() override;

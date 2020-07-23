@@ -1,6 +1,7 @@
 #version 450
 
 layout(push_constant) uniform pushBlock {
+      int total;
       int vocab_size;
       int hidden_size;
       int output_size;

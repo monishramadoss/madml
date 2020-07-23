@@ -61,6 +61,7 @@ namespace kernel
 
 			struct RNN_cell_param
 			{
+				int total;
 				int vocab_size;
 				int hidden_size;
 				int output_size;
@@ -69,7 +70,7 @@ namespace kernel
 				int output_offset;
 			};
 
-			class RNNCell : public layer, public Module
+			class RNNCell : public Base_Layer
 			{
 			private:
 				void computeGroupCount() override;
@@ -104,7 +105,7 @@ namespace kernel
 				std::vector<tensor*> cache;
 			};
 
-			class LSTMCell : public layer, public Module
+			class LSTMCell : public Base_Layer
 			{
 			private:
 				void computeGroupCount() override;
@@ -139,7 +140,7 @@ namespace kernel
 				std::string nonlinearity_;
 			};
 
-			class GRUCell : public layer, public Module
+			class GRUCell : public Base_Layer
 			{
 			private:
 				void computeGroupCount() override;

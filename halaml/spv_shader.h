@@ -27,7 +27,7 @@ namespace kernel {
 		extern const unsigned int d_sinh_spv[404];
 		extern const unsigned int d_tan_spv[424];
 		extern const unsigned int d_tanh_spv[438];
-		extern const unsigned int gemm_spv[850];
+		extern const unsigned int gemm_spv[865];
 		extern const unsigned int celu_spv[579];
 		extern const unsigned int elu_spv[513];
 		extern const unsigned int gelu_spv[516];
@@ -60,12 +60,12 @@ namespace kernel {
 		extern const unsigned int sub_spv[466];
 		extern const unsigned int xor_spv[479];
 		extern const unsigned int MSE_spv[552];
-		extern const unsigned int gruCell_spv[2295];
-		extern const unsigned int lstmCell_spv[2644];
-		extern const unsigned int rnnCell_spv[1563];
-		extern const unsigned int col2vol_spv[2045];
-		extern const unsigned int transpose_spv[384];
-		extern const unsigned int vol2col_spv[2150];
+		extern const unsigned int gruCell_spv[2310];
+		extern const unsigned int lstmCell_spv[2659];
+		extern const unsigned int rnnCell_spv[1578];
+		extern const unsigned int col2vol_spv[2060];
+		extern const unsigned int transpose_spv[377];
+		extern const unsigned int vol2col_spv[2165];
 		extern const unsigned int abs_spv[404];
 		extern const unsigned int ceil_spv[404];
 		extern const unsigned int clip_spv[456];

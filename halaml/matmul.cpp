@@ -17,9 +17,8 @@ namespace kernel
 {
 	namespace layers
 	{
-		matmul::matmul()
+		matmul::matmul() : Base_Layer(3), m_param({0,0,0})
 		{
-			initVulkanThing(3);
 			m_type = "matmul";
 		}
 
@@ -38,26 +37,8 @@ namespace kernel
 		{
 			if (x->getShape()[1] != w->getShape()[0])
 				std::cerr << "Mat mul dim ERROR" << std::endl;
-			inputs.push_back(x->getId());
-			inputs.push_back(w->getId());
-			auto* y = new tensor(0.0, std::vector<int>{x->getShape()[0], w->getShape()[1]});
-			outputs.push_back(y->getId());
-
-			if (m_pipeline_forward == nullptr)
-			{
-				m_param = {x->getShape()[0], w->getShape()[1], x->getShape()[1]};
-				computeGroupCount();
-				createShaderModuleForward(shaders::gemm_spv, sizeof(shaders::gemm_spv));
-				createPipelineForward(sizeof(matmul_param));
-			}
-
-			bindTensor(m_device, x, 0, m_descriptor_set_forward);
-			bindTensor(m_device, w, 1, m_descriptor_set_forward);
-			bindTensor(m_device, y, 2, m_descriptor_set_forward);
-
-			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(matmul_param));
-			forward_layers.push_back(this);
-			return y;
+			m_param = {0, x->getShape()[0], w->getShape()[1], x->getShape()[1] };
+			return layer_construct_forward<matmul_param>(shaders::gemm_spv, sizeof(shaders::gemm_spv), x, w, m_param, kFormatFp32, std::vector<int>{x->getShape()[0], w->getShape()[1]});
 		}
 
 		void matmul::back_propagate() {	}

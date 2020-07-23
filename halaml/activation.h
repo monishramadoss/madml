@@ -12,21 +12,16 @@ namespace kernel
 	{
 		namespace activation
 		{
-			struct operator_param
+			struct activation_param
 			{
 				int total;
 				float alpha;
 			};
 
-			class unary_operator : public layer, public Module
+			class unary_operator : public Base_Layer
 			{
 			protected:
-				bool as_module;
-				bool m_inplace;
-				float m_alpha;
-				operator_param m_param;
-				template<typename T = operator_param> tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x);
-				void layer_construct_backward(const uint32_t* shader, size_t codeSize);
+				activation_param m_param;
 				void computeGroupCount() override;
 
 			public:

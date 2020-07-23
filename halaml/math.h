@@ -11,37 +11,21 @@ namespace kernel
 	{
 		namespace math
 		{
-			struct operator_param
-			{
-				int total;
-			};
-
-			class unary_operator : public layer, public Module
+			
+			class unary_operator : public Base_Layer
 			{
 			protected:
-				bool as_module;
-				bool m_inplace;
-				operator_param m_param;
-				template <typename T = operator_param>inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, Format fmt = kFormatFp32);
-				inline void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
-
 			public:
 				unary_operator(bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x) = 0;
 				void update_weight() override;
 			};
 
-			class binary_operator : public layer, public Module
+			class binary_operator : public Base_Layer
 			{
 			protected:
-				bool as_module;
-				bool m_inplace;
-				operator_param m_param;
-				template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, Format fmt = kFormatFp32);
-				inline void layer_construct_backward(const uint32_t* shader, size_t codeSize);
 				void computeGroupCount() override;
-
 			public:
 				binary_operator(bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x, tensor* w) = 0;
@@ -83,8 +67,7 @@ namespace kernel
 
 			class clip : public unary_operator
 			{
-				float m_min;
-				float m_max;
+				clip_operator_param m_param;
 			public:
 				clip(float min = 0.0f, float max = 1.0f, bool in_place = false, bool as_module = true);
 				tensor* forward(tensor* x) override;

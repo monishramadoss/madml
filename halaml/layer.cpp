@@ -15,8 +15,8 @@ namespace kernel
 		m_descriptor_set_layout_forward = nullptr;
 		m_pipeline_layout_forward = nullptr;
 		m_module_forward = nullptr;
-		
-		
+
+
 		m_pipeline_backward = nullptr;
 		m_cmd_buffer_backward = nullptr;
 		m_descriptor_pool_backward = nullptr;
@@ -24,7 +24,7 @@ namespace kernel
 		m_descriptor_set_layout_backward = nullptr;
 		m_pipeline_layout_backward = nullptr;
 		m_module_backward = nullptr;
-				
+
 		m_group_x = 1;
 		m_group_y = 1;
 		m_group_z = 1;
@@ -53,9 +53,9 @@ namespace kernel
 
 		if (buffer_num_backward == -1)
 			buffer_num_backward = buffer_num_forward;
-		//createDescriptorSetLayoutBackward(buffer_num_forward);
-		//createDescriptorSetBackward(buffer_num_forward);
-		//createCommandBufferBackward();
+		createDescriptorSetLayoutBackward(buffer_num_backward);
+		createDescriptorSetBackward(buffer_num_backward);
+		createCommandBufferBackward();
 	}
 
 	void layer::createDescriptorSetLayoutForward(int buffer_num)
@@ -366,6 +366,11 @@ namespace kernel
 				tmp[i]->back_propagate();
 			}
 
+			for (auto m : tmp) {
+				for (auto& layer : m->backward_layers) {
+					layer->runCommandBufferBackward();
+				}
+			}
 
 
 		}
@@ -433,5 +438,9 @@ namespace kernel
 				}
 			}
 		}
+	}
+
+	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool as_module, bool in_place) : m_as_module(as_module), m_in_place(in_place), m_param({ 0 }) {
+		initVulkanThing(forward_buffers, backward_buffers);
 	}
 }

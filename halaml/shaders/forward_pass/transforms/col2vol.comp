@@ -2,6 +2,7 @@
 #define LOCAL_SZ_X 1024
 
 layout(push_constant) uniform pushBlock {
+        int total;
 	    int batchsize;
         int channels;
         int kernel_h;

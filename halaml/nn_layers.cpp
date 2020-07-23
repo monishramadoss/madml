@@ -32,9 +32,11 @@ namespace kernel
 					biases.push_back(b->getId());
 					forward_layers.push_back(bias);
 				}
+
 				inputs.push_back(x->getId());
 				weights.push_back(w->getId());
 				outputs.push_back(y->getId());
+
 				add_module(this);
 				return y;
 			}
@@ -52,6 +54,8 @@ namespace kernel
 				// db = mean(dy) 
 				// dx = W.T * dy
 
+				backward_layers.push_back(mm_1);
+				backward_layers.push_back(mm_2);
 			}
 
 		}
@@ -478,14 +482,13 @@ namespace kernel
 	{
 		namespace nn
 		{
-			RNNCell::RNNCell(int vocab_size, int hidden_size, int output_size) : m_param({
-				vocab_size, hidden_size, output_size, 0, 0
+			RNNCell::RNNCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({ 
+				0, vocab_size, hidden_size, output_size, 0, 0
 			})
 			{
 				if (output_size == 0)
 					m_param.output_size = vocab_size;
 
-				initVulkanThing(9);
 				m_type = "RNNCell";
 			}
 
@@ -541,14 +544,13 @@ namespace kernel
 				forward_layers.push_back(this);
 			}
 
-			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : m_param({
-				vocab_size, hidden_size, output_size, 0, 0
+			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
+				0, vocab_size, hidden_size, output_size, 0, 0
 			})
 			{
 				if (output_size == 0)
 					m_param.output_size = vocab_size;
 
-				initVulkanThing(11);
 				m_type = "LSTMCell";
 			}
 
@@ -609,14 +611,13 @@ namespace kernel
 				forward_layers.push_back(this);
 			}
 
-			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : m_param({
-				vocab_size, hidden_size, output_size, 0, 0
+			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
+				0, vocab_size, hidden_size, output_size, 0, 0
 			})
 			{
 				if (output_size == 0)
 					m_param.output_size = vocab_size;
 
-				initVulkanThing(9);
 				m_type = "GRUCell";
 			}
 

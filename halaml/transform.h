@@ -18,6 +18,7 @@ namespace kernel
 
 		struct vol2col_param
 		{
+			int total;
 			int batchsize;
 			int channels;
 			int kernel_h;
@@ -40,7 +41,7 @@ namespace kernel
 			int depth_vol;
 		};
 
-		class vol2col : public layer, public Module
+		class vol2col : public Base_Layer
 		{
 		private:
 			void computeGroupCount() override;
@@ -56,7 +57,7 @@ namespace kernel
 			std::vector<int> output_shape() const;
 		};
 
-		class col2vol : public layer, public Module
+		class col2vol : public Base_Layer
 		{
 		private:
 			void computeGroupCount() override;
@@ -64,13 +65,27 @@ namespace kernel
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			tensor* forward(tensor* x);
-
 			void update_weight() override
 			{
 			}
 
 			std::vector<int> output_shape() const;
 		};
+
+	
+		class copy : public Base_Layer
+		{
+		private:
+			void computeGroupCount() override;
+		public:
+			copy();
+			tensor* forward(tensor* x);
+			void back_propagate();
+			void update_weight() override
+			{
+			}
+		};
+
 	}
 }
 
