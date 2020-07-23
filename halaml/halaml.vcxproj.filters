@@ -57,6 +57,9 @@
     <ClInclude Include="halmal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="rnn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activation.cpp">
@@ -93,6 +96,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="math.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rnn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -59,32 +59,6 @@ namespace kernel
 				bool USE_BIAS;
 			};
 
-			struct RNN_cell_param
-			{
-				int total;
-				int vocab_size;
-				int hidden_size;
-				int output_size;
-				int input_offset;
-				int weight_offset;
-				int output_offset;
-			};
-
-			class RNNCell : public Base_Layer
-			{
-			private:
-				void computeGroupCount() override;
-				RNN_cell_param m_param;
-			public:
-				RNNCell(int vocab_size, int hidden_size, int output_size = 0);
-				void forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1,
-				             tensor* b2, int input_offset, int weight_offset, int output_offset);
-
-				void update_weight() override
-				{
-				};
-			};
-
 			class RNN : public Module
 			{
 			public:
@@ -100,25 +74,11 @@ namespace kernel
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
 				int m_output_size, m_seq_length;
 				bool USE_BIAS, bidirectional{};
-				std::vector<RNNCell*> cells;
+				std::vector<rnn::RNNCell*> cells;
 				std::vector<tensor*> weights_biases;
 				std::vector<tensor*> cache;
 			};
-
-			class LSTMCell : public Base_Layer
-			{
-			private:
-				void computeGroupCount() override;
-				RNN_cell_param m_param;
-			public:
-				LSTMCell(int vocab_size, int hidden_size, int output_size);
-				void forward(tensor* x, tensor* h, tensor* c, tensor* y, tensor* hn, tensor* cn, tensor* U, tensor* W,
-				             tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset, int output_offset);
-
-				void update_weight() override
-				{
-				};
-			};
+		
 
 			class LSTM : public Module
 			{
@@ -134,27 +94,13 @@ namespace kernel
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
 				int m_output_size, m_seq_length;
 				bool USE_BIAS, bidirectional{};
-				std::vector<LSTMCell*> cells;
+				std::vector<rnn::LSTMCell*> cells;
 				std::vector<tensor*> weights_biases;
 				std::vector<tensor*> cache;
 				std::string nonlinearity_;
 			};
 
-			class GRUCell : public Base_Layer
-			{
-			private:
-				void computeGroupCount() override;
-				RNN_cell_param m_param;
-			public:
-				GRUCell(int vocab_size, int hidden_size, int output_size);
-				void GRUCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1,
-				                      tensor* b2, int input_offset, int weight_offset, int output_offset);
-
-				void update_weight() override
-				{
-				};
-			};
-
+		
 			class GRU : public Module
 			{
 			public:
@@ -169,7 +115,7 @@ namespace kernel
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
 				int m_output_size, m_seq_length;
 				bool USE_BIAS, bidirectional{};
-				std::vector<GRUCell*> cells;
+				std::vector<rnn::GRUCell*> cells;
 				std::vector<tensor*> weights_biases;
 				std::vector<tensor*> cache;
 				std::string nonlinearity_;

@@ -150,10 +150,10 @@ namespace kernel
 				return y;
 			}
 
-			void rnn_constructor_helper(int seq, int input, int hidden, int output, std::vector<RNNCell*>& layers)
+			void rnn_constructor_helper(int seq, int input, int hidden, int output, std::vector<rnn::RNNCell*>& layers)
 			{
 				for (int i = 0; i < seq; ++i)
-					layers.push_back(new RNNCell(input, hidden, output));
+					layers.push_back(new rnn::RNNCell(input, hidden, output));
 			}
 
 
@@ -195,7 +195,7 @@ namespace kernel
 							biases.push_back(weights_biases.back()->getId());
 						}
 						for (int i = 0; i < seq_length; ++i)
-							cells.push_back(new RNNCell(input, m_hidden_size, output));
+							cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
 					}
 				}
 			}
@@ -300,7 +300,7 @@ namespace kernel
 							biases.push_back(weights_biases.back()->getId());
 						}
 						for (int i = 0; i < seq_length; ++i)
-							cells.push_back(new LSTMCell(input, m_hidden_size, output));
+							cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
 					}
 				}
 			}
@@ -408,7 +408,7 @@ namespace kernel
 							biases.push_back(weights_biases.back()->getId());
 						}
 						for (int i = 0; i < seq_length; ++i)
-							cells.push_back(new GRUCell(input, m_hidden_size, output));
+							cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
 					}
 				}
 			}
@@ -471,206 +471,6 @@ namespace kernel
 
 				add_module(this);
 				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
-			}
-		}
-	}
-}
-
-namespace kernel
-{
-	namespace layers
-	{
-		namespace nn
-		{
-			RNNCell::RNNCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({ 
-				0, vocab_size, hidden_size, output_size, 0, 0
-			})
-			{
-				if (output_size == 0)
-					m_param.output_size = vocab_size;
-
-				m_type = "RNNCell";
-			}
-
-			void RNNCell::computeGroupCount()
-			{
-				m_group_x = static_cast<int>(alignSize(m_param.hidden_size, LOCAL_SZ_X)) / LOCAL_SZ_X;
-				if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-					m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-				m_group_y = static_cast<int>(alignSize(m_param.output_size, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-				if (m_group_y > MAX_COMPUTE_WORK_GROUP_COUNT)
-					m_group_y = MAX_COMPUTE_WORK_GROUP_COUNT;
-				m_group_z = 1;
-			}
-
-			void RNNCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1,
-			                      tensor* b2, int input_offset, int weight_offset, int output_offset)
-			{
-				const auto input_shape = x->getShape(); //seq_len, input_size
-				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
-
-				m_param.input_offset = input_offset;
-				m_param.weight_offset = weight_offset;
-				m_param.output_offset = output_offset;
-
-				inputs.push_back(x->getId());
-				inputs.push_back(h->getId());
-				inputs.push_back(U->getId());
-				inputs.push_back(W->getId());
-				inputs.push_back(V->getId());
-				inputs.push_back(b1->getId());
-				inputs.push_back(b2->getId());
-				outputs.push_back(y->getId());
-				outputs.push_back(hn->getId());
-
-				if (m_pipeline_forward == nullptr)
-				{
-					computeGroupCount();
-					createShaderModuleForward(shaders::rnnCell_spv, sizeof(shaders::rnnCell_spv));
-					createPipelineForward(sizeof(RNN_cell_param));
-				}
-
-				bindTensor(m_device, U, 0, m_descriptor_set_forward);
-				bindTensor(m_device, V, 1, m_descriptor_set_forward);
-				bindTensor(m_device, W, 2, m_descriptor_set_forward);
-				bindTensor(m_device, x, 3, m_descriptor_set_forward);
-				bindTensor(m_device, h, 4, m_descriptor_set_forward);
-				bindTensor(m_device, b1, 5, m_descriptor_set_forward);
-				bindTensor(m_device, b2, 6, m_descriptor_set_forward);
-				bindTensor(m_device, y, 7, m_descriptor_set_forward);
-				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
-				forward_layers.push_back(this);
-			}
-
-			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
-				0, vocab_size, hidden_size, output_size, 0, 0
-			})
-			{
-				if (output_size == 0)
-					m_param.output_size = vocab_size;
-
-				m_type = "LSTMCell";
-			}
-
-			void LSTMCell::computeGroupCount()
-			{
-				m_group_x = static_cast<int>(alignSize(m_param.hidden_size, LOCAL_SZ_X)) / LOCAL_SZ_X;
-				if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-					m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-				m_group_y = static_cast<int>(alignSize(m_param.output_size, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-				if (m_group_y > MAX_COMPUTE_WORK_GROUP_COUNT)
-					m_group_y = MAX_COMPUTE_WORK_GROUP_COUNT;
-				m_group_z = 1;
-			}
-
-			void LSTMCell::forward(tensor* x, tensor* h, tensor* c, tensor* y, tensor* hn, tensor* cn, tensor* U, tensor* W,
-			                       tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset, int output_offset)
-			{
-				const auto input_shape = x->getShape(); //seq_len, input_size
-				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
-				const auto cell_shape = c->getShape();
-
-				m_param.input_offset = input_offset;
-				m_param.weight_offset = weight_offset;
-				m_param.output_offset = output_offset;
-
-				inputs.push_back(x->getId());
-				inputs.push_back(h->getId());
-				inputs.push_back(c->getId());
-				inputs.push_back(U->getId());
-				inputs.push_back(W->getId());
-				inputs.push_back(V->getId());
-				inputs.push_back(b1->getId());
-				inputs.push_back(b2->getId());
-				outputs.push_back(y->getId());
-				outputs.push_back(hn->getId());
-				outputs.push_back(cn->getId());
-
-				if (m_pipeline_forward == nullptr)
-				{
-					computeGroupCount();
-					createShaderModuleForward(shaders::lstmCell_spv, sizeof(shaders::lstmCell_spv));
-					createPipelineForward(sizeof(RNN_cell_param));
-				}
-
-				bindTensor(m_device, U, 0, m_descriptor_set_forward);
-				bindTensor(m_device, V, 1, m_descriptor_set_forward);
-				bindTensor(m_device, W, 2, m_descriptor_set_forward);
-				bindTensor(m_device, x, 3, m_descriptor_set_forward);
-				bindTensor(m_device, h, 4, m_descriptor_set_forward);
-				bindTensor(m_device, c, 5, m_descriptor_set_forward);
-				bindTensor(m_device, b1, 6, m_descriptor_set_forward);
-				bindTensor(m_device, b2, 7, m_descriptor_set_forward);
-				bindTensor(m_device, y, 8, m_descriptor_set_forward);
-				bindTensor(m_device, hn, 9, m_descriptor_set_forward);
-				bindTensor(m_device, cn, 10, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
-				forward_layers.push_back(this);
-			}
-
-			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
-				0, vocab_size, hidden_size, output_size, 0, 0
-			})
-			{
-				if (output_size == 0)
-					m_param.output_size = vocab_size;
-
-				m_type = "GRUCell";
-			}
-
-			void GRUCell::computeGroupCount()
-			{
-				m_group_x = static_cast<int>(alignSize(m_param.hidden_size, LOCAL_SZ_X)) / LOCAL_SZ_X;
-				if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-					m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-				m_group_y = static_cast<int>(alignSize(m_param.output_size, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-				if (m_group_y > MAX_COMPUTE_WORK_GROUP_COUNT)
-					m_group_y = MAX_COMPUTE_WORK_GROUP_COUNT;
-				m_group_z = 1;
-			}
-
-			void GRUCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1,
-			                      tensor* b2, int input_offset, int weight_offset, int output_offset)
-			{
-				const auto input_shape = x->getShape(); //seq_len, input_size
-				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
-
-				m_param.input_offset = input_offset;
-				m_param.weight_offset = weight_offset;
-				m_param.output_offset = output_offset;
-
-
-				inputs.push_back(x->getId());
-				inputs.push_back(h->getId());
-				inputs.push_back(U->getId());
-				inputs.push_back(W->getId());
-				inputs.push_back(V->getId());
-				inputs.push_back(b1->getId());
-				inputs.push_back(b2->getId());
-				outputs.push_back(y->getId());
-
-				if (m_pipeline_forward == nullptr)
-				{
-					computeGroupCount();
-					createShaderModuleForward(shaders::gruCell_spv, sizeof(shaders::gruCell_spv));
-					createPipelineForward(sizeof(RNN_cell_param));
-				}
-
-				bindTensor(m_device, U, 0, m_descriptor_set_forward);
-				bindTensor(m_device, V, 1, m_descriptor_set_forward);
-				bindTensor(m_device, W, 2, m_descriptor_set_forward);
-				bindTensor(m_device, x, 3, m_descriptor_set_forward);
-				bindTensor(m_device, h, 4, m_descriptor_set_forward);
-				bindTensor(m_device, b1, 5, m_descriptor_set_forward);
-				bindTensor(m_device, b2, 6, m_descriptor_set_forward);
-				bindTensor(m_device, y, 7, m_descriptor_set_forward);
-				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
-
-				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
-				forward_layers.push_back(this);
 			}
 		}
 	}

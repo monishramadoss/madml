@@ -168,7 +168,7 @@ namespace kernel
 		}
 
 		void copy::back_propagate() {
-			layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv));
+			layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 		}
 
 	}

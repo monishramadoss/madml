@@ -33,6 +33,7 @@
     <ClInclude Include="..\halaml\utils.h" />
     <ClInclude Include="halmal.h" />
     <ClInclude Include="math.h" />
+    <ClInclude Include="rnn.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activation.cpp" />
@@ -43,6 +44,7 @@
     <ClCompile Include="math.cpp" />
     <ClCompile Include="matmul.cpp" />
     <ClCompile Include="nn_layers.cpp" />
+    <ClCompile Include="rnn.cpp" />
     <ClCompile Include="spv_shader.cpp" />
     <ClCompile Include="tensor.cpp" />
     <ClCompile Include="transform.cpp" />
