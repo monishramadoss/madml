@@ -14,7 +14,7 @@ namespace kernel
 			m_param({
 				0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
 				dilation.w, dilation.d,	0, 0, 0, 0, 0, 0
-			})
+				})
 		{
 			m_type = "vol2col";
 		}
@@ -36,7 +36,7 @@ namespace kernel
 		}
 
 		tensor* vol2col::forward(tensor* x)
-		{		
+		{
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
 			const int width = x->getShape()[x->getShape().size() - 1];
@@ -53,7 +53,6 @@ namespace kernel
 
 			if (m_pipeline_forward == nullptr)
 			{
-				
 				computeGroupCount();
 				createShaderModuleForward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
 				createPipelineForward(sizeof(vol2col_param));
@@ -61,8 +60,8 @@ namespace kernel
 
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
-			auto* y = new tensor(0.0, std::vector<int>{output_length * n_out_plane});
-			
+			auto* y = new tensor(0.0, std::vector<int>{output_length* n_out_plane});
+
 			bindTensor(m_device, x, 0, m_descriptor_set_forward);
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
@@ -71,12 +70,12 @@ namespace kernel
 
 			inputs.push_back(x->getId());
 			outputs.push_back(y->getId());
-			layers.push_back(this);
-			
+
 			return y;
 		}
 
-		void vol2col::back_propagate(){
+		void vol2col::back_propagate()
+		{
 			auto* x = get_grad(inputs[0]);
 			auto* y = get_grad(outputs[0]);
 
@@ -100,12 +99,11 @@ namespace kernel
 				createShaderModuleBackward(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
 				createPipelineBackward(sizeof(vol2col_param));
 			}
-			
+
 			bindTensor(m_device, x, 1, m_descriptor_set_backward);
 			bindTensor(m_device, y, 0, m_descriptor_set_backward);
 
-			recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(vol2col_param));			
-			
+			recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(vol2col_param));
 		}
 
 		std::vector<int> vol2col::output_shape() const
@@ -117,8 +115,8 @@ namespace kernel
 			m_param({
 				0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
 				dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
-			})
-		{		
+				})
+		{
 			m_type = "col2vol";
 		}
 
@@ -139,7 +137,7 @@ namespace kernel
 		}
 
 		tensor* col2vol::forward(tensor* x)
-		{		
+		{
 			if (m_pipeline_forward == nullptr)
 			{
 				const int depth = x->getShape()[x->getShape().size() - 3];
@@ -161,7 +159,7 @@ namespace kernel
 			}
 			const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 			const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
-			auto* y = new tensor(0.0, std::vector<int>{n_out_plane * (m_param.depth_vol * m_param.height_vol * m_param.width_vol)});
+			auto* y = new tensor(0.0, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
 			bindTensor(m_device, x, 0, m_descriptor_set_forward);
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
@@ -170,11 +168,12 @@ namespace kernel
 
 			inputs.push_back(x->getId());
 			outputs.push_back(y->getId());
-			layers.push_back(this);
+
 			return y;
 		}
 
-		void col2vol::back_propagate(){
+		void col2vol::back_propagate()
+		{
 			auto* x = get_grad(inputs[0]);
 			auto* y = get_grad(outputs[0]);
 
@@ -190,7 +189,6 @@ namespace kernel
 
 			if (m_pipeline_backward == nullptr)
 			{
-
 				computeGroupCount();
 				createShaderModuleBackward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
 				createPipelineBackward(sizeof(vol2col_param));
@@ -198,7 +196,7 @@ namespace kernel
 
 			bindTensor(m_device, x, 1, m_descriptor_set_backward);
 			bindTensor(m_device, y, 0, m_descriptor_set_backward);
-			layers.push_back(this);
+
 			recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(vol2col_param));
 		}
 
@@ -208,11 +206,12 @@ namespace kernel
 		}
 
 		copy::copy(bool as_module) : Base_Layer(2, 2, as_module)
-		{			
+		{
 			m_type = "copy";
 		}
 
-		void copy::computeGroupCount() {
+		void copy::computeGroupCount()
+		{
 			m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
 			if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
 				m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
@@ -220,11 +219,13 @@ namespace kernel
 			m_group_z = 1;
 		}
 
-		tensor* copy::forward(tensor* x) {
+		tensor* copy::forward(tensor* x)
+		{
 			return layer_construct_forward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), x, m_param);
 		}
 
-		void copy::back_propagate() {
+		void copy::back_propagate()
+		{
 			layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 		}
 
@@ -236,25 +237,27 @@ namespace kernel
 
 			for (int64_t i = dims - 2; i >= 0; i--)
 			{
-				stride[dims * 2 +i] = stride[dims * 2 + i + 1] * shape_before[i + 1];
-				stride[dims+i] = stride[dims + i + 1] * shape_after[i + 1];
+				stride[dims * 2 + i] = stride[dims * 2 + i + 1] * shape_before[i + 1];
+				stride[dims + i] = stride[dims + i + 1] * shape_after[i + 1];
 			}
 			return stride;
 		}
 
-		transpose::transpose(const std::vector<int> order, bool as_module) : Base_Layer(4, 4, as_module), m_param({ 0,0 }) {
+		transpose::transpose(const std::vector<int> order, bool as_module) : Base_Layer(4, 4, as_module), m_param({ 0,0 })
+		{
 			m_type = "transpose";
 			m_param.num_axes = static_cast<int>(order.size());
-			new_shape.resize(order.size());		
+			new_shape.resize(order.size());
 			stride.resize(order.size() * 3);
 			for (size_t i = 0; i < m_param.num_axes; ++i)
 				stride[i] = order[i];
 		}
 
-		tensor* transpose::forward(tensor* x) {
-			for (size_t i = 0; i < m_param.num_axes; ++i) 
+		tensor* transpose::forward(tensor* x)
+		{
+			for (size_t i = 0; i < m_param.num_axes; ++i)
 				new_shape[i] = x->getShape()[stride[i]];
-			
+
 			if (m_pipeline_forward == nullptr)
 			{
 				m_param.total = x->count();
@@ -263,7 +266,7 @@ namespace kernel
 				createPipelineForward(sizeof(transpose_param));
 			}
 
-			tensor* y = new tensor(0.0, new_shape);			
+			tensor* y = new tensor(0.0, new_shape);
 			stride = prepareStrides(x->getShape(), new_shape, stride);
 
 			tensor* tensor_stride = new tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32);
@@ -272,18 +275,18 @@ namespace kernel
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 			bindTensor(m_device, tensor_stride, 2, m_descriptor_set_forward);
 			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(transpose_param));
-		
+
 			inputs.push_back(x->getId());
 			outputs.push_back(y->getId());
-			layers.push_back(this);
 
 			return y;
 		}
 
-		void transpose::back_propagate() {
+		void transpose::back_propagate()
+		{
 			layer_construct_backward<transpose_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 		}
-		
+
 		void transpose::computeGroupCount()
 		{
 			m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;

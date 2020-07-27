@@ -16,7 +16,6 @@ namespace kernel
 		m_pipeline_layout_forward = nullptr;
 		m_module_forward = nullptr;
 
-
 		m_pipeline_backward = nullptr;
 		m_cmd_buffer_backward = nullptr;
 		m_descriptor_pool_backward = nullptr;
@@ -36,17 +35,15 @@ namespace kernel
 		vkDestroyDescriptorPool(m_device, m_descriptor_pool_forward, nullptr);
 		vkDestroyPipeline(m_device, m_pipeline_forward, nullptr);
 		vkDestroyPipelineLayout(m_device, m_pipeline_layout_forward, nullptr);
-		/*
+
 		vkDestroyShaderModule(m_device, m_module_backward, nullptr);
 		vkDestroyDescriptorPool(m_device, m_descriptor_pool_backward, nullptr);
 		vkDestroyPipeline(m_device, m_pipeline_backward, nullptr);
 		vkDestroyPipelineLayout(m_device, m_pipeline_layout_backward, nullptr);
-		*/
 	}
 
 	void layer::initVulkanThing(int buffer_num_forward, int buffer_num_backward)
 	{
-
 		createDescriptorSetLayoutForward(buffer_num_forward);
 		createDescriptorSetForward(buffer_num_forward);
 		createCommandBufferForward();
@@ -77,7 +74,6 @@ namespace kernel
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &info, 0, &m_descriptor_set_layout_forward));
 	}
 
-
 	void layer::createDescriptorSetForward(int buffer_num)
 	{
 		VkDescriptorPoolSize pool_size = {};
@@ -99,9 +95,6 @@ namespace kernel
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(m_device, &allocate_info, &m_descriptor_set_forward));
 	}
 
-
-
-
 	void layer::createShaderModuleForward(const uint32_t* spv, size_t size, const std::string& source)
 	{
 		VkShaderModuleCreateInfo create_info = {};
@@ -116,12 +109,10 @@ namespace kernel
 			//std::vector<uint32_t> code;
 			//code = compile("shader", shaderc_compute_shader, source);
 			//create_info.pCode = code.data();
-			//create_info.codeSize = sizeof(uint32_t) * code.size();			
+			//create_info.codeSize = sizeof(uint32_t) * code.size();
 		}
 		VK_CHECK_RESULT(vkCreateShaderModule(m_device, &create_info, 0, &m_module_forward));
 	}
-
-
 
 	void layer::createPipelineForward(size_t push_constants_size, VkSpecializationInfo* specialization_info)
 	{
@@ -153,8 +144,6 @@ namespace kernel
 		VK_CHECK_RESULT(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &pipeline_create_info, 0, &m_pipeline_forward));
 	}
 
-
-
 	void layer::createCommandBufferForward()
 	{
 		VkCommandBufferAllocateInfo info = {};
@@ -164,7 +153,6 @@ namespace kernel
 		info.commandBufferCount = 1;
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_device, &info, &m_cmd_buffer_forward));
 	}
-
 
 	void layer::recordCommandBufferForward(void* push_constants, size_t push_constants_size) const
 	{
@@ -185,8 +173,6 @@ namespace kernel
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer_forward));
 		kContextMtx.unlock();
 	}
-
-
 
 	void layer::runCommandBufferForward() const
 	{
@@ -211,7 +197,6 @@ namespace kernel
 		vkDestroyFence(m_device, fence, nullptr);
 	}
 
-
 	void layer::createDescriptorSetLayoutBackward(int buffer_num)
 	{
 		if (buffer_num <= 0)
@@ -230,7 +215,6 @@ namespace kernel
 		info.pBindings = &bindings[0];
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(m_device, &info, 0, &m_descriptor_set_layout_backward));
 	}
-
 
 	void layer::createDescriptorSetBackward(int buffer_num)
 	{
@@ -355,23 +339,30 @@ namespace kernel
 		vkDestroyFence(m_device, fence, nullptr);
 	}
 
-
-
 	namespace layers
 	{
 		void Module::update_weight()
 		{
-
 		}
 
 		void Module::backward()
 		{
-
 		}
 
 		void Module::execute()
 		{
+			auto& M = get_module();
+			for (auto* m : M)
+			{
+				for (auto i : m->inputs)
+					std::cout << i << " ";
 
+				std::cout << "-> ";
+				for (auto o : m->outputs)
+					std::cout << o << " ";
+
+				std::cout << std::endl;
+			}
 		}
 
 		std::vector<tensor*>& Module::get_tensors()
@@ -420,15 +411,18 @@ namespace kernel
 		{
 			auto& G = get_gradients();
 			auto& T = get_tensors();
-			if (G.size() != T.size()) {
-				for (auto t : T) {
+			if (G.size() != T.size())
+			{
+				for (auto t : T)
+				{
 					G.push_back(new tensor(0.0, t->getShape()));
 				}
 			}
 		}
 	}
 
-	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool as_module, bool in_place) : m_as_module(as_module), m_in_place(in_place), m_param({ 0 }) {
+	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool as_module, bool in_place) : m_as_module(as_module), m_in_place(in_place), m_param({ 0 })
+	{
 		add_module(this);
 		initVulkanThing(forward_buffers, backward_buffers);
 	}

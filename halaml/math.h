@@ -11,7 +11,6 @@ namespace kernel
 	{
 		namespace math
 		{
-			
 			class unary_operator : public Base_Layer
 			{
 			protected:
@@ -27,7 +26,7 @@ namespace kernel
 				void computeGroupCount() override;
 			public:
 				binary_operator(bool in_place, bool as_module = true);
-				virtual tensor* forward(tensor* x, tensor* w) = 0;				
+				virtual tensor* forward(tensor* x, tensor* w) = 0;
 			};
 		}
 	}

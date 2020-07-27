@@ -10,8 +10,8 @@ namespace kernel
 	{
 		namespace activation
 		{
-			unary_operator::unary_operator(float alpha, bool in_place, bool as_module) : Base_Layer(2, -1, in_place, as_module), m_param({0, alpha })
-			{				
+			unary_operator::unary_operator(float alpha, bool in_place, bool as_module) : Base_Layer(2, -1, in_place, as_module), m_param({ 0, alpha })
+			{
 				auto* t = new tensor();
 			}
 
@@ -71,7 +71,7 @@ namespace kernel
 			}
 
 			hardtanh::hardtanh(float min_val, float max_val, bool in_place, bool as_module) :
-				unary_operator(0, in_place, as_module), m_param({0, min_val, max_val})
+				unary_operator(0, in_place, as_module), m_param({ 0, min_val, max_val })
 			{
 				m_type = "hardtanh";
 			}
@@ -142,7 +142,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::relu_spv, sizeof(shaders::relu_spv), x, m_param);
 			}
 
-			void relu::back_propagate() 
+			void relu::back_propagate()
 			{
 				layer_construct_backward<activation_param>(shaders::d_relu_spv, sizeof(shaders::d_relu_spv), m_param);
 			}
@@ -187,7 +187,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::sigmoid_spv, sizeof(shaders::sigmoid_spv), x, m_param);
 			}
 
-			void sigmoid::back_propagate() 
+			void sigmoid::back_propagate()
 			{
 				layer_construct_backward <activation_param>(shaders::d_sigmoid_spv, sizeof(shaders::d_sigmoid_spv), m_param);
 			}

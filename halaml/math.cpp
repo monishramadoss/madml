@@ -24,7 +24,7 @@ namespace kernel
 				m_group_y = 1;
 				m_group_z = 1;
 			}
-							
+
 			binary_operator::binary_operator(bool in_place, bool as_module) : Base_Layer(3, -1, in_place, as_module)
 			{
 			}
@@ -37,7 +37,6 @@ namespace kernel
 				m_group_y = 1;
 				m_group_z = 1;
 			}
-
 		}
 	}
 }
@@ -58,7 +57,7 @@ namespace kernel
 				return layer_construct_forward(shaders::abs_spv, sizeof(shaders::abs_spv), x, m_param);
 			}
 
-			void abs::back_propagate() 
+			void abs::back_propagate()
 			{
 				layer_construct_backward(shaders::d_abs_spv, sizeof(shaders::d_abs_spv), m_param);
 			}
@@ -78,7 +77,7 @@ namespace kernel
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			clip::clip(float min, float max, bool in_place, bool as_module) : unary_operator(in_place, as_module), m_param({0, min, max})
+			clip::clip(float min, float max, bool in_place, bool as_module) : unary_operator(in_place, as_module), m_param({ 0, min, max })
 			{
 				m_type = "clip";
 			}
@@ -103,7 +102,7 @@ namespace kernel
 				return layer_construct_forward(shaders::exp_spv, sizeof(shaders::exp_spv), x, m_param);
 			}
 
-			void exp::back_propagate() 
+			void exp::back_propagate()
 			{
 				layer_construct_backward(shaders::d_exp_spv, sizeof(shaders::d_exp_spv), m_param);
 			}
@@ -133,7 +132,7 @@ namespace kernel
 				return layer_construct_forward(shaders::ln_spv, sizeof(shaders::ln_spv), x, m_param);
 			}
 
-			void ln::back_propagate() 
+			void ln::back_propagate()
 			{
 				layer_construct_backward(shaders::d_ln_spv, sizeof(shaders::d_ln_spv), m_param);
 			}
@@ -148,7 +147,7 @@ namespace kernel
 				return layer_construct_forward(shaders::round_spv, sizeof(shaders::round_spv), x, m_param);
 			}
 
-			void round::back_propagate() 
+			void round::back_propagate()
 			{
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -157,13 +156,13 @@ namespace kernel
 			{
 				m_type = "sqrt";
 			}
-		
+
 			tensor* sqrt::forward(tensor* x)
 			{
 				return layer_construct_forward(shaders::sqrt_spv, sizeof(shaders::sqrt_spv), x, m_param);
 			}
 
-			void sqrt::back_propagate() 
+			void sqrt::back_propagate()
 			{
 				layer_construct_backward(shaders::d_sqrt_spv, sizeof(shaders::d_sqrt_spv), m_param);
 			}
@@ -178,7 +177,8 @@ namespace kernel
 				return layer_construct_forward(shaders::acos_spv, sizeof(shaders::acos_spv), x, m_param);
 			}
 
-			void acos::back_propagate() {
+			void acos::back_propagate()
+			{
 				layer_construct_backward(shaders::d_acos_spv, sizeof(shaders::d_acos_spv), m_param);
 			}
 
@@ -192,7 +192,8 @@ namespace kernel
 				return layer_construct_forward(shaders::acosh_spv, sizeof(shaders::acosh_spv), x, m_param);
 			}
 
-			void acosh::back_propagate() {
+			void acosh::back_propagate()
+			{
 				layer_construct_backward(shaders::d_acosh_spv, sizeof(shaders::d_acosh_spv), m_param);
 			}
 
@@ -206,7 +207,7 @@ namespace kernel
 				return layer_construct_forward(shaders::asin_spv, sizeof(shaders::asin_spv), x, m_param);
 			}
 
-			void asin::back_propagate() 
+			void asin::back_propagate()
 			{
 				layer_construct_backward(shaders::d_asin_spv, sizeof(shaders::d_asin_spv), m_param);
 			}
@@ -221,7 +222,7 @@ namespace kernel
 				return layer_construct_forward(shaders::asinh_spv, sizeof(shaders::asinh_spv), x, m_param);
 			}
 
-			void asinh::back_propagate() 
+			void asinh::back_propagate()
 			{
 				layer_construct_backward(shaders::d_asinh_spv, sizeof(shaders::d_asinh_spv), m_param);
 			}
@@ -236,7 +237,8 @@ namespace kernel
 				return layer_construct_forward(shaders::atan_spv, sizeof(shaders::atan_spv), x, m_param);
 			}
 
-			void atan::back_propagate() {
+			void atan::back_propagate()
+			{
 				layer_construct_backward(shaders::d_atan_spv, sizeof(shaders::d_atan_spv), m_param);
 			}
 
@@ -250,7 +252,8 @@ namespace kernel
 				return layer_construct_forward(shaders::atanh_spv, sizeof(shaders::atanh_spv), x, m_param);
 			}
 
-			void atanh::back_propagate() {
+			void atanh::back_propagate()
+			{
 				layer_construct_backward(shaders::d_atanh_spv, sizeof(shaders::d_atanh_spv), m_param);
 			}
 
@@ -264,7 +267,8 @@ namespace kernel
 				return layer_construct_forward(shaders::cos_spv, sizeof(shaders::cos_spv), x, m_param);
 			}
 
-			void cos::back_propagate() {
+			void cos::back_propagate()
+			{
 				layer_construct_backward(shaders::d_cos_spv, sizeof(shaders::d_cos_spv), m_param);
 			}
 
@@ -278,7 +282,8 @@ namespace kernel
 				return layer_construct_forward(shaders::cosh_spv, sizeof(shaders::cosh_spv), x, m_param);
 			}
 
-			void cosh::back_propagate() {
+			void cosh::back_propagate()
+			{
 				layer_construct_backward(shaders::d_cosh_spv, sizeof(shaders::d_cosh_spv), m_param);
 			}
 
@@ -292,7 +297,8 @@ namespace kernel
 				return layer_construct_forward(shaders::sin_spv, sizeof(shaders::sin_spv), x, m_param);
 			}
 
-			void sin::back_propagate() {
+			void sin::back_propagate()
+			{
 				layer_construct_backward(shaders::d_sin_spv, sizeof(shaders::d_sin_spv), m_param);
 			}
 
@@ -306,7 +312,8 @@ namespace kernel
 				return layer_construct_forward(shaders::sinh_spv, sizeof(shaders::sinh_spv), x, m_param);
 			}
 
-			void sinh::back_propagate() {
+			void sinh::back_propagate()
+			{
 				layer_construct_backward(shaders::d_sinh_spv, sizeof(shaders::d_sinh_spv), m_param);
 			}
 
@@ -320,7 +327,8 @@ namespace kernel
 				return layer_construct_forward(shaders::tan_spv, sizeof(shaders::tan_spv), x, m_param);
 			}
 
-			void tan::back_propagate() {
+			void tan::back_propagate()
+			{
 				layer_construct_backward(shaders::d_tan_spv, sizeof(shaders::d_tan_spv), m_param);
 			}
 
@@ -334,7 +342,8 @@ namespace kernel
 				return layer_construct_forward(shaders::tanh_spv, sizeof(shaders::tanh_spv), x, m_param);
 			}
 
-			void tanh::back_propagate() {
+			void tanh::back_propagate()
+			{
 				layer_construct_backward(shaders::d_tanh_spv, sizeof(shaders::d_tanh_spv), m_param);
 			}
 		}
@@ -391,7 +400,6 @@ namespace kernel
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
-
 
 			div::div(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
@@ -453,7 +461,6 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-
 			min::min(bool in_place, bool as_module) : binary_operator(in_place, as_module)
 			{
 				m_type = "min";
@@ -479,7 +486,7 @@ namespace kernel
 				return layer_construct_forward(shaders::equal_spv, sizeof(shaders::equal_spv), x, w, m_param, Format::kFormatBool);
 			}
 
-			void eq::back_propagate() 
+			void eq::back_propagate()
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
@@ -494,7 +501,7 @@ namespace kernel
 				return layer_construct_forward(shaders::nequal_spv, sizeof(shaders::nequal_spv), x, w, m_param, Format::kFormatBool);
 			}
 
-			void ne::back_propagate() 
+			void ne::back_propagate()
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
@@ -505,11 +512,11 @@ namespace kernel
 			}
 
 			tensor* lt::forward(tensor* x, tensor* w)
-			{				
+			{
 				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w, m_param, Format::kFormatBool);
 			}
 
-			void lt::back_propagate() 
+			void lt::back_propagate()
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
@@ -524,7 +531,7 @@ namespace kernel
 				return layer_construct_forward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv), x, w, m_param, Format::kFormatBool);
 			}
 
-			void le::back_propagate() 
+			void le::back_propagate()
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
@@ -539,8 +546,7 @@ namespace kernel
 				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w, m_param, Format::kFormatBool);
 			}
 
-
-			void gt::back_propagate() 
+			void gt::back_propagate()
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
@@ -555,8 +561,7 @@ namespace kernel
 				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w, m_param, Format::kFormatBool);
 			}
 
-
-			void ge::back_propagate() 
+			void ge::back_propagate()
 			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
@@ -575,10 +580,10 @@ namespace kernel
 				}
 
 				return layer_construct_forward(shaders::xor_spv, sizeof(shaders::xor_spv), x, w, m_param, Format::kFormatBool);
-				
 			}
 
-			void xr::back_propagate() {
+			void xr::back_propagate()
+			{
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 		}

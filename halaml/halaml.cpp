@@ -5,7 +5,6 @@
 #include <chrono>
 #include <future>
 
-
 #include "halmal.h"
 
 using namespace std::chrono;
@@ -18,7 +17,7 @@ void PrintDiffer(float* data, int size)
 	{
 		diff_freq[data[i]] += 1;
 	}
-		
+
 	std::cout << "{";
 	for (const auto df : diff_freq)
 	{
@@ -36,7 +35,7 @@ void PrintDiffer(int* data, int size)
 	{
 		diff_freq[static_cast<int>(data[i])] += 1;
 	}
-	
+
 	std::cout << "{";
 	for (const auto df : diff_freq)
 	{
@@ -58,15 +57,14 @@ void PrintMatrix(float* data, std::vector<int> shape)
 		std::cout << "]" << std::endl;
 	}
 }
-#define TEST_TRANS
+//#define TEST_TRANS
 //#define TEST_MATH
 //#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
-//#define TEST_MNIST
+#define TEST_MNIST
 void test_fn()
 {
-
 #ifdef TEST_TRANS
 	std::cout << "testing trans_op" << std::endl;
 	{
@@ -75,7 +73,7 @@ void test_fn()
 		auto* t1 = new kernel::tensor(dat, shape_x);
 		auto k1 = kernel::layers::transpose(std::vector<int>{ 1, 2, 0});
 		auto* t2 = k1.forward(t1);
-	
+
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 		k1.execute();
 		PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
@@ -104,14 +102,15 @@ void test_fn()
 		const int M = 240;
 		const int K = 240;
 		const int N = 240;
-		const std::vector<int> shape_x{M, K};
+		const std::vector<int> shape_x{ M, K };
 		auto* t1 = new kernel::tensor(1.0, shape_x);
 		auto* layer = new kernel::layers::nn::dense(N, false);
 		auto* t3 = layer->forward(t1);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
 		layer->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
-		for (int i = 0; i < 100; ++i) {
+		for (int i = 0; i < 100; ++i)
+		{
 			layer->execute();
 		}
 	}
@@ -131,7 +130,8 @@ void test_fn()
 		cnn_layer_1->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		for (int i = 0; i < 10000; ++i) {
+		for (int i = 0; i < 10000; ++i)
+		{
 			cnn_layer_1->execute();
 		}
 	}
@@ -157,10 +157,10 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
-		for (int i = 0; i < 100; ++i) {
+		for (int i = 0; i < 100; ++i)
+		{
 			rnn_layer_1->execute();
 		}
-		
 	}
 	std::cout << "testing lstm" << std::endl;
 
@@ -185,10 +185,10 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		std::cout << std::endl;
-		for (int i = 0; i < 100; ++i) {
+		for (int i = 0; i < 100; ++i)
+		{
 			rnn_layer_1->execute();
 		}
-		
 	}
 	std::cout << "testing gru" << std::endl;
 
@@ -210,33 +210,36 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
-		for (int i = 0; i < 100; ++i) {
+		for (int i = 0; i < 100; ++i)
+		{
 			rnn_layer_1->execute();
 		}
 		std::cout << "DONE STRESS TESTING" << std::endl;
 	}
 #endif
 #ifdef TEST_MNIST
-	auto l1 = kernel::layers::nn::dense(64, false);
-	auto l2 = kernel::layers::activation::relu();
-	auto l3 = kernel::layers::nn::dense(64, false);
-	auto l4 = kernel::layers::activation::relu();
-	auto l5 = kernel::layers::nn::dense(10, false);
-	auto l6 = kernel::layers::activation::sigmoid();
+	std::cout << "testing mnist" << std::endl;
 
-	auto* t1 = new kernel::tensor(1.0, std::vector<int>{1, 784});
-	auto* t2 = l1.forward(t1);
-	auto* t3 = l2.forward(t2);
-	auto* t4 = l3.forward(t3);
-	auto* t5 = l4.forward(t4);
-	auto* t6 = l5.forward(t5);
-	auto* t7 = l6.forward(t6);
-	
-	for (int i = 0; i < 10000; ++i) {
-		l4.execute();
+	{
+		auto l1 = kernel::layers::nn::dense(64, false);
+		auto l2 = kernel::layers::activation::relu();
+		auto l3 = kernel::layers::nn::dense(64, false);
+		auto l4 = kernel::layers::activation::relu();
+		auto l5 = kernel::layers::nn::dense(10, false);
+		auto l6 = kernel::layers::activation::sigmoid();
+
+		auto* t1 = new kernel::tensor(1.0, std::vector<int>{1, 784});
+		auto* t2 = l1.forward(t1);
+		auto* t3 = l2.forward(t2);
+		auto* t4 = l3.forward(t3);
+		auto* t5 = l4.forward(t4);
+		auto* t6 = l5.forward(t5);
+		auto* t7 = l6.forward(t6);
+
+		l6.execute();
 	}
-#endif
 
+#endif
 }
 
 PYBIND11_MODULE(halaml, m)

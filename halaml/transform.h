@@ -66,7 +66,6 @@ namespace kernel
 			std::vector<int> output_shape() const;
 		};
 
-	
 		class copy : public Base_Layer
 		{
 		private:
@@ -74,15 +73,17 @@ namespace kernel
 		public:
 			copy(bool as_module = true);
 			tensor* forward(tensor* x);
-			void back_propagate();			
+			void back_propagate();
 		};
 
-		struct transpose_param {
+		struct transpose_param
+		{
 			int total;
 			int num_axes;
 		};
 
-		class transpose : public Base_Layer {
+		class transpose : public Base_Layer
+		{
 		private:
 			void computeGroupCount() override;
 			transpose_param m_param;
@@ -91,9 +92,8 @@ namespace kernel
 		public:
 			transpose(const std::vector<int> order, bool as_module = true);
 			tensor* forward(tensor* x);
-			void back_propagate();			
+			void back_propagate();
 		};
-
 	}
 }
 

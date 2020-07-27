@@ -13,7 +13,7 @@ namespace kernel
 	}
 
 	class context;
-	struct operator_param 
+	struct operator_param
 	{
 		int total;
 	};
@@ -26,7 +26,7 @@ namespace kernel
 		//		virtual void forward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 		//		virtual void backward(std::vector<tensor*>& ins, std::vector<tensor*>& outs) = 0;
 		void initVulkanThing(int buffer_num_forward, int buffer_num_backward = -1);
-		
+
 		void createDescriptorSetLayoutForward(int buffer_num);
 		void createDescriptorSetForward(int buffer_num);
 		void createShaderModuleForward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
@@ -44,7 +44,7 @@ namespace kernel
 		void runCommandBufferBackward();
 		virtual void computeGroupCount() = 0;
 		VkDevice m_device;
-		
+
 		VkPipeline m_pipeline_forward;
 		VkCommandBuffer m_cmd_buffer_forward;
 		VkDescriptorPool m_descriptor_pool_forward;
@@ -52,7 +52,7 @@ namespace kernel
 		VkDescriptorSetLayout m_descriptor_set_layout_forward;
 		VkPipelineLayout m_pipeline_layout_forward;
 		VkShaderModule m_module_forward;
-				
+
 		VkPipeline m_pipeline_backward;
 		VkCommandBuffer m_cmd_buffer_backward;
 		VkDescriptorPool m_descriptor_pool_backward;
@@ -60,13 +60,11 @@ namespace kernel
 		VkDescriptorSetLayout m_descriptor_set_layout_backward;
 		VkPipelineLayout m_pipeline_layout_backward;
 		VkShaderModule m_module_backward;
-				
+
 		int m_group_x;
 		int m_group_y;
 		int m_group_z;
 		std::string m_type;
-
-		layer* next;
 	};
 
 	namespace layers
@@ -85,7 +83,6 @@ namespace kernel
 
 		protected:
 
-			std::vector<layer*> layers;
 			static std::vector<tensor*>& get_tensors();
 			static std::vector<tensor*>& get_gradients();
 			static std::vector<Module*>& get_module();
@@ -103,41 +100,38 @@ namespace kernel
 			virtual void back_propagate() {};
 
 			friend class tensor;
-		
+			Module* children = nullptr;
 		};
 	}
 
-
 	class Base_Layer : public layer, public layers::Module
-	{		
+	{
 	public:
 		Base_Layer(int forward_buffers, int backward_buffers = -1, bool as_module = true, bool in_place = false);
 
-	protected:		
+	protected:
 		bool m_as_module, m_in_place;
 		operator_param m_param;
 		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
-
 	};
-
 }
 
-
-namespace kernel {
+namespace kernel
+{
 	template<class T>
 	tensor* Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt, std::vector<int> output_shape)
 	{
 		tensor* y;
-		if (m_in_place && output_shape.size() == 0)
-			y = x;
-		else {
-			if (output_shape.size() != 0)
-				y = new tensor(0.0, output_shape, fmt);
-			else
-				y = new tensor(0.0, x->getShape());
-		}
+		/*if (m_in_place && output_shape.size() == 0)
+			y = x;*/
+			//else {
+		if (output_shape.size() != 0)
+			y = new tensor(0.0, output_shape, fmt);
+		else
+			y = new tensor(0.0, x->getShape());
+		//}
 
 		if (m_pipeline_forward == nullptr)
 		{
@@ -154,7 +148,7 @@ namespace kernel {
 
 		inputs.push_back(x->getId());
 		outputs.push_back(y->getId());
-		layers.push_back(this);
+
 		return y;
 	}
 
@@ -162,14 +156,14 @@ namespace kernel {
 	tensor* Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt, std::vector<int> output_shape)
 	{
 		tensor* y;
-		if (m_in_place && output_shape.size() == 0)
-			y = x;
-		else {
-			if (output_shape.size() != 0)
-				y = new tensor(0.0, output_shape, fmt);
-			else
-				y = new tensor(0.0, x->getShape());
-		}
+		/*if (m_in_place && output_shape.size() == 0)
+			y = x;*/
+			//else {
+		if (output_shape.size() != 0)
+			y = new tensor(0.0, output_shape, fmt);
+		else
+			y = new tensor(0.0, x->getShape());
+		//}
 
 		if (m_pipeline_forward == nullptr)
 		{
@@ -188,7 +182,6 @@ namespace kernel {
 		inputs.push_back(x->getId());
 		inputs.push_back(w->getId());
 		outputs.push_back(y->getId());
-		layers.push_back(this);		
 		return y;
 	}
 
@@ -222,7 +215,6 @@ namespace kernel {
 
 		recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(T));
 	}
-
 }
 
 #endif

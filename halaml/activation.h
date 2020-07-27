@@ -5,7 +5,6 @@
 #include "madml.h"
 #include "layer.h"
 
-
 namespace kernel
 {
 	namespace layers
@@ -28,7 +27,6 @@ namespace kernel
 				unary_operator(float alpha, bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x) = 0;
 			};
-
 
 			class celu : public unary_operator
 			{
@@ -70,7 +68,6 @@ namespace kernel
 				void back_propagate() override;
 			};
 
-
 			class leakyrelu : public unary_operator
 			{
 			public:
@@ -79,7 +76,6 @@ namespace kernel
 				void back_propagate() override;
 			};
 
-
 			class logsigmoid : public unary_operator
 			{
 			public:
@@ -87,7 +83,6 @@ namespace kernel
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
-
 
 			class prelu : public unary_operator
 			{

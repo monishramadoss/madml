@@ -33,7 +33,7 @@ namespace kernel
 	}
 
 	tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt)
-	{		
+	{
 		createContext();
 		if (!counted)
 		{
@@ -46,7 +46,7 @@ namespace kernel
 		if (fmt == Format::kFormatBool)
 			data = std::shared_ptr<char>(init::fill_memory_shape<int>(shape, static_cast<int>(c)));
 		else
-			data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, c));		
+			data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, c));
 		reshape(data.get(), shape);
 	}
 
@@ -85,7 +85,7 @@ namespace kernel
 		{
 			return *this;
 		}
-				
+
 		if (m_shape != shape) m_shape = shape;
 		if (checkFormat(fmt) && fmt != format) format = fmt;
 
@@ -158,16 +158,19 @@ namespace kernel
 	}
 }
 
-namespace kernel {
-	namespace init {
-		char* normal_distribution_init(std::vector<int> shape, float mean, float std) 
+namespace kernel
+{
+	namespace init
+	{
+		char* normal_distribution_init(std::vector<int> shape, float mean, float std)
 		{
 			std::default_random_engine generator;
 			std::normal_distribution<float> distribution(mean, std);
 
 			const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 			auto* ret = new float[_shape];
-			for (int i = 0; i < _shape; ++i) {
+			for (int i = 0; i < _shape; ++i)
+			{
 				auto number = distribution(generator);
 				ret[i] = number;
 			}

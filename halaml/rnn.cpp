@@ -6,13 +6,12 @@
 #define LOCAL_SZ_Y 64
 #define MAX_COMPUTE_WORK_GROUP_COUNT 65535
 
-
 namespace kernel
 {
 	namespace layers
 	{
-		namespace rnn {
-
+		namespace rnn
+		{
 			RNNCell::RNNCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
 				0, vocab_size, hidden_size, output_size, 0, 0
 				})
@@ -72,7 +71,6 @@ namespace kernel
 				inputs.push_back(b2->getId());
 				outputs.push_back(y->getId());
 				outputs.push_back(hn->getId());
-				layers.push_back(this);
 			}
 
 			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
@@ -139,7 +137,6 @@ namespace kernel
 				outputs.push_back(y->getId());
 				outputs.push_back(hn->getId());
 				outputs.push_back(cn->getId());
-				layers.push_back(this);
 			}
 
 			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
@@ -173,7 +170,6 @@ namespace kernel
 				m_param.weight_offset = weight_offset;
 				m_param.output_offset = output_offset;
 
-
 				if (m_pipeline_forward == nullptr)
 				{
 					computeGroupCount();
@@ -201,7 +197,6 @@ namespace kernel
 				inputs.push_back(b1->getId());
 				inputs.push_back(b2->getId());
 				outputs.push_back(y->getId());
-				layers.push_back(this);
 			}
 		}
 	}

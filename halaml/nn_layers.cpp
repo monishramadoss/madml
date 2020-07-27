@@ -22,7 +22,6 @@ namespace kernel
 				auto* mm = new matmul();
 				auto* w = new tensor(1.0, std::vector<int>{input_shape[1], m_size});
 				auto* y = mm->forward(x, w);
-				layers.push_back(mm);
 
 				if (USE_BIAS)
 				{
@@ -30,7 +29,6 @@ namespace kernel
 					auto* bias = new math::add();
 					y = bias->forward(y, b);
 					biases.push_back(b->getId());
-					layers.push_back(bias);
 				}
 
 				inputs.push_back(x->getId());
@@ -43,12 +41,10 @@ namespace kernel
 			void dense::back_propagate()
 			{
 				// MxK KxN = MxN
-				// dw =  dy * x.T 
-				// db = mean(dy) 
+				// dw =  dy * x.T
+				// db = mean(dy)
 				// dx = W.T * dy
-
 			}
-
 		}
 	}
 }
@@ -70,9 +66,6 @@ namespace kernel
 				auto input_shape = x->getShape();
 				auto* kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				auto* mm = new matmul();
-				layers.push_back(kernel);
-				layers.push_back(mm);
-
 				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
 
 				auto* ir_vol2col = kernel->forward(x); //27 9
@@ -81,7 +74,6 @@ namespace kernel
 				if (USE_BIAS)
 				{
 					auto* bias = new math::add();
-					layers.push_back(bias);
 					auto* b = new tensor(1.0, y->getShape());
 					y = bias->forward(y, b);
 					biases.push_back(b->getId());
@@ -111,18 +103,13 @@ namespace kernel
 				auto input_shape = x->getShape();
 				auto* kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				auto* mm = new matmul();
-				layers.push_back(kernel);
-				layers.push_back(mm);
-
 				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
-
 				auto* ir_col2vol = kernel->forward(x);
 				auto* y = mm->forward(w, ir_col2vol);
 
 				if (USE_BIAS)
 				{
 					auto* bias = new math::add();
-					layers.push_back(bias);
 					auto* b = new tensor(1.0, y->getShape());
 					y = bias->forward(y, b);
 					biases.push_back(b->getId());
@@ -138,13 +125,6 @@ namespace kernel
 
 				return y;
 			}
-
-			void rnn_constructor_helper(int seq, int input, int hidden, int output, std::vector<rnn::RNNCell*>& layers)
-			{
-				for (int i = 0; i < seq; ++i)
-					layers.push_back(new rnn::RNNCell(input, hidden, output));
-			}
-
 
 			RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
 				float dropout, bool bias, std::string nonlinearity) :
@@ -246,7 +226,6 @@ namespace kernel
 
 				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
-
 
 			LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
 				float dropout, bool bias, std::string nonlinearity) :

@@ -46,7 +46,7 @@ namespace kernel
 			{
 			public:
 				convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-				              bool use_bias);
+					bool use_bias);
 				tensor* forward(tensor* x);
 
 				void update_weight() override
@@ -63,7 +63,7 @@ namespace kernel
 			{
 			public:
 				RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
-				    int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<tensor*, tensor*> forward(tensor* x);
 
 				void update_weight() override
@@ -78,13 +78,12 @@ namespace kernel
 				std::vector<tensor*> weights_biases;
 				std::vector<tensor*> cache;
 			};
-		
 
 			class LSTM : public Module
 			{
 			public:
 				LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
-				     int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<tensor*, tensor*, tensor*> forward(tensor* x);
 
 				void update_weight() override
@@ -100,12 +99,11 @@ namespace kernel
 				std::string nonlinearity_;
 			};
 
-		
 			class GRU : public Module
 			{
 			public:
 				GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
-				    int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<tensor*, tensor*> forward(tensor* x);
 
 				void update_weight() override

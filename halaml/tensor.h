@@ -25,7 +25,7 @@ namespace kernel
 		int count(int start_axis = 0, int end_axis = -1) const;
 		char* toHost() const;
 		tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false,
-		               Format fmt = Format::kFormatInvalid);
+			Format fmt = Format::kFormatInvalid);
 		tensor reshape(const std::vector<int>& shape);
 		void set_to(float val) const;
 		Format getFormat() const;
@@ -35,7 +35,6 @@ namespace kernel
 		std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
 
 		// init
-		
 
 	private:
 
@@ -56,9 +55,11 @@ namespace kernel
 #ifndef INIT_H
 #define INIT_H
 
-namespace kernel {
-	namespace init {
-		char* normal_distribution_init(std::vector<int> shape, float mean, float std); 
+namespace kernel
+{
+	namespace init
+	{
+		char* normal_distribution_init(std::vector<int> shape, float mean, float std);
 
 		template <typename dType = float>
 		char* fill_memory_shape(std::vector<int> shape, dType c)
