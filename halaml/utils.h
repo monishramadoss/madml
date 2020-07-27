@@ -21,27 +21,27 @@ namespace kernel
 	std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind, const std::string& data);
 	void bindTensor(VkDevice& device, tensor* tensor, int binding, VkDescriptorSet descriptor_set);
 
-	inline bool checkFormat(Format fmt) { return fmt > -1 && fmt < kFormatNum; }
+	inline bool checkFormat(Format fmt) { return fmt > Format::kFormatInvalid && fmt < Format::kFormatNum; }
 
 	inline size_t elementSize(Format fmt)
 	{
-		if (fmt == kFormatFp32 || fmt == kFormatInt32 || fmt == kFormatBool)
+		if (fmt == Format::kFormatFp32 || fmt == Format::kFormatInt32 || fmt == Format::kFormatBool)
 		{
 			return 4;
 		}
-		if (fmt == kFormatFp64 || fmt == kFormatInt64)
+		if (fmt == Format::kFormatFp64 || fmt == Format::kFormatInt64)
 		{
 			return 8;
 		}
-		if (fmt == kFormatFp16 || fmt == kFormatInt16)
+		if (fmt == Format::kFormatFp16 || fmt == Format::kFormatInt16)
 		{
 			return 2;
 		}
-		if (fmt == kFormatInt8 || fmt == kFormatUInt8)
+		if (fmt == Format::kFormatInt8 || fmt == Format::kFormatUInt8)
 		{
 			return 1;
 		}
-		if (fmt >= 0 && fmt < kFormatNum)
+		if (fmt >= Format::kFormatFp16 && fmt < Format::kFormatNum)
 		{
 			printf("Unsupported format %d", fmt);
 		}

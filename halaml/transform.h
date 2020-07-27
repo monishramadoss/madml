@@ -2,6 +2,7 @@
 #define TRANSFORM_H
 
 #include <vector>
+#include <utility>
 #include "madml.h"
 #include "layer.h"
 
@@ -49,11 +50,7 @@ namespace kernel
 		public:
 			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			tensor* forward(tensor* x);
-
-			void update_weight() override
-			{
-			}
-
+			void back_propagate();
 			std::vector<int> output_shape() const;
 		};
 
@@ -65,10 +62,7 @@ namespace kernel
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			tensor* forward(tensor* x);
-			void update_weight() override
-			{
-			}
-
+			void back_propagate();
 			std::vector<int> output_shape() const;
 		};
 
@@ -78,12 +72,26 @@ namespace kernel
 		private:
 			void computeGroupCount() override;
 		public:
-			copy();
+			copy(bool as_module = true);
 			tensor* forward(tensor* x);
-			void back_propagate();
-			void update_weight() override
-			{
-			}
+			void back_propagate();			
+		};
+
+		struct transpose_param {
+			int total;
+			int num_axes;
+		};
+
+		class transpose : public Base_Layer {
+		private:
+			void computeGroupCount() override;
+			transpose_param m_param;
+			std::vector<int> new_shape;
+			std::vector<int> stride;
+		public:
+			transpose(const std::vector<int> order, bool as_module = true);
+			tensor* forward(tensor* x);
+			void back_propagate();			
 		};
 
 	}

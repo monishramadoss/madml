@@ -43,7 +43,7 @@ for i in range(0, len(lst)):
 
     size = os.path.getsize(bin_file)
     spv_txt_file = prefix + '.spv'
-    cmd = 'glslangValidator -V ' + path + ' -S comp -o ' + spv_txt_file + ' -x' + null_out
+    cmd = 'glslangValidator -V ' + path + ' -S comp -o ' + spv_txt_file + ' -x' + null_out 
     os.system(cmd)
     infile_name = spv_txt_file
 

@@ -3,19 +3,19 @@
 
 namespace kernel
 {
-	enum Format
+	enum class Format
 	{
 		kFormatInvalid = -1,
-		kFormatFp16,
-		kFormatFp32,
-		kFormatFp64,
-		kFormatInt8,
-		kFormatInt16,
-		kFormatInt32,
-		kFormatInt64,
-		kFormatUInt8,
-		kFormatBool,
-		kFormatNum
+		kFormatFp16 = 0,
+		kFormatFp32 = 1,
+		kFormatFp64 = 2,
+		kFormatInt8 = 3,
+		kFormatInt16 = 4,
+		kFormatInt32 = 5,
+		kFormatInt64 = 6,
+		kFormatUInt8 = 7,
+		kFormatBool = 8,
+		kFormatNum = -1
 	};
 
 	enum FusedActivationType { kNone, kRelu, kRelu1, kRelu6, kActivationNum };

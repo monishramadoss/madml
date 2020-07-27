@@ -65,6 +65,8 @@ namespace kernel
 		int m_group_y;
 		int m_group_z;
 		std::string m_type;
+
+		layer* next;
 	};
 
 	namespace layers
@@ -73,7 +75,7 @@ namespace kernel
 		{
 		public:
 			static void backward();
-			virtual void update_weight() = 0;
+			virtual void update_weight();
 			void execute();
 			std::vector<int> inputs;
 			std::vector<int> outputs;
@@ -82,18 +84,18 @@ namespace kernel
 			std::vector<int> temporaries;
 
 		protected:
-			std::vector<layer*> forward_layers;
-			std::vector<layer*> backward_layers;
-			static std::vector<Module*>& get_module();
+
+			std::vector<layer*> layers;
 			static std::vector<tensor*>& get_tensors();
 			static std::vector<tensor*>& get_gradients();
-			static tensor* get_grad(int id);
+			static std::vector<Module*>& get_module();
 
+			static tensor* get_grad(int id);
 			static void zero_grad();
 
 			static void add_tensor(tensor* T);
-			static void add_module(Module* M);
 			static void add_gradient(tensor* G);
+			static void add_module(Module* M);
 
 			int batch_size = 0;
 			float lr = 0.0001f;
@@ -114,8 +116,8 @@ namespace kernel
 	protected:		
 		bool m_as_module, m_in_place;
 		operator_param m_param;
-		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt = kFormatFp32, std::vector<int> output_shape = {});
-		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt = kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 
 	};
@@ -152,7 +154,7 @@ namespace kernel {
 
 		inputs.push_back(x->getId());
 		outputs.push_back(y->getId());
-		forward_layers.push_back(this);
+		layers.push_back(this);
 		return y;
 	}
 
@@ -186,7 +188,7 @@ namespace kernel {
 		inputs.push_back(x->getId());
 		inputs.push_back(w->getId());
 		outputs.push_back(y->getId());
-		forward_layers.push_back(this);
+		layers.push_back(this);		
 		return y;
 	}
 
@@ -219,7 +221,6 @@ namespace kernel {
 		}
 
 		recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(T));
-		backward_layers.push_back(this);
 	}
 
 }

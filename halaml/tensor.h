@@ -2,6 +2,7 @@
 #define TENSOR_H
 #include <memory>
 #include <numeric>
+#include <random>
 #include <vulkan/vulkan.h>
 #include "madml.h"
 
@@ -13,7 +14,7 @@ namespace kernel
 	{
 	public:
 		tensor(Format fmt = Format::kFormatFp32);
-		tensor(char* data, const std::vector<int>& shape, Format fmt = Format::kFormatInvalid);
+		tensor(char* data, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
 		tensor(float c, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
 		void* map() const;
 		void unMap() const;
@@ -33,6 +34,9 @@ namespace kernel
 		void copyTo(tensor dst) const;
 		std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
 
+		// init
+		
+
 	private:
 
 		int id{};
@@ -47,14 +51,25 @@ namespace kernel
 	};
 }
 
-template <typename dType = float>
-char* fill_memory_shape(std::vector<int> shape, dType c)
-{
-	const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-	auto* ret = new dType[_shape];
-	for (int i = 0; i < _shape; ++i)
-		ret[i] = reinterpret_cast<dType&>(c);
-	return reinterpret_cast<char*>(ret);
+#endif
+
+#ifndef INIT_H
+#define INIT_H
+
+namespace kernel {
+	namespace init {
+		char* normal_distribution_init(std::vector<int> shape, float mean, float std); 
+
+		template <typename dType = float>
+		char* fill_memory_shape(std::vector<int> shape, dType c)
+		{
+			const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
+			auto* ret = new dType[_shape];
+			for (int i = 0; i < _shape; ++i)
+				ret[i] = reinterpret_cast<dType&>(c);
+			return reinterpret_cast<char*>(ret);
+		}
+	}
 }
 
 #endif

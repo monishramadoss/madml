@@ -58,14 +58,32 @@ void PrintMatrix(float* data, std::vector<int> shape)
 		std::cout << "]" << std::endl;
 	}
 }
-
+#define TEST_TRANS
 //#define TEST_MATH
 //#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
-#define TEST_MNIST
+//#define TEST_MNIST
 void test_fn()
 {
+
+#ifdef TEST_TRANS
+	std::cout << "testing trans_op" << std::endl;
+	{
+		const std::vector<int> shape_x{ 2, 3, 4 };
+		char* dat = kernel::init::normal_distribution_init(shape_x, 20, 2);
+		auto* t1 = new kernel::tensor(dat, shape_x);
+		auto k1 = kernel::layers::transpose(std::vector<int>{ 1, 2, 0});
+		auto* t2 = k1.forward(t1);
+	
+		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+		k1.execute();
+		PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
+		std::cout << "\n\n\n";
+		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+	}
+#endif
+
 #ifdef TEST_MATH
 	std::cout << "testing add_op" << std::endl;
 	{
@@ -219,7 +237,6 @@ void test_fn()
 	}
 #endif
 
-	std::cin.get();
 }
 
 PYBIND11_MODULE(halaml, m)

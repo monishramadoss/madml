@@ -1,7 +1,8 @@
 #version 450
+
 layout(push_constant) uniform pushBlock {
       int total;
-      int num_dims;
+      int num_axes;
 } p;
 
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
@@ -9,14 +10,30 @@ layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 layout (binding = 0) readonly buffer ssbA {
   float A[];
 };
+
 layout (binding = 1) writeonly buffer ssbB {
   float B[];
 };
 
+layout(binding = 2) readonly buffer Input2{
+    int stride[];
+};
+
+
 
 void main(){
-    for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.total; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
-      
+    for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.total; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x)
+    {
+        uint old_pos = 0;
+        int new_pos = int(globalRow);
 
+        for(uint j = 0; j < p.num_axes; ++j)
+        {
+            int order = stride[j];
+            old_pos += (new_pos / stride[p.num_axes + j]) * stride[p.num_axes*2 + order];
+            new_pos %= stride[p.num_axes + j];
+        }
+        
+        B[globalRow] = A[uint(abs(old_pos))];
     }
 }

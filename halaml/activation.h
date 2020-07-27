@@ -27,7 +27,6 @@ namespace kernel
 			public:
 				unary_operator(float alpha, bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x) = 0;
-				void update_weight() override {}
 			};
 
 

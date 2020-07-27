@@ -46,7 +46,7 @@ namespace kernel
 
 	void layer::initVulkanThing(int buffer_num_forward, int buffer_num_backward)
 	{
-		
+
 		createDescriptorSetLayoutForward(buffer_num_forward);
 		createDescriptorSetForward(buffer_num_forward);
 		createCommandBufferForward();
@@ -153,8 +153,8 @@ namespace kernel
 		VK_CHECK_RESULT(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &pipeline_create_info, 0, &m_pipeline_forward));
 	}
 
-	
-	
+
+
 	void layer::createCommandBufferForward()
 	{
 		VkCommandBufferAllocateInfo info = {};
@@ -176,17 +176,17 @@ namespace kernel
 		VK_CHECK_RESULT(vkBeginCommandBuffer(m_cmd_buffer_forward, &beginInfo));
 		if (push_constants)
 			vkCmdPushConstants(m_cmd_buffer_forward, m_pipeline_layout_forward, VK_SHADER_STAGE_COMPUTE_BIT, 0,
-			                   static_cast<uint32_t>(push_constants_size), push_constants);
+				static_cast<uint32_t>(push_constants_size), push_constants);
 		vkCmdBindPipeline(m_cmd_buffer_forward, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_forward);
 		vkCmdBindDescriptorSets(m_cmd_buffer_forward, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_layout_forward, 0, 1,
-		                        &m_descriptor_set_forward, 0, nullptr);
+			&m_descriptor_set_forward, 0, nullptr);
 		vkCmdDispatch(m_cmd_buffer_forward, m_group_x, m_group_y, m_group_z);
 
 		VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer_forward));
 		kContextMtx.unlock();
 	}
 
-	
+
 
 	void layer::runCommandBufferForward() const
 	{
@@ -211,8 +211,8 @@ namespace kernel
 		vkDestroyFence(m_device, fence, nullptr);
 	}
 
-	
-		void layer::createDescriptorSetLayoutBackward(int buffer_num)
+
+	void layer::createDescriptorSetLayoutBackward(int buffer_num)
 	{
 		if (buffer_num <= 0)
 			return;
@@ -271,7 +271,7 @@ namespace kernel
 		}
 		VK_CHECK_RESULT(vkCreateShaderModule(m_device, &create_info, 0, &m_module_backward));
 	}
-	
+
 	void layer::createPipelineBackward(size_t push_constants_size, VkSpecializationInfo* specialization_info)
 	{
 		VkPipelineShaderStageCreateInfo stage_create_info = {};
@@ -301,7 +301,7 @@ namespace kernel
 		pipeline_create_info.layout = m_pipeline_layout_backward;
 		VK_CHECK_RESULT(vkCreateComputePipelines(m_device, VK_NULL_HANDLE, 1, &pipeline_create_info, 0, &m_pipeline_backward));
 	}
-	
+
 	void layer::createCommandBufferBackward()
 	{
 		VkCommandBufferAllocateInfo info = {};
@@ -311,7 +311,7 @@ namespace kernel
 		info.commandBufferCount = 1;
 		VK_CHECK_RESULT(vkAllocateCommandBuffers(m_device, &info, &m_cmd_buffer_backward));
 	}
-	 
+
 	void layer::recordCommandBufferBackward(void* push_constants, size_t push_constants_size)
 	{
 		VkCommandBufferBeginInfo beginInfo = {};
@@ -332,7 +332,7 @@ namespace kernel
 		kContextMtx.unlock();
 	}
 
-	void layer::runCommandBufferBackward() 
+	void layer::runCommandBufferBackward()
 	{
 		//TODO: generate with thread pool;
 		VkSubmitInfo submit_info = {};
@@ -356,40 +356,22 @@ namespace kernel
 	}
 
 
-	
+
 	namespace layers
 	{
+		void Module::update_weight()
+		{
+
+		}
+
 		void Module::backward()
 		{
-			auto tmp = get_module();
-			for(size_t i = tmp.size() - 1; i >= 0; --i) {
-				tmp[i]->back_propagate();
-			}
-
-			for (auto m : tmp) {
-				for (auto& layer : m->backward_layers) {
-					layer->runCommandBufferBackward();
-				}
-			}
-
 
 		}
 
 		void Module::execute()
 		{
-			auto tmp = get_module();
-			for (auto m : tmp){
-				for (auto& layer : m->forward_layers)
-				{
-					layer->runCommandBufferForward(); //inconsitencies in layer allocations;
-				}
-			}
-		}
 
-		std::vector<Module*>& Module::get_module()
-		{
-			static std::vector<Module*> M;
-			return M;
 		}
 
 		std::vector<tensor*>& Module::get_tensors()
@@ -404,16 +386,16 @@ namespace kernel
 			return G;
 		}
 
-		tensor* Module::get_grad(int id) 
+		std::vector<Module*>& Module::get_module()
+		{
+			static std::vector<Module*> M;
+			return M;
+		}
+
+		tensor* Module::get_grad(int id)
 		{
 			auto T = get_gradients();
 			return T[id];
-		}
-
-		void Module::add_module(Module* M)
-		{
-			auto& m = get_module();
-			m.push_back(M);
 		}
 
 		void Module::add_tensor(tensor* T)
@@ -422,17 +404,23 @@ namespace kernel
 			t.push_back(T);
 		}
 
-		void Module::add_gradient(tensor* G) 
+		void Module::add_gradient(tensor* G)
 		{
 			auto& g = get_gradients();
 			g.push_back(G);
 		}
-			
-		void Module::zero_grad() 
+
+		void Module::add_module(Module* M)
+		{
+			auto& m = get_module();
+			m.push_back(M);
+		}
+
+		void Module::zero_grad()
 		{
 			auto& G = get_gradients();
 			auto& T = get_tensors();
-			if(G.size() != T.size()){
+			if (G.size() != T.size()) {
 				for (auto t : T) {
 					G.push_back(new tensor(0.0, t->getShape()));
 				}
@@ -441,6 +429,7 @@ namespace kernel
 	}
 
 	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool as_module, bool in_place) : m_as_module(as_module), m_in_place(in_place), m_param({ 0 }) {
+		add_module(this);
 		initVulkanThing(forward_buffers, backward_buffers);
 	}
 }

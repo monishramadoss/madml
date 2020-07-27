@@ -64,7 +64,7 @@ namespace kernel {
 		extern const unsigned int lstmCell_spv[2659];
 		extern const unsigned int rnnCell_spv[1578];
 		extern const unsigned int col2vol_spv[2060];
-		extern const unsigned int transpose_spv[377];
+		extern const unsigned int transpose_spv[752];
 		extern const unsigned int vol2col_spv[2165];
 		extern const unsigned int abs_spv[404];
 		extern const unsigned int ceil_spv[404];

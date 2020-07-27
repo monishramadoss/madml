@@ -19,7 +19,6 @@ namespace kernel
 			public:
 				unary_operator(bool in_place, bool as_module = true);
 				virtual tensor* forward(tensor* x) = 0;
-				void update_weight() override;
 			};
 
 			class binary_operator : public Base_Layer
@@ -28,8 +27,7 @@ namespace kernel
 				void computeGroupCount() override;
 			public:
 				binary_operator(bool in_place, bool as_module = true);
-				virtual tensor* forward(tensor* x, tensor* w) = 0;
-				void update_weight() override;
+				virtual tensor* forward(tensor* x, tensor* w) = 0;				
 			};
 		}
 	}

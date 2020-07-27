@@ -25,10 +25,6 @@ namespace kernel
 				m_group_z = 1;
 			}
 							
-			void unary_operator::update_weight()
-			{
-			}
-
 			binary_operator::binary_operator(bool in_place, bool as_module) : Base_Layer(3, -1, in_place, as_module)
 			{
 			}
@@ -42,10 +38,6 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			
-			void binary_operator::update_weight()
-			{
-			}
 		}
 	}
 }
@@ -484,7 +476,7 @@ namespace kernel
 
 			tensor* eq::forward(tensor* x, tensor* w)
 			{
-				return layer_construct_forward(shaders::equal_spv, sizeof(shaders::equal_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::equal_spv, sizeof(shaders::equal_spv), x, w, m_param, Format::kFormatBool);
 			}
 
 			void eq::back_propagate() 
@@ -499,7 +491,7 @@ namespace kernel
 
 			tensor* ne::forward(tensor* x, tensor* w)
 			{
-				return layer_construct_forward(shaders::nequal_spv, sizeof(shaders::nequal_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::nequal_spv, sizeof(shaders::nequal_spv), x, w, m_param, Format::kFormatBool);
 			}
 
 			void ne::back_propagate() 
@@ -514,7 +506,7 @@ namespace kernel
 
 			tensor* lt::forward(tensor* x, tensor* w)
 			{				
-				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w, m_param, Format::kFormatBool);
 			}
 
 			void lt::back_propagate() 
@@ -529,7 +521,7 @@ namespace kernel
 
 			tensor* le::forward(tensor* x, tensor* w)
 			{
-				return layer_construct_forward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv), x, w, m_param, Format::kFormatBool);
 			}
 
 			void le::back_propagate() 
@@ -544,7 +536,7 @@ namespace kernel
 
 			tensor* gt::forward(tensor* x, tensor* w)
 			{
-				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w, m_param, Format::kFormatBool);
 			}
 
 
@@ -560,7 +552,7 @@ namespace kernel
 
 			tensor* ge::forward(tensor* x, tensor* w)
 			{
-				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w, m_param, Format::kFormatBool);
 			}
 
 
@@ -582,7 +574,7 @@ namespace kernel
 					return nullptr;
 				}
 
-				return layer_construct_forward(shaders::xor_spv, sizeof(shaders::xor_spv), x, w, m_param, kFormatBool);
+				return layer_construct_forward(shaders::xor_spv, sizeof(shaders::xor_spv), x, w, m_param, Format::kFormatBool);
 				
 			}
 

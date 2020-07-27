@@ -62,6 +62,3 @@ for x, y in zip(tr_x, tr_y):
     pass
 
 
-import madml
-import madml.nn as nn
-

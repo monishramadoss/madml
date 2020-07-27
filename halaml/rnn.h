@@ -8,7 +8,8 @@ namespace kernel
 {
 	namespace layers
 	{
-		namespace rnn {
+		namespace rnn 
+		{
 			struct RNN_cell_param
 			{
 				int total;

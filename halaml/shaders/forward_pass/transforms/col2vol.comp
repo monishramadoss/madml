@@ -41,14 +41,14 @@ void col2vol(){
     uint n_output_plane = channels / (kernel_h * kernel_w * kernel_d);
     uint channels_col = channels * kernel_h * kernel_w * kernel_d;
 
-    uint elt = gl_GlobalInvocationID.x;
+    uint elt = gl_GlobalInvocationID.y;
     if(elt >= batchsize)
         return;
 
     uint data_col = elt * n_output_plane * height_vol * width_vol * depth_vol;
     uint data_vol = elt * channels * height_col * width_col * depth_col;
     
-    uint c_col = gl_GlobalInvocationID.y;
+    uint c_col = gl_GlobalInvocationID.x;
     if(c_col >= channels_col)
         return;
 
