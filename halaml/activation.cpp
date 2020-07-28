@@ -10,9 +10,8 @@ namespace kernel
 	{
 		namespace activation
 		{
-			unary_operator::unary_operator(float alpha, bool in_place, bool as_module) : Base_Layer(2, -1, in_place, as_module), m_param({ 0, alpha })
+			unary_operator::unary_operator(float alpha, bool in_place) : Base_Layer(2, -1, in_place), m_param({ 0, alpha })
 			{
-				auto* t = new tensor();
 			}
 
 			void unary_operator::computeGroupCount()
@@ -24,7 +23,7 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			celu::celu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			celu::celu(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "celu";
 			}
@@ -40,7 +39,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::d_celu_spv, sizeof(shaders::d_celu_spv), m_param);
 			}
 
-			elu::elu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			elu::elu(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "elu";
 			}
@@ -55,7 +54,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::d_elu_spv, sizeof(shaders::d_elu_spv), m_param);
 			}
 
-			hardshrink::hardshrink(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			hardshrink::hardshrink(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "hardshrink";
 			}
@@ -70,8 +69,8 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			hardtanh::hardtanh(float min_val, float max_val, bool in_place, bool as_module) :
-				unary_operator(0, in_place, as_module), m_param({ 0, min_val, max_val })
+			hardtanh::hardtanh(float min_val, float max_val, bool in_place) :
+				unary_operator(0, in_place), m_param({ 0, min_val, max_val })
 			{
 				m_type = "hardtanh";
 			}
@@ -87,7 +86,7 @@ namespace kernel
 				layer_construct_backward<two_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			leakyrelu::leakyrelu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			leakyrelu::leakyrelu(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "leakyrelu";
 			}
@@ -102,7 +101,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			logsigmoid::logsigmoid(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			logsigmoid::logsigmoid(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "logsigmoid";
 			}
@@ -117,7 +116,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			prelu::prelu(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			prelu::prelu(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "prelu";
 			}
@@ -132,7 +131,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			relu::relu(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
+			relu::relu(bool in_place) : unary_operator(0, in_place)
 			{
 				m_type = "relu";
 			}
@@ -147,7 +146,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::d_relu_spv, sizeof(shaders::d_relu_spv), m_param);
 			}
 
-			relu6::relu6(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
+			relu6::relu6(bool in_place) : unary_operator(0, in_place)
 			{
 				m_type = "relu6";
 			}
@@ -162,7 +161,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::d_relu6_spv, sizeof(shaders::d_relu6_spv), m_param);
 			}
 
-			selu::selu(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
+			selu::selu(bool in_place) : unary_operator(0, in_place)
 			{
 				m_type = "selu";
 			}
@@ -177,7 +176,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			sigmoid::sigmoid(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
+			sigmoid::sigmoid(bool in_place) : unary_operator(0, in_place)
 			{
 				m_type = "sigmoid";
 			}
@@ -192,7 +191,7 @@ namespace kernel
 				layer_construct_backward <activation_param>(shaders::d_sigmoid_spv, sizeof(shaders::d_sigmoid_spv), m_param);
 			}
 
-			softplus::softplus(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			softplus::softplus(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "softplus";
 			}
@@ -207,7 +206,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			softshrink::softshrink(float alpha, bool in_place, bool as_module) : unary_operator(alpha, in_place, as_module)
+			softshrink::softshrink(float alpha, bool in_place) : unary_operator(alpha, in_place)
 			{
 				m_type = "softshrink";
 			}
@@ -222,7 +221,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			softsign::softsign(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
+			softsign::softsign(bool in_place) : unary_operator(0, in_place)
 			{
 				m_type = "softsign";
 			}
@@ -237,7 +236,7 @@ namespace kernel
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			tanhshrink::tanhshrink(bool in_place, bool as_module) : unary_operator(0, in_place, as_module)
+			tanhshrink::tanhshrink(bool in_place) : unary_operator(0, in_place)
 			{
 				m_type = "tanhshrink";
 			}

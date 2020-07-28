@@ -71,7 +71,7 @@ namespace kernel
 		private:
 			void computeGroupCount() override;
 		public:
-			copy(bool as_module = true);
+			copy();
 			tensor* forward(tensor* x);
 			void back_propagate();
 		};
@@ -90,7 +90,7 @@ namespace kernel
 			std::vector<int> new_shape;
 			std::vector<int> stride;
 		public:
-			transpose(const std::vector<int> order, bool as_module = true);
+			transpose(const std::vector<int> order);
 			tensor* forward(tensor* x);
 			void back_propagate();
 		};

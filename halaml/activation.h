@@ -24,14 +24,14 @@ namespace kernel
 				void computeGroupCount() override;
 
 			public:
-				unary_operator(float alpha, bool in_place, bool as_module = true);
+				unary_operator(float alpha, bool in_place);
 				virtual tensor* forward(tensor* x) = 0;
 			};
 
 			class celu : public unary_operator
 			{
 			public:
-				explicit celu(float alpha, bool in_place = false, bool as_module = true);
+				explicit celu(float alpha, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -39,7 +39,7 @@ namespace kernel
 			class elu : public unary_operator
 			{
 			public:
-				explicit elu(float alpha, bool in_place = false, bool as_module = true);
+				explicit elu(float alpha, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -47,7 +47,7 @@ namespace kernel
 			class hardshrink : public unary_operator
 			{
 			public:
-				explicit hardshrink(float lambda, bool in_place = false, bool as_module = true);
+				explicit hardshrink(float lambda, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -63,7 +63,7 @@ namespace kernel
 			{
 				two_param m_param;
 			public:
-				explicit hardtanh(float min_val = -1, float max_val = 1, bool in_place = false, bool as_module = true);
+				explicit hardtanh(float min_val = -1, float max_val = 1, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -71,7 +71,7 @@ namespace kernel
 			class leakyrelu : public unary_operator
 			{
 			public:
-				explicit leakyrelu(float slope = -0.01, bool in_place = false, bool as_module = true);
+				explicit leakyrelu(float slope = -0.01, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -79,7 +79,7 @@ namespace kernel
 			class logsigmoid : public unary_operator
 			{
 			public:
-				explicit logsigmoid(float alpha = -0.01, bool in_place = false, bool as_module = true);
+				explicit logsigmoid(float alpha = -0.01, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -87,7 +87,7 @@ namespace kernel
 			class prelu : public unary_operator
 			{
 			public:
-				explicit prelu(float alpha = -0.01, bool in_place = false, bool as_module = true);
+				explicit prelu(float alpha = -0.01, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -95,7 +95,7 @@ namespace kernel
 			class relu : public unary_operator
 			{
 			public:
-				explicit relu(bool in_place = false, bool as_module = true);
+				explicit relu(bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -103,7 +103,7 @@ namespace kernel
 			class relu6 : public unary_operator
 			{
 			public:
-				explicit relu6(bool in_place = false, bool as_module = true);
+				explicit relu6(bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -111,7 +111,7 @@ namespace kernel
 			class selu : public unary_operator
 			{
 			public:
-				explicit selu(bool in_place = false, bool as_module = true);
+				explicit selu(bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -119,7 +119,7 @@ namespace kernel
 			class sigmoid : public unary_operator
 			{
 			public:
-				explicit sigmoid(bool in_place = false, bool as_module = true);
+				explicit sigmoid(bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -127,7 +127,7 @@ namespace kernel
 			class softplus : public unary_operator
 			{
 			public:
-				explicit softplus(float alpha, bool in_place = false, bool as_module = true);
+				explicit softplus(float alpha, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -135,7 +135,7 @@ namespace kernel
 			class softshrink : public unary_operator
 			{
 			public:
-				explicit softshrink(float alpha, bool in_place = false, bool as_module = true);
+				explicit softshrink(float alpha, bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -143,7 +143,7 @@ namespace kernel
 			class softsign : public unary_operator
 			{
 			public:
-				explicit softsign(bool in_place = false, bool as_module = true);
+				explicit softsign(bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};
@@ -151,7 +151,7 @@ namespace kernel
 			class tanhshrink : public unary_operator
 			{
 			public:
-				explicit tanhshrink(bool in_place = false, bool as_module = true);
+				explicit tanhshrink(bool in_place = false);
 				tensor* forward(tensor* x) override;
 				void back_propagate() override;
 			};

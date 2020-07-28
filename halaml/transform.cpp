@@ -44,33 +44,14 @@ namespace kernel
 			m_param.depth_vol = depth;
 			m_param.height_vol = height;
 			m_param.width_vol = width;
-			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.
-				stride_d + 1;
-			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.
-				stride_h + 1;
-			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.
-				stride_w + 1;
-
-			if (m_pipeline_forward == nullptr)
-			{
-				computeGroupCount();
-				createShaderModuleForward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
-				createPipelineForward(sizeof(vol2col_param));
-			}
+			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.stride_d + 1;
+			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.stride_h + 1;
+			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.stride_w + 1;
 
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
-			auto* y = new tensor(0.0, std::vector<int>{output_length* n_out_plane});
-
-			bindTensor(m_device, x, 0, m_descriptor_set_forward);
-			bindTensor(m_device, y, 1, m_descriptor_set_forward);
-
-			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(vol2col_param));
+			auto* y = layer_construct_forward<vol2col_param>(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, m_param, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
-
-			inputs.push_back(x->getId());
-			outputs.push_back(y->getId());
-
 			return y;
 		}
 
@@ -86,24 +67,10 @@ namespace kernel
 			m_param.depth_col = depth;
 			m_param.height_col = height;
 			m_param.width_col = width;
-			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d
-				- 1) + m_param.pad_d + 1;
-			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.
-				kernel_h - 1) + m_param.pad_h + 1;
-			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w
-				- 1) + m_param.pad_w + 1;
-
-			if (m_pipeline_backward == nullptr)
-			{
-				computeGroupCount();
-				createShaderModuleBackward(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
-				createPipelineBackward(sizeof(vol2col_param));
-			}
-
-			bindTensor(m_device, x, 1, m_descriptor_set_backward);
-			bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-			recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(vol2col_param));
+			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1) + m_param.pad_d + 1;
+			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h - 1) + m_param.pad_h + 1;
+			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
+			layer_construct_backward <vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), m_param);
 		}
 
 		std::vector<int> vol2col::output_shape() const
@@ -138,37 +105,21 @@ namespace kernel
 
 		tensor* col2vol::forward(tensor* x)
 		{
-			if (m_pipeline_forward == nullptr)
-			{
-				const int depth = x->getShape()[x->getShape().size() - 3];
-				const int height = x->getShape()[x->getShape().size() - 2];
-				const int width = x->getShape()[x->getShape().size() - 1];
-				m_param.batchsize = 1;
-				m_param.depth_col = depth;
-				m_param.height_col = height;
-				m_param.width_col = width;
-				m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d
-					- 1) + m_param.pad_d + 1;
-				m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.
-					kernel_h - 1) + m_param.pad_h + 1;
-				m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w
-					- 1) + m_param.pad_w + 1;
-				computeGroupCount();
-				createShaderModuleForward(shaders::col2vol_spv, sizeof(shaders::col2vol_spv));
-				createPipelineForward(sizeof(vol2col_param));
-			}
+			const int depth = x->getShape()[x->getShape().size() - 3];
+			const int height = x->getShape()[x->getShape().size() - 2];
+			const int width = x->getShape()[x->getShape().size() - 1];
+			m_param.batchsize = 1;
+			m_param.depth_col = depth;
+			m_param.height_col = height;
+			m_param.width_col = width;
+			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1) + m_param.pad_d + 1;
+			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h - 1) + m_param.pad_h + 1;
+			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
 			const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 			const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
-			auto* y = new tensor(0.0, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
-			bindTensor(m_device, x, 0, m_descriptor_set_forward);
-			bindTensor(m_device, y, 1, m_descriptor_set_forward);
 
-			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(vol2col_param));
+			auto* y = layer_construct_forward<vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, m_param, Format::kFormatFp32, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
-
-			inputs.push_back(x->getId());
-			outputs.push_back(y->getId());
-
 			return y;
 		}
 
@@ -180,24 +131,10 @@ namespace kernel
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
 			const int width = x->getShape()[x->getShape().size() - 1];
-			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.
-				stride_d + 1;
-			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.
-				stride_h + 1;
-			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.
-				stride_w + 1;
-
-			if (m_pipeline_backward == nullptr)
-			{
-				computeGroupCount();
-				createShaderModuleBackward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv));
-				createPipelineBackward(sizeof(vol2col_param));
-			}
-
-			bindTensor(m_device, x, 1, m_descriptor_set_backward);
-			bindTensor(m_device, y, 0, m_descriptor_set_backward);
-
-			recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(vol2col_param));
+			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.stride_d + 1;
+			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.stride_h + 1;
+			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.stride_w + 1;
+			layer_construct_backward <vol2col_param>(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), m_param);
 		}
 
 		std::vector<int> col2vol::output_shape() const
@@ -205,7 +142,7 @@ namespace kernel
 			return std::vector<int>{m_param.depth_vol, m_param.height_vol, m_param.width_vol};
 		}
 
-		copy::copy(bool as_module) : Base_Layer(2, 2, as_module)
+		copy::copy() : Base_Layer(2, 2)
 		{
 			m_type = "copy";
 		}
@@ -243,7 +180,7 @@ namespace kernel
 			return stride;
 		}
 
-		transpose::transpose(const std::vector<int> order, bool as_module) : Base_Layer(4, 4, as_module), m_param({ 0,0 })
+		transpose::transpose(const std::vector<int> order) : Base_Layer(4, 4), m_param({ 0,0 })
 		{
 			m_type = "transpose";
 			m_param.num_axes = static_cast<int>(order.size());
@@ -278,7 +215,7 @@ namespace kernel
 
 			inputs.push_back(x->getId());
 			outputs.push_back(y->getId());
-
+			parents.push_back(get_input_id(x->getId()));
 			return y;
 		}
 

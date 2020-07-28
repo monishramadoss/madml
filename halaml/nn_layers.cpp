@@ -14,13 +14,19 @@ namespace kernel
 		{
 			dense::dense(int size, bool use_bias) : m_size(size), USE_BIAS(use_bias)
 			{
+				m_type = "dense";
+				update_id();
+				add_module(this);
+				requires_subgraph = true;
 			}
 
 			tensor* dense::forward(tensor* x)
 			{
+				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
 				auto* mm = new matmul();
 				auto* w = new tensor(1.0, std::vector<int>{input_shape[1], m_size});
+				weights.push_back(w->getId());
 				auto* y = mm->forward(x, w);
 
 				if (USE_BIAS)
@@ -31,8 +37,6 @@ namespace kernel
 					biases.push_back(b->getId());
 				}
 
-				inputs.push_back(x->getId());
-				weights.push_back(w->getId());
 				outputs.push_back(y->getId());
 
 				return y;
@@ -59,16 +63,22 @@ namespace kernel
 				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
 				m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 			{
+				m_type = "conv";
+				update_id();
+				add_module(this);
+				requires_subgraph = true;
 			}
 
 			tensor* conv::forward(tensor* x)
 			{
+				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
 				auto* kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				auto* mm = new matmul();
 				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
-
+				weights.push_back(w->getId());
 				auto* ir_vol2col = kernel->forward(x); //27 9
+				temporaries.push_back(ir_vol2col->getId());
 				auto* y = mm->forward(w, ir_vol2col);
 
 				if (USE_BIAS)
@@ -79,9 +89,6 @@ namespace kernel
 					biases.push_back(b->getId());
 				}
 
-				inputs.push_back(x->getId());
-				weights.push_back(w->getId());
-				temporaries.push_back(ir_vol2col->getId());
 				outputs.push_back(y->getId());
 
 				auto out = kernel->output_shape();
@@ -96,15 +103,22 @@ namespace kernel
 				m_stride(stride), m_padding(padding), m_dilation(dilation),
 				USE_BIAS(use_bias)
 			{
+				m_type = "convT";
+				update_id();
+				add_module(this);
+				requires_subgraph = true;
 			}
 
 			tensor* convTranspose::forward(tensor* x)
 			{
+				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
 				auto* kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				auto* mm = new matmul();
 				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
+				weights.push_back(w->getId());
 				auto* ir_col2vol = kernel->forward(x);
+				temporaries.push_back(ir_col2vol->getId());
 				auto* y = mm->forward(w, ir_col2vol);
 
 				if (USE_BIAS)
@@ -115,9 +129,6 @@ namespace kernel
 					biases.push_back(b->getId());
 				}
 
-				inputs.push_back(x->getId());
-				weights.push_back(w->getId());
-				temporaries.push_back(ir_col2vol->getId());
 				outputs.push_back(y->getId());
 
 				auto out = kernel->output_shape();
@@ -131,6 +142,10 @@ namespace kernel
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
 			{
+				m_type = "RNN";
+				update_id();
+				add_module(this);
+				requires_subgraph = true;
 				if (bidirectional)
 					m_directions = 2;
 				if (output_size == 0)
@@ -232,6 +247,10 @@ namespace kernel
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 			{
+				m_type = "LSTM";
+				update_id();
+				requires_subgraph = true;
+				add_module(this);
 				if (bidirectional)
 					m_directions = 2;
 				if (output_size == 0)
@@ -339,6 +358,10 @@ namespace kernel
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 			{
+				m_type = "GRU";
+				update_id();
+				add_module(this);
+				requires_subgraph = true;
 				if (bidirectional)
 					m_directions = 2;
 				if (output_size == 0)

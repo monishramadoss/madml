@@ -12,7 +12,7 @@ namespace kernel
 	{
 		namespace math
 		{
-			unary_operator::unary_operator(bool in_place, bool as_module) : Base_Layer(2, -1, in_place, as_module)
+			unary_operator::unary_operator(bool in_place) : Base_Layer(2, -1, in_place)
 			{
 			}
 
@@ -25,7 +25,7 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			binary_operator::binary_operator(bool in_place, bool as_module) : Base_Layer(3, -1, in_place, as_module)
+			binary_operator::binary_operator(bool in_place) : Base_Layer(3, -1, in_place)
 			{
 			}
 
@@ -47,7 +47,7 @@ namespace kernel
 	{
 		namespace math
 		{
-			abs::abs(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			abs::abs(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "abs";
 			}
@@ -62,7 +62,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_abs_spv, sizeof(shaders::d_abs_spv), m_param);
 			}
 
-			ceil::ceil(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			ceil::ceil(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "ceil";
 			}
@@ -77,7 +77,7 @@ namespace kernel
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			clip::clip(float min, float max, bool in_place, bool as_module) : unary_operator(in_place, as_module), m_param({ 0, min, max })
+			clip::clip(float min, float max, bool in_place) : unary_operator(in_place), m_param({ 0, min, max })
 			{
 				m_type = "clip";
 			}
@@ -92,7 +92,7 @@ namespace kernel
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			exp::exp(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			exp::exp(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "exp";
 			}
@@ -107,7 +107,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_exp_spv, sizeof(shaders::d_exp_spv), m_param);
 			}
 
-			floor::floor(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			floor::floor(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "floor";
 			}
@@ -122,7 +122,7 @@ namespace kernel
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			ln::ln(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			ln::ln(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "ln";
 			}
@@ -137,7 +137,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_ln_spv, sizeof(shaders::d_ln_spv), m_param);
 			}
 
-			round::round(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			round::round(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "round";
 			}
@@ -152,7 +152,7 @@ namespace kernel
 				layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
 
-			sqrt::sqrt(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			sqrt::sqrt(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "sqrt";
 			}
@@ -167,7 +167,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_sqrt_spv, sizeof(shaders::d_sqrt_spv), m_param);
 			}
 
-			acos::acos(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			acos::acos(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "acos";
 			}
@@ -182,7 +182,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_acos_spv, sizeof(shaders::d_acos_spv), m_param);
 			}
 
-			acosh::acosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			acosh::acosh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "acosh";
 			}
@@ -197,7 +197,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_acosh_spv, sizeof(shaders::d_acosh_spv), m_param);
 			}
 
-			asin::asin(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			asin::asin(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "asin";
 			}
@@ -212,7 +212,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_asin_spv, sizeof(shaders::d_asin_spv), m_param);
 			}
 
-			asinh::asinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			asinh::asinh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "asinh";
 			}
@@ -227,7 +227,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_asinh_spv, sizeof(shaders::d_asinh_spv), m_param);
 			}
 
-			atan::atan(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			atan::atan(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "atan";
 			}
@@ -242,7 +242,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_atan_spv, sizeof(shaders::d_atan_spv), m_param);
 			}
 
-			atanh::atanh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			atanh::atanh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "atan";
 			}
@@ -257,7 +257,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_atanh_spv, sizeof(shaders::d_atanh_spv), m_param);
 			}
 
-			cos::cos(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			cos::cos(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "cos";
 			}
@@ -272,7 +272,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_cos_spv, sizeof(shaders::d_cos_spv), m_param);
 			}
 
-			cosh::cosh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			cosh::cosh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "cosh";
 			}
@@ -287,7 +287,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_cosh_spv, sizeof(shaders::d_cosh_spv), m_param);
 			}
 
-			sin::sin(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			sin::sin(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "sin";
 			}
@@ -302,7 +302,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_sin_spv, sizeof(shaders::d_sin_spv), m_param);
 			}
 
-			sinh::sinh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			sinh::sinh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "sinh";
 			}
@@ -317,7 +317,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_sinh_spv, sizeof(shaders::d_sinh_spv), m_param);
 			}
 
-			tan::tan(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			tan::tan(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "tan";
 			}
@@ -332,7 +332,7 @@ namespace kernel
 				layer_construct_backward(shaders::d_tan_spv, sizeof(shaders::d_tan_spv), m_param);
 			}
 
-			tanh::tanh(bool in_place, bool as_module) : unary_operator(in_place, as_module)
+			tanh::tanh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "tanh";
 			}
@@ -356,7 +356,7 @@ namespace kernel
 	{
 		namespace math
 		{
-			add::add(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			add::add(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "add";
 			}
@@ -371,7 +371,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			sub::sub(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			sub::sub(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "sub";
 			}
@@ -386,7 +386,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			mul::mul(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			mul::mul(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "mul";
 			}
@@ -401,7 +401,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			div::div(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			div::div(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "div";
 			}
@@ -416,7 +416,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			mod::mod(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			mod::mod(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "mod";
 			}
@@ -431,7 +431,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			pow::pow(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			pow::pow(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "pow";
 			}
@@ -446,7 +446,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			max::max(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			max::max(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "max";
 			}
@@ -461,7 +461,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			min::min(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			min::min(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "min";
 			}
@@ -476,7 +476,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			eq::eq(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			eq::eq(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "eq";
 			}
@@ -491,7 +491,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			ne::ne(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			ne::ne(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "ne";
 			}
@@ -506,7 +506,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			lt::lt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			lt::lt(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "lt";
 			}
@@ -521,7 +521,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			le::le(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			le::le(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "le";
 			}
@@ -536,7 +536,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			gt::gt(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			gt::gt(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "gt";
 			}
@@ -551,7 +551,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			ge::ge(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			ge::ge(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "greater_eq";
 			}
@@ -566,7 +566,7 @@ namespace kernel
 				layer_construct_backward(shaders::binary_operator_spv, sizeof(shaders::binary_operator_spv), m_param);
 			}
 
-			xr::xr(bool in_place, bool as_module) : binary_operator(in_place, as_module)
+			xr::xr(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "xor";
 			}

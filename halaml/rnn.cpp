@@ -71,6 +71,9 @@ namespace kernel
 				inputs.push_back(b2->getId());
 				outputs.push_back(y->getId());
 				outputs.push_back(hn->getId());
+
+				parents.push_back(get_input_id(x->getId()));
+				parents.push_back(get_input_id(h->getId()));
 			}
 
 			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
@@ -137,6 +140,8 @@ namespace kernel
 				outputs.push_back(y->getId());
 				outputs.push_back(hn->getId());
 				outputs.push_back(cn->getId());
+				parents.push_back(get_input_id(x->getId()));
+				parents.push_back(get_input_id(h->getId()));
 			}
 
 			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
@@ -197,6 +202,8 @@ namespace kernel
 				inputs.push_back(b1->getId());
 				inputs.push_back(b2->getId());
 				outputs.push_back(y->getId());
+				parents.push_back(get_input_id(x->getId()));
+				parents.push_back(get_input_id(h->getId()));
 			}
 		}
 	}

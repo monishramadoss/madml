@@ -154,6 +154,7 @@ namespace kernel
 	void tensor::update_id()
 	{
 		auto& objId = get_object_id();
+		layers::Module::add_tensor(this);
 		id = objId++;
 	}
 }

@@ -61,8 +61,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 //#define TEST_MATH
 //#define TEST_NN
 //#define TEST_CNN
-//#define TEST_RNN
-#define TEST_MNIST
+#define TEST_RNN
+//#define TEST_MNIST
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -130,10 +130,6 @@ void test_fn()
 		cnn_layer_1->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		for (int i = 0; i < 10000; ++i)
-		{
-			cnn_layer_1->execute();
-		}
 	}
 #endif
 #ifdef TEST_RNN
@@ -141,11 +137,11 @@ void test_fn()
 	{
 		int length = 4;
 		int vocab = 16;
-		int num_layers = 2;
+		int num_layers = 4;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
 		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, true);
+		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1->forward(t1);
 		auto* t3 = std::get<0>(tup);
 		auto* t4 = std::get<1>(tup);
@@ -171,7 +167,7 @@ void test_fn()
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
 		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* rnn_layer_1 = new kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, true);
+		auto* rnn_layer_1 = new kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1->forward(t1);
 		auto* t3 = std::get<0>(tup);
 		auto* t4 = std::get<1>(tup);
@@ -227,14 +223,16 @@ void test_fn()
 		auto l4 = kernel::layers::activation::relu();
 		auto l5 = kernel::layers::nn::dense(10, false);
 		auto l6 = kernel::layers::activation::sigmoid();
+		auto l7 = kernel::layers::math::add();
 
-		auto* t1 = new kernel::tensor(1.0, std::vector<int>{1, 784});
-		auto* t2 = l1.forward(t1);
-		auto* t3 = l2.forward(t2);
-		auto* t4 = l3.forward(t3);
-		auto* t5 = l4.forward(t4);
-		auto* t6 = l5.forward(t5);
-		auto* t7 = l6.forward(t6);
+		auto* t0 = new kernel::tensor(1.0, std::vector<int>{1, 784});
+		auto* t1 = l1.forward(t0);
+		auto* t2 = l2.forward(t1);
+		auto* t3 = l3.forward(t2);
+		auto* t4 = l4.forward(t3);
+		auto* tx = l7.forward(t4, t2);
+		auto* t5 = l5.forward(tx);
+		auto* t6 = l6.forward(t5);
 
 		l6.execute();
 	}

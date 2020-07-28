@@ -352,17 +352,21 @@ namespace kernel
 		void Module::execute()
 		{
 			auto& M = get_module();
+			auto& T = get_tensors();
+			/// <summary>
+			///  weight = -2;
+			///  bias = -3;
+			///  input = -1;
+			/// </summary>
 			for (auto* m : M)
 			{
-				for (auto i : m->inputs)
-					std::cout << i << " ";
-
-				std::cout << "-> ";
-				for (auto o : m->outputs)
-					std::cout << o << " ";
-
-				std::cout << std::endl;
+				std::cout << m->id << " " << m->m_type << " ";
+				for (auto p : m->parents)
+					std::cout << p << " ";
+				std::cout << "\n";
 			}
+			//std::cout << *std::max_element(sanity_check.begin(), sanity_check.end());
+			//std::cout << std::endl;
 		}
 
 		std::vector<tensor*>& Module::get_tensors()
@@ -419,11 +423,72 @@ namespace kernel
 				}
 			}
 		}
+
+		void Module::BFS(std::vector<std::vector<int>> adj, int s)
+		{
+			int v = adj.size();
+			std::vector<bool> visited(v, false);
+			std::vector<int> q;
+			q.push_back(s);
+			visited[s] = true;
+			int vis;
+			while (!q.empty())
+			{
+				vis = q[0];
+				std::cout << vis << " -> ";
+				q.erase(q.begin());
+				for (int i = 0; i < v; i++)
+				{
+					if (adj[vis][i] == 1 && (!visited[i]))
+					{
+						q.push_back(i);
+						visited[i] = true;
+					}
+				}
+			}
+		}
+
+		int Module::get_input_id(int i)
+		{
+			auto& M = get_module();
+			for (auto* m : M)
+			{
+				if (std::find(m->outputs.begin(), m->outputs.end(), i) != m->outputs.end())
+					return m->id;
+				if (std::find(m->weights.begin(), m->weights.end(), i) != m->weights.end())
+					return -2;
+				if (std::find(m->biases.begin(), m->biases.end(), i) != m->biases.end())
+					return -3;
+			}
+			return -1;
+		}
+		int& Module::get_object_id()
+		{
+			static int objId;
+			return objId;
+		}
+
+		void Module::update_id()
+		{
+			auto& objId = get_object_id();
+			id = objId++;
+		}
 	}
 
-	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool as_module, bool in_place) : m_as_module(as_module), m_in_place(in_place), m_param({ 0 })
+	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
 	{
+		update_id();
 		add_module(this);
 		initVulkanThing(forward_buffers, backward_buffers);
+	}
+
+	void Base_Layer::fwd_callback()
+	{
+		runCommandBufferForward();
+	}
+
+	void Base_Layer::bwd_callback()
+	{
+		runCommandBufferBackward();
 	}
 }
