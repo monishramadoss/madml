@@ -33,7 +33,7 @@ namespace kernel
 			m_group_z = 1;
 		}
 
-		tensor* matmul::forward(tensor* x, tensor* w)
+		std::shared_ptr<tensor> matmul::forward(std::shared_ptr<tensor> x, std::shared_ptr<tensor> w)
 		{
 			if (x->getShape()[1] != w->getShape()[0])
 				std::cerr << "Mat mul dim ERROR" << std::endl;

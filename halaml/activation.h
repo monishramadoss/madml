@@ -25,14 +25,14 @@ namespace kernel
 
 			public:
 				unary_operator(float alpha, bool in_place);
-				virtual tensor* forward(tensor* x) = 0;
+				virtual std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) = 0;
 			};
 
 			class celu : public unary_operator
 			{
 			public:
 				explicit celu(float alpha, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -40,7 +40,7 @@ namespace kernel
 			{
 			public:
 				explicit elu(float alpha, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -48,7 +48,7 @@ namespace kernel
 			{
 			public:
 				explicit hardshrink(float lambda, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -64,7 +64,7 @@ namespace kernel
 				two_param m_param;
 			public:
 				explicit hardtanh(float min_val = -1, float max_val = 1, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -72,7 +72,7 @@ namespace kernel
 			{
 			public:
 				explicit leakyrelu(float slope = -0.01, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -80,7 +80,7 @@ namespace kernel
 			{
 			public:
 				explicit logsigmoid(float alpha = -0.01, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -88,7 +88,7 @@ namespace kernel
 			{
 			public:
 				explicit prelu(float alpha = -0.01, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -96,7 +96,7 @@ namespace kernel
 			{
 			public:
 				explicit relu(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -104,7 +104,7 @@ namespace kernel
 			{
 			public:
 				explicit relu6(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -112,7 +112,7 @@ namespace kernel
 			{
 			public:
 				explicit selu(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -120,7 +120,7 @@ namespace kernel
 			{
 			public:
 				explicit sigmoid(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -128,7 +128,7 @@ namespace kernel
 			{
 			public:
 				explicit softplus(float alpha, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -136,7 +136,7 @@ namespace kernel
 			{
 			public:
 				explicit softshrink(float alpha, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -144,7 +144,7 @@ namespace kernel
 			{
 			public:
 				explicit softsign(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -152,7 +152,7 @@ namespace kernel
 			{
 			public:
 				explicit tanhshrink(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 		}

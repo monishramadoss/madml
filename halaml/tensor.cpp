@@ -120,7 +120,7 @@ namespace kernel
 		if (m_device == nullptr)
 			return;
 
-		auto* p = static_cast<float*>(map());
+		auto p = static_cast<float*>(map());
 		const int cnt = count();
 		for (int i = 0; i < cnt; ++i)
 			*p++ = val;
@@ -154,7 +154,7 @@ namespace kernel
 	void tensor::update_id()
 	{
 		auto& objId = get_object_id();
-		layers::Module::add_tensor(this);
+		layers::Module::add_tensor(std::make_shared<tensor>(*this));
 		id = objId++;
 	}
 }
@@ -169,7 +169,7 @@ namespace kernel
 			std::normal_distribution<float> distribution(mean, std);
 
 			const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-			auto* ret = new float[_shape];
+			auto ret = new float[_shape];
 			for (int i = 0; i < _shape; ++i)
 			{
 				auto number = distribution(generator);

@@ -3,6 +3,7 @@
 #include "madml.h"
 #include <string>
 #include <vector>
+#include <memory>
 #include <algorithm>
 #include <list>
 
@@ -67,15 +68,16 @@ namespace kernel
 
 	namespace layers
 	{
-		class Module
+		class Module : std::enable_shared_from_this<Module>
 		{
 		public:
 			virtual void update_weight();
 			virtual void execute();
 			virtual void backward();
-			bool requires_subgraph = false;
 
 			std::vector<int> parents;
+			std::shared_ptr<Module> getptr();
+
 		protected:
 			std::string m_type;
 			std::vector<int> inputs;
@@ -83,16 +85,20 @@ namespace kernel
 			std::vector<int> weights;
 			std::vector<int> biases;
 			std::vector<int> temporaries;
-
-			static std::vector<tensor*>& get_tensors();
-			static std::vector<tensor*>& get_gradients();
+			bool requires_sub_graph = false;
+			std::vector<Module*> sub_graph;
+			static std::vector<std::shared_ptr<tensor>>& get_tensors();
+			static std::vector<std::shared_ptr<tensor>>& get_gradients();
 			static std::vector<Module*>& get_module();
+			static bool& sub_graph_bit();
+			static void set_sub_graph();
+			static void unset_sub_graph();
 
-			static tensor* get_grad(int id);
+			static std::shared_ptr<tensor> get_grad(int id);
 			static void zero_grad();
 
-			static void add_tensor(tensor* T);
-			static void add_gradient(tensor* G);
+			static void add_tensor(std::shared_ptr<tensor>T);
+			static void add_gradient(std::shared_ptr<tensor>G);
 			static void add_module(Module* M);
 
 			int get_input_id(int i);
@@ -107,7 +113,7 @@ namespace kernel
 
 			friend class tensor;
 		private:
-			void BFS(std::vector<std::vector<int>> adj, int s = 0);
+			//void BFS(std::vector<std::vector<int>> adj, int s = 0);
 		};
 	}
 
@@ -121,8 +127,8 @@ namespace kernel
 		bool m_in_place;
 		operator_param m_param;
 
-		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
-		template <typename T = operator_param> inline tensor* layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline std::shared_ptr<tensor>layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline std::shared_ptr<tensor>layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, std::shared_ptr<tensor>w, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 	};
 }
@@ -130,17 +136,17 @@ namespace kernel
 namespace kernel
 {
 	template<class T>
-	tensor* Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, T m_param, Format fmt, std::vector<int> output_shape)
+	std::shared_ptr<tensor>Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, T m_param, Format fmt, std::vector<int> output_shape)
 	{
 		inputs.push_back(x->getId());
-		tensor* y;
+		std::shared_ptr<tensor>y;
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
 			//else {
 		if (output_shape.size() != 0)
-			y = new tensor(0.0, output_shape, fmt);
+			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
 		else
-			y = new tensor(0.0, x->getShape());
+			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
 		//}
 		outputs.push_back(y->getId());
 
@@ -162,19 +168,19 @@ namespace kernel
 	}
 
 	template<class T>
-	tensor* Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, tensor* x, tensor* w, T m_param, Format fmt, std::vector<int> output_shape)
+	std::shared_ptr<tensor>Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, std::shared_ptr<tensor>w, T m_param, Format fmt, std::vector<int> output_shape)
 	{
 		inputs.push_back(x->getId());
 		inputs.push_back(w->getId());
-		tensor* y;
+		std::shared_ptr<tensor>y;
 
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
 			//else {
 		if (output_shape.size() != 0)
-			y = new tensor(0.0, output_shape, fmt);
+			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
 		else
-			y = new tensor(0.0, x->getShape());
+			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
 		//}
 		outputs.push_back(y->getId());
 		if (m_pipeline_forward == nullptr)
@@ -199,11 +205,11 @@ namespace kernel
 	template<class T>
 	void Base_Layer::layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param)
 	{
-		if (m_pipeline_forward == nullptr)
+		if (m_pipeline_backward == nullptr)
 		{
 			computeGroupCount();
-			createShaderModuleForward(shader, codeSize);
-			createPipelineForward(sizeof(T));
+			createShaderModuleBackward(shader, codeSize);
+			createPipelineBackward(sizeof(T));
 		}
 
 		int binding = 0;

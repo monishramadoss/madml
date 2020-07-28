@@ -3,7 +3,7 @@
 
 namespace kernel
 {
-	void bindTensor(VkDevice& device, tensor* tensor, int binding, VkDescriptorSet descriptor_set)
+	void bindTensor(VkDevice& device, std::shared_ptr<tensor>tensor, int binding, VkDescriptorSet descriptor_set)
 	{
 		VkDescriptorBufferInfo desc_buffer_info = {};
 		desc_buffer_info.buffer = tensor->getBuffer()->getVkBuffer();

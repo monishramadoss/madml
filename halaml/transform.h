@@ -49,7 +49,7 @@ namespace kernel
 			vol2col_param m_param;
 		public:
 			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
-			tensor* forward(tensor* x);
+			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
 			void back_propagate();
 			std::vector<int> output_shape() const;
 		};
@@ -61,7 +61,7 @@ namespace kernel
 			vol2col_param m_param;
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
-			tensor* forward(tensor* x);
+			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
 			void back_propagate();
 			std::vector<int> output_shape() const;
 		};
@@ -72,7 +72,7 @@ namespace kernel
 			void computeGroupCount() override;
 		public:
 			copy();
-			tensor* forward(tensor* x);
+			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
 			void back_propagate();
 		};
 
@@ -91,7 +91,7 @@ namespace kernel
 			std::vector<int> stride;
 		public:
 			transpose(const std::vector<int> order);
-			tensor* forward(tensor* x);
+			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
 			void back_propagate();
 		};
 	}

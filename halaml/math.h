@@ -17,7 +17,7 @@ namespace kernel
 				void computeGroupCount() override;
 			public:
 				unary_operator(bool in_place);
-				virtual tensor* forward(tensor* x) = 0;
+				virtual std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) = 0;
 			};
 
 			class binary_operator : public Base_Layer
@@ -26,7 +26,7 @@ namespace kernel
 				void computeGroupCount() override;
 			public:
 				binary_operator(bool in_place);
-				virtual tensor* forward(tensor* x, tensor* w) = 0;
+				virtual std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w) = 0;
 			};
 		}
 	}
@@ -43,7 +43,7 @@ namespace kernel
 			{
 			public:
 				abs(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -51,7 +51,7 @@ namespace kernel
 			{
 			public:
 				ceil(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -67,7 +67,7 @@ namespace kernel
 				clip_operator_param m_param;
 			public:
 				clip(float min = 0.0f, float max = 1.0f, bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -75,7 +75,7 @@ namespace kernel
 			{
 			public:
 				exp(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -83,7 +83,7 @@ namespace kernel
 			{
 			public:
 				floor(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -91,7 +91,7 @@ namespace kernel
 			{
 			public:
 				ln(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -99,7 +99,7 @@ namespace kernel
 			{
 			public:
 				round(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -107,7 +107,7 @@ namespace kernel
 			{
 			public:
 				sqrt(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -115,7 +115,7 @@ namespace kernel
 			{
 			public:
 				acos(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -123,7 +123,7 @@ namespace kernel
 			{
 			public:
 				acosh(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -131,7 +131,7 @@ namespace kernel
 			{
 			public:
 				asin(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -139,7 +139,7 @@ namespace kernel
 			{
 			public:
 				asinh(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -147,7 +147,7 @@ namespace kernel
 			{
 			public:
 				atan(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -155,7 +155,7 @@ namespace kernel
 			{
 			public:
 				atanh(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -163,7 +163,7 @@ namespace kernel
 			{
 			public:
 				cos(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -171,7 +171,7 @@ namespace kernel
 			{
 			public:
 				cosh(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -179,7 +179,7 @@ namespace kernel
 			{
 			public:
 				sin(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -187,7 +187,7 @@ namespace kernel
 			{
 			public:
 				sinh(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -195,7 +195,7 @@ namespace kernel
 			{
 			public:
 				tan(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -203,7 +203,7 @@ namespace kernel
 			{
 			public:
 				tanh(bool in_place = false);
-				tensor* forward(tensor* x) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
 				void back_propagate() override;
 			};
 
@@ -212,7 +212,7 @@ namespace kernel
 			{
 			public:
 				add(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -220,7 +220,7 @@ namespace kernel
 			{
 			public:
 				sub(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -228,7 +228,7 @@ namespace kernel
 			{
 			public:
 				mul(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -236,7 +236,7 @@ namespace kernel
 			{
 			public:
 				div(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -244,7 +244,7 @@ namespace kernel
 			{
 			public:
 				mod(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -252,7 +252,7 @@ namespace kernel
 			{
 			public:
 				pow(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -260,7 +260,7 @@ namespace kernel
 			{
 			public:
 				max(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -268,7 +268,7 @@ namespace kernel
 			{
 			public:
 				min(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -276,7 +276,7 @@ namespace kernel
 			{
 			public:
 				eq(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -284,7 +284,7 @@ namespace kernel
 			{
 			public:
 				ne(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -292,7 +292,7 @@ namespace kernel
 			{
 			public:
 				lt(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -300,7 +300,7 @@ namespace kernel
 			{
 			public:
 				le(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -308,7 +308,7 @@ namespace kernel
 			{
 			public:
 				gt(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -316,7 +316,7 @@ namespace kernel
 			{
 			public:
 				ge(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 
@@ -324,7 +324,7 @@ namespace kernel
 			{
 			public:
 				xr(bool in_place = false);
-				tensor* forward(tensor* x, tensor* y) override;
+				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
 				void back_propagate() override;
 			};
 		}

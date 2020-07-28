@@ -33,8 +33,8 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void RNNCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1,
-				tensor* b2, int input_offset, int weight_offset, int output_offset)
+			void RNNCell::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>y, std::shared_ptr<tensor>hn, std::shared_ptr<tensor>U, std::shared_ptr<tensor>W, std::shared_ptr<tensor>V, std::shared_ptr<tensor>b1,
+				std::shared_ptr<tensor>b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape(); //seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -97,8 +97,8 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void LSTMCell::forward(tensor* x, tensor* h, tensor* c, tensor* y, tensor* hn, tensor* cn, tensor* U, tensor* W,
-				tensor* V, tensor* b1, tensor* b2, int input_offset, int weight_offset, int output_offset)
+			void LSTMCell::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>c, std::shared_ptr<tensor>y, std::shared_ptr<tensor>hn, std::shared_ptr<tensor>cn, std::shared_ptr<tensor>U, std::shared_ptr<tensor>W,
+				std::shared_ptr<tensor>V, std::shared_ptr<tensor>b1, std::shared_ptr<tensor>b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape(); //seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -165,8 +165,8 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void GRUCell::forward(tensor* x, tensor* h, tensor* y, tensor* hn, tensor* U, tensor* W, tensor* V, tensor* b1,
-				tensor* b2, int input_offset, int weight_offset, int output_offset)
+			void GRUCell::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>y, std::shared_ptr<tensor>hn, std::shared_ptr<tensor>U, std::shared_ptr<tensor>W, std::shared_ptr<tensor>V, std::shared_ptr<tensor>b1,
+				std::shared_ptr<tensor>b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape(); //seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size

@@ -28,9 +28,9 @@ namespace kernel
 				m_type = "celu";
 			}
 
-			tensor* celu::forward(tensor* x)
+			std::shared_ptr<tensor>celu::forward(std::shared_ptr<tensor>x)
 			{
-				tensor* alpha = new tensor(1.0, x->getShape());
+				std::shared_ptr<tensor> alpha = std::make_shared<tensor>(tensor(1.0, x->getShape(), Format::kFormatFp32));
 				return layer_construct_forward<activation_param>(shaders::celu_spv, sizeof(shaders::celu_spv), x, alpha, m_param);
 			}
 
@@ -44,7 +44,7 @@ namespace kernel
 				m_type = "elu";
 			}
 
-			tensor* elu::forward(tensor* x)
+			std::shared_ptr<tensor>elu::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::elu_spv, sizeof(shaders::elu_spv), x, m_param);
 			}
@@ -59,7 +59,7 @@ namespace kernel
 				m_type = "hardshrink";
 			}
 
-			tensor* hardshrink::forward(tensor* x)
+			std::shared_ptr<tensor>hardshrink::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x, m_param);
 			}
@@ -75,7 +75,7 @@ namespace kernel
 				m_type = "hardtanh";
 			}
 
-			tensor* hardtanh::forward(tensor* x)
+			std::shared_ptr<tensor>hardtanh::forward(std::shared_ptr<tensor>x)
 			{
 				m_param.total = x->count();
 				return layer_construct_forward<two_param>(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x, m_param);
@@ -91,7 +91,7 @@ namespace kernel
 				m_type = "leakyrelu";
 			}
 
-			tensor* leakyrelu::forward(tensor* x)
+			std::shared_ptr<tensor>leakyrelu::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::leakyrelu_spv, sizeof(shaders::leakyrelu_spv), x, m_param);
 			}
@@ -106,7 +106,7 @@ namespace kernel
 				m_type = "logsigmoid";
 			}
 
-			tensor* logsigmoid::forward(tensor* x)
+			std::shared_ptr<tensor>logsigmoid::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::logsigmoid_spv, sizeof(shaders::logsigmoid_spv), x, m_param);
 			}
@@ -121,7 +121,7 @@ namespace kernel
 				m_type = "prelu";
 			}
 
-			tensor* prelu::forward(tensor* x)
+			std::shared_ptr<tensor>prelu::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::prelu_spv, sizeof(shaders::prelu_spv), x, m_param);
 			}
@@ -136,7 +136,7 @@ namespace kernel
 				m_type = "relu";
 			}
 
-			tensor* relu::forward(tensor* x)
+			std::shared_ptr<tensor>relu::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::relu_spv, sizeof(shaders::relu_spv), x, m_param);
 			}
@@ -151,7 +151,7 @@ namespace kernel
 				m_type = "relu6";
 			}
 
-			tensor* relu6::forward(tensor* x)
+			std::shared_ptr<tensor>relu6::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::relu6_spv, sizeof(shaders::relu6_spv), x, m_param);
 			}
@@ -166,7 +166,7 @@ namespace kernel
 				m_type = "selu";
 			}
 
-			tensor* selu::forward(tensor* x)
+			std::shared_ptr<tensor>selu::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::selu_spv, sizeof(shaders::selu_spv), x, m_param);
 			}
@@ -181,7 +181,7 @@ namespace kernel
 				m_type = "sigmoid";
 			}
 
-			tensor* sigmoid::forward(tensor* x)
+			std::shared_ptr<tensor>sigmoid::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::sigmoid_spv, sizeof(shaders::sigmoid_spv), x, m_param);
 			}
@@ -196,7 +196,7 @@ namespace kernel
 				m_type = "softplus";
 			}
 
-			tensor* softplus::forward(tensor* x)
+			std::shared_ptr<tensor>softplus::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::softplus_spv, sizeof(shaders::softplus_spv), x, m_param);
 			}
@@ -211,7 +211,7 @@ namespace kernel
 				m_type = "softshrink";
 			}
 
-			tensor* softshrink::forward(tensor* x)
+			std::shared_ptr<tensor>softshrink::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::softshrink_spv, sizeof(shaders::softshrink_spv), x, m_param);
 			}
@@ -226,7 +226,7 @@ namespace kernel
 				m_type = "softsign";
 			}
 
-			tensor* softsign::forward(tensor* x)
+			std::shared_ptr<tensor>softsign::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::softsign_spv, sizeof(shaders::softsign_spv), x, m_param);
 			}
@@ -241,7 +241,7 @@ namespace kernel
 				m_type = "tanhshrink";
 			}
 
-			tensor* tanhshrink::forward(tensor* x)
+			std::shared_ptr<tensor>tanhshrink::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<activation_param>(shaders::tanhshrink_spv, sizeof(shaders::tanhshrink_spv), x, m_param);
 			}

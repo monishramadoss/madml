@@ -23,7 +23,7 @@ namespace kernel
 			matmul_param m_param{};
 		public:
 			matmul();
-			tensor* forward(tensor* x, tensor* w);
+			std::shared_ptr<tensor> forward(std::shared_ptr<tensor> x, std::shared_ptr<tensor> w);
 			void back_propagate() override;
 		};
 	}

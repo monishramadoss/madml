@@ -52,7 +52,7 @@ namespace kernel
 				m_type = "abs";
 			}
 
-			tensor* abs::forward(tensor* x)
+			std::shared_ptr<tensor>abs::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::abs_spv, sizeof(shaders::abs_spv), x, m_param);
 			}
@@ -67,7 +67,7 @@ namespace kernel
 				m_type = "ceil";
 			}
 
-			tensor* ceil::forward(tensor* x)
+			std::shared_ptr<tensor>ceil::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::ceil_spv, sizeof(shaders::ceil_spv), x, m_param);
 			}
@@ -82,7 +82,7 @@ namespace kernel
 				m_type = "clip";
 			}
 
-			tensor* clip::forward(tensor* x)
+			std::shared_ptr<tensor>clip::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward<clip_operator_param>(shaders::clip_spv, sizeof(shaders::clip_spv), x, m_param);
 			}
@@ -97,7 +97,7 @@ namespace kernel
 				m_type = "exp";
 			}
 
-			tensor* exp::forward(tensor* x)
+			std::shared_ptr<tensor>exp::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::exp_spv, sizeof(shaders::exp_spv), x, m_param);
 			}
@@ -112,7 +112,7 @@ namespace kernel
 				m_type = "floor";
 			}
 
-			tensor* floor::forward(tensor* x)
+			std::shared_ptr<tensor>floor::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::floor_spv, sizeof(shaders::floor_spv), x, m_param);
 			}
@@ -127,7 +127,7 @@ namespace kernel
 				m_type = "ln";
 			}
 
-			tensor* ln::forward(tensor* x)
+			std::shared_ptr<tensor>ln::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::ln_spv, sizeof(shaders::ln_spv), x, m_param);
 			}
@@ -142,7 +142,7 @@ namespace kernel
 				m_type = "round";
 			}
 
-			tensor* round::forward(tensor* x)
+			std::shared_ptr<tensor>round::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::round_spv, sizeof(shaders::round_spv), x, m_param);
 			}
@@ -157,7 +157,7 @@ namespace kernel
 				m_type = "sqrt";
 			}
 
-			tensor* sqrt::forward(tensor* x)
+			std::shared_ptr<tensor>sqrt::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::sqrt_spv, sizeof(shaders::sqrt_spv), x, m_param);
 			}
@@ -172,7 +172,7 @@ namespace kernel
 				m_type = "acos";
 			}
 
-			tensor* acos::forward(tensor* x)
+			std::shared_ptr<tensor>acos::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::acos_spv, sizeof(shaders::acos_spv), x, m_param);
 			}
@@ -187,7 +187,7 @@ namespace kernel
 				m_type = "acosh";
 			}
 
-			tensor* acosh::forward(tensor* x)
+			std::shared_ptr<tensor>acosh::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::acosh_spv, sizeof(shaders::acosh_spv), x, m_param);
 			}
@@ -202,7 +202,7 @@ namespace kernel
 				m_type = "asin";
 			}
 
-			tensor* asin::forward(tensor* x)
+			std::shared_ptr<tensor>asin::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::asin_spv, sizeof(shaders::asin_spv), x, m_param);
 			}
@@ -217,7 +217,7 @@ namespace kernel
 				m_type = "asinh";
 			}
 
-			tensor* asinh::forward(tensor* x)
+			std::shared_ptr<tensor>asinh::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::asinh_spv, sizeof(shaders::asinh_spv), x, m_param);
 			}
@@ -232,7 +232,7 @@ namespace kernel
 				m_type = "atan";
 			}
 
-			tensor* atan::forward(tensor* x)
+			std::shared_ptr<tensor>atan::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::atan_spv, sizeof(shaders::atan_spv), x, m_param);
 			}
@@ -247,7 +247,7 @@ namespace kernel
 				m_type = "atan";
 			}
 
-			tensor* atanh::forward(tensor* x)
+			std::shared_ptr<tensor>atanh::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::atanh_spv, sizeof(shaders::atanh_spv), x, m_param);
 			}
@@ -262,7 +262,7 @@ namespace kernel
 				m_type = "cos";
 			}
 
-			tensor* cos::forward(tensor* x)
+			std::shared_ptr<tensor>cos::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::cos_spv, sizeof(shaders::cos_spv), x, m_param);
 			}
@@ -277,7 +277,7 @@ namespace kernel
 				m_type = "cosh";
 			}
 
-			tensor* cosh::forward(tensor* x)
+			std::shared_ptr<tensor>cosh::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::cosh_spv, sizeof(shaders::cosh_spv), x, m_param);
 			}
@@ -292,7 +292,7 @@ namespace kernel
 				m_type = "sin";
 			}
 
-			tensor* sin::forward(tensor* x)
+			std::shared_ptr<tensor>sin::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::sin_spv, sizeof(shaders::sin_spv), x, m_param);
 			}
@@ -307,7 +307,7 @@ namespace kernel
 				m_type = "sinh";
 			}
 
-			tensor* sinh::forward(tensor* x)
+			std::shared_ptr<tensor>sinh::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::sinh_spv, sizeof(shaders::sinh_spv), x, m_param);
 			}
@@ -322,7 +322,7 @@ namespace kernel
 				m_type = "tan";
 			}
 
-			tensor* tan::forward(tensor* x)
+			std::shared_ptr<tensor>tan::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::tan_spv, sizeof(shaders::tan_spv), x, m_param);
 			}
@@ -337,7 +337,7 @@ namespace kernel
 				m_type = "tanh";
 			}
 
-			tensor* tanh::forward(tensor* x)
+			std::shared_ptr<tensor>tanh::forward(std::shared_ptr<tensor>x)
 			{
 				return layer_construct_forward(shaders::tanh_spv, sizeof(shaders::tanh_spv), x, m_param);
 			}
@@ -361,7 +361,7 @@ namespace kernel
 				m_type = "add";
 			}
 
-			tensor* add::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>add::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::add_spv, sizeof(shaders::add_spv), x, w, m_param);
 			}
@@ -376,7 +376,7 @@ namespace kernel
 				m_type = "sub";
 			}
 
-			tensor* sub::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>sub::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::sub_spv, sizeof(shaders::sub_spv), x, w, m_param);
 			}
@@ -391,7 +391,7 @@ namespace kernel
 				m_type = "mul";
 			}
 
-			tensor* mul::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>mul::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::mul_spv, sizeof(shaders::mul_spv), x, w, m_param);
 			}
@@ -406,7 +406,7 @@ namespace kernel
 				m_type = "div";
 			}
 
-			tensor* div::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>div::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::div_spv, sizeof(shaders::div_spv), x, w, m_param);
 			}
@@ -421,7 +421,7 @@ namespace kernel
 				m_type = "mod";
 			}
 
-			tensor* mod::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>mod::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::mod_spv, sizeof(shaders::mod_spv), x, w, m_param);
 			}
@@ -436,7 +436,7 @@ namespace kernel
 				m_type = "pow";
 			}
 
-			tensor* pow::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>pow::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::pow_spv, sizeof(shaders::pow_spv), x, w, m_param);
 			}
@@ -451,7 +451,7 @@ namespace kernel
 				m_type = "max";
 			}
 
-			tensor* max::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>max::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::max_spv, sizeof(shaders::max_spv), x, w, m_param);
 			}
@@ -466,7 +466,7 @@ namespace kernel
 				m_type = "min";
 			}
 
-			tensor* min::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>min::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::min_spv, sizeof(shaders::min_spv), x, w, m_param);
 			}
@@ -481,7 +481,7 @@ namespace kernel
 				m_type = "eq";
 			}
 
-			tensor* eq::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>eq::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::equal_spv, sizeof(shaders::equal_spv), x, w, m_param, Format::kFormatBool);
 			}
@@ -496,7 +496,7 @@ namespace kernel
 				m_type = "ne";
 			}
 
-			tensor* ne::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>ne::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::nequal_spv, sizeof(shaders::nequal_spv), x, w, m_param, Format::kFormatBool);
 			}
@@ -511,7 +511,7 @@ namespace kernel
 				m_type = "lt";
 			}
 
-			tensor* lt::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>lt::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w, m_param, Format::kFormatBool);
 			}
@@ -526,7 +526,7 @@ namespace kernel
 				m_type = "le";
 			}
 
-			tensor* le::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>le::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::less_eq_spv, sizeof(shaders::less_eq_spv), x, w, m_param, Format::kFormatBool);
 			}
@@ -541,7 +541,7 @@ namespace kernel
 				m_type = "gt";
 			}
 
-			tensor* gt::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>gt::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w, m_param, Format::kFormatBool);
 			}
@@ -556,7 +556,7 @@ namespace kernel
 				m_type = "greater_eq";
 			}
 
-			tensor* ge::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>ge::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w, m_param, Format::kFormatBool);
 			}
@@ -571,7 +571,7 @@ namespace kernel
 				m_type = "xor";
 			}
 
-			tensor* xr::forward(tensor* x, tensor* w)
+			std::shared_ptr<tensor>xr::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w)
 			{
 				if (x->getFormat() != Format::kFormatBool && w->getFormat() != Format::kFormatBool)
 				{

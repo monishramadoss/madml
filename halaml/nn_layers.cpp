@@ -17,28 +17,31 @@ namespace kernel
 				m_type = "dense";
 				update_id();
 				add_module(this);
-				requires_subgraph = true;
+				requires_sub_graph = true;
 			}
 
-			tensor* dense::forward(tensor* x)
+			std::shared_ptr<tensor>dense::forward(std::shared_ptr<tensor>x)
 			{
+				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
-				auto* mm = new matmul();
-				auto* w = new tensor(1.0, std::vector<int>{input_shape[1], m_size});
+				auto mm = new matmul();
+				sub_graph.push_back(mm);
+				std::shared_ptr<tensor> w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[1], m_size}));
 				weights.push_back(w->getId());
-				auto* y = mm->forward(x, w);
+				std::shared_ptr<tensor> y = mm->forward(x, w);
 
 				if (USE_BIAS)
 				{
-					auto* b = new tensor(1.0, y->getShape());
-					auto* bias = new math::add();
-					y = bias->forward(y, b);
+					std::shared_ptr<tensor> b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+					auto bias = new math::add();
+					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
+					y = bias->forward(y, b);
 				}
 
 				outputs.push_back(y->getId());
-
+				unset_sub_graph();
 				return y;
 			}
 
@@ -49,16 +52,7 @@ namespace kernel
 				// db = mean(dy)
 				// dx = W.T * dy
 			}
-		}
-	}
-}
 
-namespace kernel
-{
-	namespace layers
-	{
-		namespace nn
-		{
 			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
 				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
 				m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
@@ -66,27 +60,31 @@ namespace kernel
 				m_type = "conv";
 				update_id();
 				add_module(this);
-				requires_subgraph = true;
+				requires_sub_graph = true;
 			}
 
-			tensor* conv::forward(tensor* x)
+			std::shared_ptr<tensor>conv::forward(std::shared_ptr<tensor>x)
 			{
+				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
-				auto* kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
-				auto* mm = new matmul();
-				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
+				auto kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
+				sub_graph.push_back(kernel);
+				auto mm = new matmul();
+				sub_graph.push_back(mm);
+				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
-				auto* ir_vol2col = kernel->forward(x); //27 9
+				auto ir_vol2col = kernel->forward(x); //27 9
 				temporaries.push_back(ir_vol2col->getId());
-				auto* y = mm->forward(w, ir_vol2col);
+				auto y = mm->forward(w, ir_vol2col);
 
 				if (USE_BIAS)
 				{
-					auto* bias = new math::add();
-					auto* b = new tensor(1.0, y->getShape());
-					y = bias->forward(y, b);
+					std::shared_ptr<tensor> b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+					auto bias = new math::add();
+					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
+					y = bias->forward(y, b);
 				}
 
 				outputs.push_back(y->getId());
@@ -95,6 +93,7 @@ namespace kernel
 				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
 
 				return y;
+				unset_sub_graph();
 			}
 
 			convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
@@ -106,34 +105,38 @@ namespace kernel
 				m_type = "convT";
 				update_id();
 				add_module(this);
-				requires_subgraph = true;
+				requires_sub_graph = true;
 			}
 
-			tensor* convTranspose::forward(tensor* x)
+			std::shared_ptr<tensor>convTranspose::forward(std::shared_ptr<tensor>x)
 			{
+				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
-				auto* kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
-				auto* mm = new matmul();
-				auto* w = new tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w});
+				auto kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
+				sub_graph.push_back(kernel);
+				auto mm = new matmul();
+				sub_graph.push_back(mm);
+				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
-				auto* ir_col2vol = kernel->forward(x);
+				auto ir_col2vol = kernel->forward(x);
 				temporaries.push_back(ir_col2vol->getId());
-				auto* y = mm->forward(w, ir_col2vol);
+				auto y = mm->forward(w, ir_col2vol);
 
 				if (USE_BIAS)
 				{
-					auto* bias = new math::add();
-					auto* b = new tensor(1.0, y->getShape());
-					y = bias->forward(y, b);
+					std::shared_ptr<tensor> b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+					auto bias = new math::add();
+					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
+					y = bias->forward(y, b);
 				}
 
 				outputs.push_back(y->getId());
 
 				auto out = kernel->output_shape();
 				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
-
+				unset_sub_graph();
 				return y;
 			}
 
@@ -145,7 +148,7 @@ namespace kernel
 				m_type = "RNN";
 				update_id();
 				add_module(this);
-				requires_subgraph = true;
+				requires_sub_graph = true;
 				if (bidirectional)
 					m_directions = 2;
 				if (output_size == 0)
@@ -158,43 +161,46 @@ namespace kernel
 						const int input = l == 0 ? m_vocab_size : m_hidden_size;
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size})));
 						weights.push_back(weights_biases.back()->getId());
 						if (USE_BIAS)
 						{
-							weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size})));
 							biases.push_back(weights_biases.back()->getId());
-							weights_biases.push_back(new tensor(1.0, std::vector<int>{output}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output})));
 							biases.push_back(weights_biases.back()->getId());
 						}
 						else
 						{
-							weights_biases.push_back(new tensor(0.0, std::vector<int>{m_hidden_size}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size})));
 							biases.push_back(weights_biases.back()->getId());
-							weights_biases.push_back(new tensor(0.0, std::vector<int>{output}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 							biases.push_back(weights_biases.back()->getId());
 						}
+						set_sub_graph();
 						for (int i = 0; i < seq_length; ++i)
 							cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
+						sub_graph.insert(sub_graph.end(), cells.begin(), cells.end());
+						unset_sub_graph();
 					}
 				}
 			}
 
-			std::tuple<tensor*, tensor*> RNN::forward(tensor* x)
+			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> RNN::forward(std::shared_ptr<tensor>x)
 			{
 				const auto input_shape = x->getShape();
 				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
 				cache.push_back(x);
-				cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, output}));
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				}
 
 				for (int dir = 0; dir < m_directions; ++dir)
@@ -249,8 +255,8 @@ namespace kernel
 			{
 				m_type = "LSTM";
 				update_id();
-				requires_subgraph = true;
 				add_module(this);
+				requires_sub_graph = true;
 				if (bidirectional)
 					m_directions = 2;
 				if (output_size == 0)
@@ -263,46 +269,49 @@ namespace kernel
 						const int input = l == 0 ? m_vocab_size : m_hidden_size;
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input, 4}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 4})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size, 4}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 4})));
 						weights.push_back(weights_biases.back()->getId());
 
 						if (USE_BIAS)
 						{
-							weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, 4}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, 4})));
 							biases.push_back(weights_biases.back()->getId());
-							weights_biases.push_back(new tensor(1.0, std::vector<int>{output}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output})));
 							biases.push_back(weights_biases.back()->getId());
 						}
 						else
 						{
-							weights_biases.push_back(new tensor(0.0, std::vector<int>{m_hidden_size, 4}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size, 4})));
 							biases.push_back(weights_biases.back()->getId());
-							weights_biases.push_back(new tensor(0.0, std::vector<int>{output}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 							biases.push_back(weights_biases.back()->getId());
 						}
+						set_sub_graph();
 						for (int i = 0; i < seq_length; ++i)
 							cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
+						sub_graph.insert(sub_graph.end(), cells.begin(), cells.end());
+						unset_sub_graph();
 					}
 				}
 			}
 
-			std::tuple<tensor*, tensor*, tensor*> LSTM::forward(tensor* x)
+			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> LSTM::forward(std::shared_ptr<tensor>x)
 			{
 				const auto input_shape = x->getShape();
 				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
 				cache.push_back(x);
-				cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, output}));
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				}
 
 				for (int dir = 0; dir < m_directions; ++dir)
@@ -361,7 +370,7 @@ namespace kernel
 				m_type = "GRU";
 				update_id();
 				add_module(this);
-				requires_subgraph = true;
+				requires_sub_graph = true;
 				if (bidirectional)
 					m_directions = 2;
 				if (output_size == 0)
@@ -374,44 +383,48 @@ namespace kernel
 						const int input = l == 0 ? m_vocab_size : m_hidden_size;
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, input, 3}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 3})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(new tensor(1.0, std::vector<int>{output, m_hidden_size, 3}));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 3})));
 						weights.push_back(weights_biases.back()->getId());
 
 						if (USE_BIAS)
 						{
-							weights_biases.push_back(new tensor(1.0, std::vector<int>{m_hidden_size, 3}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, 3})));
 							biases.push_back(weights_biases.back()->getId());
-							weights_biases.push_back(new tensor(1.0, std::vector<int>{output}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output})));
 							biases.push_back(weights_biases.back()->getId());
 						}
 						else
 						{
-							weights_biases.push_back(new tensor(0.0, std::vector<int>{m_hidden_size, 3}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size, 3})));
 							biases.push_back(weights_biases.back()->getId());
-							weights_biases.push_back(new tensor(0.0, std::vector<int>{output}));
+							weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 							biases.push_back(weights_biases.back()->getId());
 						}
+						set_sub_graph();
 						for (int i = 0; i < seq_length; ++i)
 							cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
+						sub_graph.insert(sub_graph.end(), cells.begin(), cells.end());
+						unset_sub_graph();
 					}
 				}
 			}
 
-			std::tuple<tensor*, tensor*> GRU::forward(tensor* x)
+			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> GRU::forward(std::shared_ptr<tensor>x)
 			{
 				const auto input_shape = x->getShape();
 				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+				inputs.push_back(x->getId());
 				cache.push_back(x);
-				cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, output}));
-					cache.push_back(new tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				}
 
 				for (int dir = 0; dir < m_directions; ++dir)
@@ -453,7 +466,6 @@ namespace kernel
 					}
 				}
 
-				inputs.push_back(x->getId());
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
 

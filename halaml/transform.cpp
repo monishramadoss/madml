@@ -35,7 +35,7 @@ namespace kernel
 			m_group_z = 1;
 		}
 
-		tensor* vol2col::forward(tensor* x)
+		std::shared_ptr<tensor>vol2col::forward(std::shared_ptr<tensor>x)
 		{
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
@@ -50,15 +50,15 @@ namespace kernel
 
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
-			auto* y = layer_construct_forward<vol2col_param>(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, m_param, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
+			auto y = layer_construct_forward<vol2col_param>(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, m_param, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
 
 		void vol2col::back_propagate()
 		{
-			auto* x = get_grad(inputs[0]);
-			auto* y = get_grad(outputs[0]);
+			auto x = get_grad(inputs[0]);
+			auto y = get_grad(outputs[0]);
 
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
@@ -103,7 +103,7 @@ namespace kernel
 			m_group_z = 1;
 		}
 
-		tensor* col2vol::forward(tensor* x)
+		std::shared_ptr<tensor>col2vol::forward(std::shared_ptr<tensor>x)
 		{
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
@@ -118,15 +118,15 @@ namespace kernel
 			const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 			const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
 
-			auto* y = layer_construct_forward<vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, m_param, Format::kFormatFp32, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
+			auto y = layer_construct_forward<vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, m_param, Format::kFormatFp32, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
 
 		void col2vol::back_propagate()
 		{
-			auto* x = get_grad(inputs[0]);
-			auto* y = get_grad(outputs[0]);
+			auto x = get_grad(inputs[0]);
+			auto y = get_grad(outputs[0]);
 
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
@@ -156,7 +156,7 @@ namespace kernel
 			m_group_z = 1;
 		}
 
-		tensor* copy::forward(tensor* x)
+		std::shared_ptr<tensor>copy::forward(std::shared_ptr<tensor>x)
 		{
 			return layer_construct_forward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), x, m_param);
 		}
@@ -190,7 +190,7 @@ namespace kernel
 				stride[i] = order[i];
 		}
 
-		tensor* transpose::forward(tensor* x)
+		std::shared_ptr<tensor>transpose::forward(std::shared_ptr<tensor>x)
 		{
 			for (size_t i = 0; i < m_param.num_axes; ++i)
 				new_shape[i] = x->getShape()[stride[i]];
@@ -203,10 +203,10 @@ namespace kernel
 				createPipelineForward(sizeof(transpose_param));
 			}
 
-			tensor* y = new tensor(0.0, new_shape);
+			std::shared_ptr<tensor> y = std::make_shared<tensor>(tensor(0.0, new_shape));
 			stride = prepareStrides(x->getShape(), new_shape, stride);
 
-			tensor* tensor_stride = new tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32);
+			std::shared_ptr<tensor>tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 
 			bindTensor(m_device, x, 0, m_descriptor_set_forward);
 			bindTensor(m_device, y, 1, m_descriptor_set_forward);

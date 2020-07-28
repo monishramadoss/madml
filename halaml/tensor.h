@@ -65,7 +65,7 @@ namespace kernel
 		char* fill_memory_shape(std::vector<int> shape, dType c)
 		{
 			const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-			auto* ret = new dType[_shape];
+			auto ret = new dType[_shape];
 			for (int i = 0; i < _shape; ++i)
 				ret[i] = reinterpret_cast<dType&>(c);
 			return reinterpret_cast<char*>(ret);

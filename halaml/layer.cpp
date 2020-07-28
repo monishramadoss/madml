@@ -352,32 +352,47 @@ namespace kernel
 		void Module::execute()
 		{
 			auto& M = get_module();
-			auto& T = get_tensors();
 			/// <summary>
 			///  weight = -2;
 			///  bias = -3;
 			///  input = -1;
 			/// </summary>
-			for (auto* m : M)
+			std::vector<int> execution_order;
+			for (auto m : M)
 			{
 				std::cout << m->id << " " << m->m_type << " ";
 				for (auto p : m->parents)
-					std::cout << p << " ";
+				{
+					if (p == -1)
+					{
+						execution_order.push_back(m->id);
+						std::cout << "input" << " ";
+					}
+					else if (p == -2)
+						std::cout << "weight" << " ";
+					else if (p == -3)
+						std::cout << "bias" << " ";
+					else if (p == -4)
+						std::cout << "temp" << " ";
+					else
+						std::cout << p << " ";
+				}
 				std::cout << "\n";
 			}
+
 			//std::cout << *std::max_element(sanity_check.begin(), sanity_check.end());
 			//std::cout << std::endl;
 		}
 
-		std::vector<tensor*>& Module::get_tensors()
+		std::vector<std::shared_ptr<tensor>>& Module::get_tensors()
 		{
-			static std::vector<tensor*> T;
+			static std::vector<std::shared_ptr<tensor>> T;
 			return T;
 		}
 
-		std::vector<tensor*>& Module::get_gradients()
+		std::vector<std::shared_ptr<tensor>>& Module::get_gradients()
 		{
-			static std::vector<tensor*> G;
+			static std::vector<std::shared_ptr<tensor>> G;
 			return G;
 		}
 
@@ -387,19 +402,37 @@ namespace kernel
 			return M;
 		}
 
-		tensor* Module::get_grad(int id)
+		std::shared_ptr<tensor>Module::get_grad(int id)
 		{
 			auto T = get_gradients();
 			return T[id];
 		}
 
-		void Module::add_tensor(tensor* T)
+		bool& Module::sub_graph_bit()
+		{
+			static bool requires_sub_graph;
+			return requires_sub_graph;
+		}
+
+		void Module::set_sub_graph()
+		{
+			bool& r = sub_graph_bit();
+			r = true;
+		}
+
+		void Module::unset_sub_graph()
+		{
+			bool& r = sub_graph_bit();
+			r = false;
+		}
+
+		void Module::add_tensor(std::shared_ptr<tensor>T)
 		{
 			auto& t = get_tensors();
 			t.push_back(T);
 		}
 
-		void Module::add_gradient(tensor* G)
+		void Module::add_gradient(std::shared_ptr<tensor>G)
 		{
 			auto& g = get_gradients();
 			g.push_back(G);
@@ -419,31 +452,7 @@ namespace kernel
 			{
 				for (auto t : T)
 				{
-					G.push_back(new tensor(0.0, t->getShape()));
-				}
-			}
-		}
-
-		void Module::BFS(std::vector<std::vector<int>> adj, int s)
-		{
-			int v = adj.size();
-			std::vector<bool> visited(v, false);
-			std::vector<int> q;
-			q.push_back(s);
-			visited[s] = true;
-			int vis;
-			while (!q.empty())
-			{
-				vis = q[0];
-				std::cout << vis << " -> ";
-				q.erase(q.begin());
-				for (int i = 0; i < v; i++)
-				{
-					if (adj[vis][i] == 1 && (!visited[i]))
-					{
-						q.push_back(i);
-						visited[i] = true;
-					}
+					G.push_back(std::make_shared<tensor>(tensor(0.0, t->getShape())));
 				}
 			}
 		}
@@ -451,7 +460,7 @@ namespace kernel
 		int Module::get_input_id(int i)
 		{
 			auto& M = get_module();
-			for (auto* m : M)
+			for (auto m : M)
 			{
 				if (std::find(m->outputs.begin(), m->outputs.end(), i) != m->outputs.end())
 					return m->id;
@@ -459,6 +468,8 @@ namespace kernel
 					return -2;
 				if (std::find(m->biases.begin(), m->biases.end(), i) != m->biases.end())
 					return -3;
+				if (std::find(m->temporaries.begin(), m->temporaries.end(), i) != m->temporaries.end())
+					return -4;
 			}
 			return -1;
 		}
@@ -473,12 +484,18 @@ namespace kernel
 			auto& objId = get_object_id();
 			id = objId++;
 		}
+
+		std::shared_ptr<Module> Module::getptr()
+		{
+			return shared_from_this();
+		}
 	}
 
 	Base_Layer::Base_Layer(int forward_buffers, int backward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
 	{
 		update_id();
-		add_module(this);
+		if (!sub_graph_bit())
+			add_module(this);
 		initVulkanThing(forward_buffers, backward_buffers);
 	}
 

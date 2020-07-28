@@ -61,8 +61,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 //#define TEST_MATH
 //#define TEST_NN
 //#define TEST_CNN
-#define TEST_RNN
-//#define TEST_MNIST
+//#define TEST_RNN
+#define TEST_MNIST
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -70,9 +70,9 @@ void test_fn()
 	{
 		const std::vector<int> shape_x{ 2, 3, 4 };
 		char* dat = kernel::init::normal_distribution_init(shape_x, 20, 2);
-		auto* t1 = new kernel::tensor(dat, shape_x);
+		auto t1 = new kernel::tensor(dat, shape_x);
 		auto k1 = kernel::layers::transpose(std::vector<int>{ 1, 2, 0});
-		auto* t2 = k1.forward(t1);
+		auto t2 = k1.forward(t1);
 
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 		k1.execute();
@@ -86,10 +86,10 @@ void test_fn()
 	std::cout << "testing add_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2000 };
-		auto* t1 = new kernel::tensor(6.0, shape_x);
-		auto* t2 = new kernel::tensor(1.0, shape_x);
+		auto t1 = new kernel::tensor(6.0, shape_x);
+		auto t2 = new kernel::tensor(1.0, shape_x);
 		auto k1 = kernel::layers::math::add();
-		auto* t3 = k1.forward(t1, t2);
+		auto t3 = k1.forward(t1, t2);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
 		k1.execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
@@ -103,9 +103,9 @@ void test_fn()
 		const int K = 240;
 		const int N = 240;
 		const std::vector<int> shape_x{ M, K };
-		auto* t1 = new kernel::tensor(1.0, shape_x);
-		auto* layer = new kernel::layers::nn::dense(N, false);
-		auto* t3 = layer->forward(t1);
+		auto t1 = new kernel::tensor(1.0, shape_x);
+		auto layer = new kernel::layers::nn::dense(N, false);
+		auto t3 = layer->forward(t1);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
 		layer->execute();
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), M * N);
@@ -120,11 +120,11 @@ void test_fn()
 	{
 		//cdhw
 		std::vector<int> shape_x{ 3, 1, 128, 128 };
-		auto* t1 = new kernel::tensor(1.0, shape_x);
-		auto* cnn_layer_1 = new kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
-		auto* t3 = cnn_layer_1->forward(t1);
-		auto* cnn_layer_2 = new kernel::layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
-		auto* t4 = cnn_layer_2->forward(t3);
+		auto t1 = new kernel::tensor(1.0, shape_x);
+		auto cnn_layer_1 = new kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto t3 = cnn_layer_1->forward(t1);
+		auto cnn_layer_2 = new kernel::layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto t4 = cnn_layer_2->forward(t3);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		cnn_layer_1->execute();
@@ -140,11 +140,11 @@ void test_fn()
 		int num_layers = 4;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
+		auto t1 = new kernel::tensor(1, shape_x);
+		auto rnn_layer_1 = new kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1->forward(t1);
-		auto* t3 = std::get<0>(tup);
-		auto* t4 = std::get<1>(tup);
+		auto t3 = std::get<0>(tup);
+		auto t4 = std::get<1>(tup);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		rnn_layer_1->execute();
@@ -166,12 +166,12 @@ void test_fn()
 		int num_layers = 2;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* rnn_layer_1 = new kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
+		auto t1 = new kernel::tensor(1, shape_x);
+		auto rnn_layer_1 = new kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1->forward(t1);
-		auto* t3 = std::get<0>(tup);
-		auto* t4 = std::get<1>(tup);
-		auto* t5 = std::get<2>(tup);
+		auto t3 = std::get<0>(tup);
+		auto t4 = std::get<1>(tup);
+		auto t5 = std::get<2>(tup);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
@@ -194,11 +194,11 @@ void test_fn()
 		int num_layers = 2;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto* t1 = new kernel::tensor(1, shape_x);
-		auto* rnn_layer_1 = new kernel::layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
+		auto t1 = new kernel::tensor(1, shape_x);
+		auto rnn_layer_1 = new kernel::layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
 		auto tup = rnn_layer_1->forward(t1);
-		auto* t3 = std::get<0>(tup);
-		auto* t4 = std::get<1>(tup);
+		auto t3 = std::get<0>(tup);
+		auto t4 = std::get<1>(tup);
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		rnn_layer_1->execute();
@@ -215,24 +215,23 @@ void test_fn()
 #endif
 #ifdef TEST_MNIST
 	std::cout << "testing mnist" << std::endl;
-
 	{
-		auto l1 = kernel::layers::nn::dense(64, false);
+		auto l1 = kernel::layers::nn::dense(64, true);
 		auto l2 = kernel::layers::activation::relu();
-		auto l3 = kernel::layers::nn::dense(64, false);
+		auto l3 = kernel::layers::nn::dense(64, true);
 		auto l4 = kernel::layers::activation::relu();
-		auto l5 = kernel::layers::nn::dense(10, false);
+		auto l5 = kernel::layers::nn::dense(10, true);
 		auto l6 = kernel::layers::activation::sigmoid();
 		auto l7 = kernel::layers::math::add();
 
-		auto* t0 = new kernel::tensor(1.0, std::vector<int>{1, 784});
-		auto* t1 = l1.forward(t0);
-		auto* t2 = l2.forward(t1);
-		auto* t3 = l3.forward(t2);
-		auto* t4 = l4.forward(t3);
-		auto* tx = l7.forward(t4, t2);
-		auto* t5 = l5.forward(tx);
-		auto* t6 = l6.forward(t5);
+		auto t0 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, std::vector<int>{1, 784}));
+		auto t1 = l1.forward(t0);
+		auto t2 = l2.forward(t1);
+		auto t3 = l3.forward(t2);
+		auto t4 = l4.forward(t3);
+		auto tx = l7.forward(t4, t2);
+		auto t5 = l5.forward(tx);
+		auto t6 = l6.forward(t5);
 
 		l6.execute();
 	}
