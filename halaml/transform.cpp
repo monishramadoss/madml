@@ -55,7 +55,7 @@ namespace kernel
 			return y;
 		}
 
-		void vol2col::back_propagate()
+		void vol2col::backward()
 		{
 			auto x = get_grad(inputs[0]);
 			auto y = get_grad(outputs[0]);
@@ -123,7 +123,7 @@ namespace kernel
 			return y;
 		}
 
-		void col2vol::back_propagate()
+		void col2vol::backward()
 		{
 			auto x = get_grad(inputs[0]);
 			auto y = get_grad(outputs[0]);
@@ -161,7 +161,7 @@ namespace kernel
 			return layer_construct_forward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), x, m_param);
 		}
 
-		void copy::back_propagate()
+		void copy::backward()
 		{
 			layer_construct_backward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 		}
@@ -219,7 +219,7 @@ namespace kernel
 			return y;
 		}
 
-		void transpose::back_propagate()
+		void transpose::backward()
 		{
 			layer_construct_backward<transpose_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 		}

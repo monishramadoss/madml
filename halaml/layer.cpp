@@ -345,43 +345,67 @@ namespace kernel
 		{
 		}
 
-		void Module::backward()
+		void DFS_f(size_t start, std::vector<bool>& visited, std::vector<std::vector<size_t>>& adj, std::vector<size_t>& execution_order)
 		{
+			execution_order.push_back(start);
+			visited[start] = true;
+			for (size_t i = 0; i < adj.size(); i++)
+			{
+				if (adj[start][i] == 1 && (!visited[i]))
+				{
+					DFS_f(i, visited, adj, execution_order);
+				}
+			}
 		}
 
 		void Module::execute()
 		{
 			auto& M = get_module();
 			/// <summary>
+			///  input = -1;
 			///  weight = -2;
 			///  bias = -3;
-			///  input = -1;
+			///  temp = -4;
 			/// </summary>
-			std::vector<int> execution_order;
-			for (auto m : M)
+			if (execution_order.size() == 0)
 			{
-				std::cout << m->id << " " << m->m_type << " ";
-				for (auto p : m->parents)
+				adj_mat.resize(M.size(), std::vector<size_t>(M.size(), 0));
+				visted.resize(M.size(), false);
+
+				for (auto m : M)
 				{
-					if (p == -1)
+					for (auto p : m->parents)
 					{
-						execution_order.push_back(m->id);
-						std::cout << "input" << " ";
+						adj_mat[m->id][p] = -1;
 					}
-					else if (p == -2)
-						std::cout << "weight" << " ";
-					else if (p == -3)
-						std::cout << "bias" << " ";
-					else if (p == -4)
-						std::cout << "temp" << " ";
-					else
-						std::cout << p << " ";
 				}
-				std::cout << "\n";
+
+				for (size_t i = 0; i < M.size(); ++i)
+				{
+					for (size_t j = 0; j < M.size(); ++j)
+					{
+						if (adj_mat[i][j])
+							M[j]->children.push_back(i);
+					}
+				}
+
+				for (auto m : M)
+				{
+					for (auto c : m->children)
+					{
+						adj_mat[m->id][c] = 1;
+					}
+				}
+
+				DFS_f(0, visted, adj_mat, execution_order);
 			}
 
-			//std::cout << *std::max_element(sanity_check.begin(), sanity_check.end());
-			//std::cout << std::endl;
+			for (size_t m_idx : execution_order)
+				M[m_idx]->fwd_callback();
+		}
+
+		void Module::execute_b()
+		{
 		}
 
 		std::vector<std::shared_ptr<tensor>>& Module::get_tensors()
@@ -402,7 +426,7 @@ namespace kernel
 			return M;
 		}
 
-		std::shared_ptr<tensor>Module::get_grad(int id)
+		std::shared_ptr<tensor>Module::get_grad(size_t id)
 		{
 			auto T = get_gradients();
 			return T[id];
@@ -457,13 +481,15 @@ namespace kernel
 			}
 		}
 
-		int Module::get_input_id(int i)
+		int Module::get_input_id(size_t i)
 		{
 			auto& M = get_module();
 			for (auto m : M)
 			{
 				if (std::find(m->outputs.begin(), m->outputs.end(), i) != m->outputs.end())
+				{
 					return m->id;
+				}
 				if (std::find(m->weights.begin(), m->weights.end(), i) != m->weights.end())
 					return -2;
 				if (std::find(m->biases.begin(), m->biases.end(), i) != m->biases.end())
@@ -504,7 +530,7 @@ namespace kernel
 		runCommandBufferForward();
 	}
 
-	void Base_Layer::bwd_callback()
+	void Base_Layer::bck_callback()
 	{
 		runCommandBufferBackward();
 	}

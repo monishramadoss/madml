@@ -14,19 +14,25 @@ namespace kernel
 			class unary_operator : public Base_Layer
 			{
 			protected:
+				std::shared_ptr<tensor> x;
+				std::shared_ptr<tensor> y;
 				void computeGroupCount() override;
 			public:
 				unary_operator(bool in_place);
 				virtual std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) = 0;
+				virtual void backward() override = 0;
 			};
 
 			class binary_operator : public Base_Layer
 			{
 			protected:
+				std::shared_ptr<tensor> x;
+				std::shared_ptr<tensor> y;
 				void computeGroupCount() override;
 			public:
 				binary_operator(bool in_place);
 				virtual std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>w) = 0;
+				virtual void backward() override = 0;
 			};
 		}
 	}
@@ -44,7 +50,7 @@ namespace kernel
 			public:
 				abs(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class ceil : public unary_operator
@@ -52,7 +58,7 @@ namespace kernel
 			public:
 				ceil(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			struct clip_operator_param
@@ -68,7 +74,7 @@ namespace kernel
 			public:
 				clip(float min = 0.0f, float max = 1.0f, bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class exp : public unary_operator
@@ -76,7 +82,7 @@ namespace kernel
 			public:
 				exp(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class floor : public unary_operator
@@ -84,7 +90,7 @@ namespace kernel
 			public:
 				floor(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class ln : public unary_operator
@@ -92,7 +98,7 @@ namespace kernel
 			public:
 				ln(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class round : public unary_operator
@@ -100,7 +106,7 @@ namespace kernel
 			public:
 				round(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class sqrt : public unary_operator
@@ -108,7 +114,7 @@ namespace kernel
 			public:
 				sqrt(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class acos : public unary_operator
@@ -116,7 +122,7 @@ namespace kernel
 			public:
 				acos(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class acosh : public unary_operator
@@ -124,7 +130,7 @@ namespace kernel
 			public:
 				acosh(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class asin : public unary_operator
@@ -132,7 +138,7 @@ namespace kernel
 			public:
 				asin(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class asinh : public unary_operator
@@ -140,7 +146,7 @@ namespace kernel
 			public:
 				asinh(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class atan : public unary_operator
@@ -148,7 +154,7 @@ namespace kernel
 			public:
 				atan(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class atanh : public unary_operator
@@ -156,7 +162,7 @@ namespace kernel
 			public:
 				atanh(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class cos : public unary_operator
@@ -164,7 +170,7 @@ namespace kernel
 			public:
 				cos(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class cosh : public unary_operator
@@ -172,7 +178,7 @@ namespace kernel
 			public:
 				cosh(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class sin : public unary_operator
@@ -180,7 +186,7 @@ namespace kernel
 			public:
 				sin(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class sinh : public unary_operator
@@ -188,7 +194,7 @@ namespace kernel
 			public:
 				sinh(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class tan : public unary_operator
@@ -196,7 +202,7 @@ namespace kernel
 			public:
 				tan(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class tanh : public unary_operator
@@ -204,7 +210,7 @@ namespace kernel
 			public:
 				tanh(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			// BINARY OPERATORS
@@ -213,7 +219,7 @@ namespace kernel
 			public:
 				add(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class sub : public binary_operator
@@ -221,7 +227,7 @@ namespace kernel
 			public:
 				sub(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class mul : public binary_operator
@@ -229,7 +235,7 @@ namespace kernel
 			public:
 				mul(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class div : public binary_operator
@@ -237,7 +243,7 @@ namespace kernel
 			public:
 				div(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class mod : public binary_operator
@@ -245,7 +251,7 @@ namespace kernel
 			public:
 				mod(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class pow : public binary_operator
@@ -253,7 +259,7 @@ namespace kernel
 			public:
 				pow(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class max : public binary_operator
@@ -261,7 +267,7 @@ namespace kernel
 			public:
 				max(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class min : public binary_operator
@@ -269,7 +275,7 @@ namespace kernel
 			public:
 				min(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class eq : public binary_operator
@@ -277,7 +283,7 @@ namespace kernel
 			public:
 				eq(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class ne : public binary_operator
@@ -285,7 +291,7 @@ namespace kernel
 			public:
 				ne(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class lt : public binary_operator
@@ -293,7 +299,7 @@ namespace kernel
 			public:
 				lt(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class le : public binary_operator
@@ -301,7 +307,7 @@ namespace kernel
 			public:
 				le(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class gt : public binary_operator
@@ -309,7 +315,7 @@ namespace kernel
 			public:
 				gt(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class ge : public binary_operator
@@ -317,7 +323,7 @@ namespace kernel
 			public:
 				ge(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 
 			class xr : public binary_operator
@@ -325,7 +331,7 @@ namespace kernel
 			public:
 				xr(bool in_place = false);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>y) override;
-				void back_propagate() override;
+				void backward() override;
 			};
 		}
 	}

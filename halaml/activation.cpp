@@ -34,7 +34,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::celu_spv, sizeof(shaders::celu_spv), x, alpha, m_param);
 			}
 
-			void celu::back_propagate()
+			void celu::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::d_celu_spv, sizeof(shaders::d_celu_spv), m_param);
 			}
@@ -49,7 +49,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::elu_spv, sizeof(shaders::elu_spv), x, m_param);
 			}
 
-			void elu::back_propagate()
+			void elu::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::d_elu_spv, sizeof(shaders::d_elu_spv), m_param);
 			}
@@ -64,7 +64,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x, m_param);
 			}
 
-			void hardshrink::back_propagate()
+			void hardshrink::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -81,7 +81,7 @@ namespace kernel
 				return layer_construct_forward<two_param>(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x, m_param);
 			}
 
-			void hardtanh::back_propagate()
+			void hardtanh::backward()
 			{
 				layer_construct_backward<two_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -96,7 +96,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::leakyrelu_spv, sizeof(shaders::leakyrelu_spv), x, m_param);
 			}
 
-			void leakyrelu::back_propagate()
+			void leakyrelu::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -111,7 +111,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::logsigmoid_spv, sizeof(shaders::logsigmoid_spv), x, m_param);
 			}
 
-			void logsigmoid::back_propagate()
+			void logsigmoid::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -126,7 +126,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::prelu_spv, sizeof(shaders::prelu_spv), x, m_param);
 			}
 
-			void prelu::back_propagate()
+			void prelu::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -141,7 +141,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::relu_spv, sizeof(shaders::relu_spv), x, m_param);
 			}
 
-			void relu::back_propagate()
+			void relu::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::d_relu_spv, sizeof(shaders::d_relu_spv), m_param);
 			}
@@ -156,7 +156,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::relu6_spv, sizeof(shaders::relu6_spv), x, m_param);
 			}
 
-			void relu6::back_propagate()
+			void relu6::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::d_relu6_spv, sizeof(shaders::d_relu6_spv), m_param);
 			}
@@ -171,7 +171,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::selu_spv, sizeof(shaders::selu_spv), x, m_param);
 			}
 
-			void selu::back_propagate()
+			void selu::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -186,7 +186,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::sigmoid_spv, sizeof(shaders::sigmoid_spv), x, m_param);
 			}
 
-			void sigmoid::back_propagate()
+			void sigmoid::backward()
 			{
 				layer_construct_backward <activation_param>(shaders::d_sigmoid_spv, sizeof(shaders::d_sigmoid_spv), m_param);
 			}
@@ -201,7 +201,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::softplus_spv, sizeof(shaders::softplus_spv), x, m_param);
 			}
 
-			void softplus::back_propagate()
+			void softplus::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -216,7 +216,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::softshrink_spv, sizeof(shaders::softshrink_spv), x, m_param);
 			}
 
-			void softshrink::back_propagate()
+			void softshrink::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -231,7 +231,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::softsign_spv, sizeof(shaders::softsign_spv), x, m_param);
 			}
 
-			void softsign::back_propagate()
+			void softsign::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}
@@ -246,7 +246,7 @@ namespace kernel
 				return layer_construct_forward<activation_param>(shaders::tanhshrink_spv, sizeof(shaders::tanhshrink_spv), x, m_param);
 			}
 
-			void tanhshrink::back_propagate()
+			void tanhshrink::backward()
 			{
 				layer_construct_backward<activation_param>(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), m_param);
 			}

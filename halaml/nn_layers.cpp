@@ -42,10 +42,19 @@ namespace kernel
 
 				outputs.push_back(y->getId());
 				unset_sub_graph();
+				parents.push_back(get_input_id(x->getId()));
 				return y;
 			}
 
-			void dense::back_propagate()
+			void dense::fwd_callback()
+			{
+				for (auto g : sub_graph)
+				{
+					g->fwd_callback();
+				}
+			}
+
+			void dense::backward()
 			{
 				// MxK KxN = MxN
 				// dw =  dy * x.T
@@ -72,7 +81,7 @@ namespace kernel
 				sub_graph.push_back(kernel);
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
+				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
 				auto ir_vol2col = kernel->forward(x); //27 9
 				temporaries.push_back(ir_vol2col->getId());
@@ -91,9 +100,25 @@ namespace kernel
 
 				auto out = kernel->output_shape();
 				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
-
-				return y;
+				parents.push_back(get_input_id(x->getId()));
 				unset_sub_graph();
+				return y;
+			}
+
+			void conv::fwd_callback()
+			{
+				for (auto g : sub_graph)
+				{
+					g->fwd_callback();
+				}
+			}
+
+			void conv::backward()
+			{
+				// MxK KxN = MxN
+				// dw =  dy * x.T
+				// db = mean(dy)
+				// dx = W.T * dy
 			}
 
 			convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
@@ -117,7 +142,7 @@ namespace kernel
 				sub_graph.push_back(kernel);
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
+				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
 				auto ir_col2vol = kernel->forward(x);
 				temporaries.push_back(ir_col2vol->getId());
@@ -137,7 +162,24 @@ namespace kernel
 				auto out = kernel->output_shape();
 				y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
 				unset_sub_graph();
+				parents.push_back(get_input_id(x->getId()));
 				return y;
+			}
+
+			void convTranspose::fwd_callback()
+			{
+				for (auto g : sub_graph)
+				{
+					g->fwd_callback();
+				}
+			}
+
+			void convTranspose::backward()
+			{
+				// MxK KxN = MxN
+				// dw =  dy * x.T
+				// db = mean(dy)
+				// dx = W.T * dy
 			}
 
 			RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -192,10 +234,20 @@ namespace kernel
 
 			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> RNN::forward(std::shared_ptr<tensor>x)
 			{
+				auto h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				return forward(x, h);
+			}
+
+			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> RNN::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h)
+			{
+				inputs.push_back(x->getId());
+				weights.push_back(h->getId());
 				const auto input_shape = x->getShape();
-				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+				if (x->getShape().size() == 2)
+					x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
 				cache.push_back(x);
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(h);
+
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
@@ -241,11 +293,26 @@ namespace kernel
 					}
 				}
 
-				inputs.push_back(x->getId());
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
-
+				parents.push_back(get_input_id(x->getId()));
 				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+			}
+
+			void RNN::fwd_callback()
+			{
+				for (auto g : cells)
+				{
+					g->fwd_callback();
+				}
+			}
+
+			void RNN::backward()
+			{
+				// MxK KxN = MxN
+				// dw =  dy * x.T
+				// db = mean(dy)
+				// dx = W.T * dy
 			}
 
 			LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -301,11 +368,23 @@ namespace kernel
 
 			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> LSTM::forward(std::shared_ptr<tensor>x)
 			{
+				auto h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				auto c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				return forward(x, h, c);
+			}
+
+			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> LSTM::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>c)
+			{
+				inputs.push_back(x->getId());
+				weights.push_back(h->getId());
+				weights.push_back(c->getId());
 				const auto input_shape = x->getShape();
-				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+				if (x->getShape().size() == 2)
+					x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
 				cache.push_back(x);
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(h);
+				cache.push_back(c);
+
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
@@ -358,8 +437,24 @@ namespace kernel
 				outputs.push_back(cache[cache.size() - 3]->getId());
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
-
+				parents.push_back(get_input_id(x->getId()));
 				return std::make_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
+			}
+
+			void LSTM::fwd_callback()
+			{
+				for (auto g : cells)
+				{
+					g->fwd_callback();
+				}
+			}
+
+			void LSTM::backward()
+			{
+				// MxK KxN = MxN
+				// dw =  dy * x.T
+				// db = mean(dy)
+				// dx = W.T * dy
 			}
 
 			GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -415,11 +510,20 @@ namespace kernel
 
 			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> GRU::forward(std::shared_ptr<tensor>x)
 			{
-				const auto input_shape = x->getShape();
-				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+				auto h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				return forward(x, h);
+			}
+
+			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> GRU::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h)
+			{
 				inputs.push_back(x->getId());
+				weights.push_back(h->getId());
+				const auto input_shape = x->getShape();
+				if (x->getShape().size() == 2)
+					x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
 				cache.push_back(x);
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(h);
+
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
@@ -468,8 +572,24 @@ namespace kernel
 
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
-
+				parents.push_back(get_input_id(x->getId()));
 				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+			}
+
+			void GRU::fwd_callback()
+			{
+				for (auto g : cells)
+				{
+					g->fwd_callback();
+				}
+			}
+
+			void GRU::backward()
+			{
+				// MxK KxN = MxN
+				// dw =  dy * x.T
+				// db = mean(dy)
+				// dx = W.T * dy
 			}
 		}
 	}

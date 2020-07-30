@@ -16,7 +16,8 @@ namespace kernel
 			public:
 				dense(int size, bool use_bias);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-				void back_propagate() override;
+				void fwd_callback() override;
+				void backward() override;
 				void update_weight() override
 				{
 				};
@@ -31,7 +32,8 @@ namespace kernel
 			public:
 				conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-
+				void fwd_callback() override;
+				void backward() override;
 				void update_weight() override
 				{
 				};
@@ -48,7 +50,8 @@ namespace kernel
 				convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
 					bool use_bias);
 				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-
+				void fwd_callback() override;
+				void backward() override;
 				void update_weight() override
 				{
 				};
@@ -65,7 +68,9 @@ namespace kernel
 				RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x);
-
+				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor> h);
+				void fwd_callback() override;
+				void backward() override;
 				void update_weight() override
 				{
 				};
@@ -85,7 +90,9 @@ namespace kernel
 				LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x);
-
+				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>c);
+				void fwd_callback() override;
+				void backward() override;
 				void update_weight() override
 				{
 				};
@@ -105,7 +112,9 @@ namespace kernel
 				GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x);
-
+				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h);
+				void fwd_callback() override;
+				void backward() override;
 				void update_weight() override
 				{
 				};

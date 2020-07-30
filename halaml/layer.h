@@ -72,21 +72,27 @@ namespace kernel
 		{
 		public:
 			virtual void update_weight();
-			virtual void execute();
-			virtual void backward();
+			void execute();
+			void execute_b();
+			virtual void backward() = 0;
+			virtual void bck_callback() {};
+			virtual void fwd_callback() = 0;
 
-			std::vector<int> parents;
+			std::vector<size_t> parents;
+			std::vector<size_t> children;
 			std::shared_ptr<Module> getptr();
 
 		protected:
 			std::string m_type;
-			std::vector<int> inputs;
-			std::vector<int> outputs;
-			std::vector<int> weights;
-			std::vector<int> biases;
-			std::vector<int> temporaries;
+			std::vector<size_t> inputs;
+			std::vector<size_t> outputs;
+			std::vector<size_t> weights;
+			std::vector<size_t> biases;
+			std::vector<size_t> temporaries;
+
 			bool requires_sub_graph = false;
 			std::vector<Module*> sub_graph;
+
 			static std::vector<std::shared_ptr<tensor>>& get_tensors();
 			static std::vector<std::shared_ptr<tensor>>& get_gradients();
 			static std::vector<Module*>& get_module();
@@ -94,22 +100,25 @@ namespace kernel
 			static void set_sub_graph();
 			static void unset_sub_graph();
 
-			static std::shared_ptr<tensor> get_grad(int id);
+			static std::shared_ptr<tensor> get_grad(size_t id);
 			static void zero_grad();
 
 			static void add_tensor(std::shared_ptr<tensor>T);
 			static void add_gradient(std::shared_ptr<tensor>G);
 			static void add_module(Module* M);
 
-			int get_input_id(int i);
+			int get_input_id(size_t i);
 
 			int batch_size = 0;
 			float lr = 0.0001f;
-			virtual void back_propagate() {};
 
 			int id = 0;
 			static int& get_object_id();
 			void update_id();
+
+			std::vector<size_t> execution_order;
+			std::vector<std::vector<size_t>> adj_mat;
+			std::vector<bool> visted;
 
 			friend class tensor;
 		private:
@@ -121,8 +130,8 @@ namespace kernel
 	{
 	public:
 		Base_Layer(int forward_buffers, int backward_buffers = -1, bool in_place = false);
-		virtual void fwd_callback();
-		virtual void bwd_callback();
+		virtual void fwd_callback() override;
+		virtual void bck_callback() override;
 	protected:
 		bool m_in_place;
 		operator_param m_param;
@@ -164,6 +173,7 @@ namespace kernel
 		recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
 
 		parents.push_back(get_input_id(x->getId()));
+
 		return y;
 	}
 
@@ -199,6 +209,7 @@ namespace kernel
 
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
+
 		return y;
 	}
 
@@ -213,19 +224,19 @@ namespace kernel
 		}
 
 		int binding = 0;
-		for (int o : outputs)
+		for (size_t o : outputs)
 		{
 			bindTensor(m_device, get_grad(o), binding++, m_descriptor_set_backward);
 		}
-		for (int w : weights)
+		for (size_t w : weights)
 		{
 			bindTensor(m_device, get_grad(w), binding++, m_descriptor_set_backward);
 		}
-		for (int b : biases)
+		for (size_t b : biases)
 		{
 			bindTensor(m_device, get_grad(b), binding++, m_descriptor_set_backward);
 		}
-		for (int i : inputs)
+		for (size_t i : inputs)
 		{
 			bindTensor(m_device, get_grad(i), binding++, m_descriptor_set_backward);
 		}

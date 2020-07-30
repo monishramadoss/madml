@@ -50,7 +50,7 @@ namespace kernel
 		public:
 			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-			void back_propagate();
+			void backward();
 			std::vector<int> output_shape() const;
 		};
 
@@ -62,7 +62,7 @@ namespace kernel
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-			void back_propagate();
+			void backward();
 			std::vector<int> output_shape() const;
 		};
 
@@ -73,7 +73,7 @@ namespace kernel
 		public:
 			copy();
 			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-			void back_propagate();
+			void backward();
 		};
 
 		struct transpose_param
@@ -92,7 +92,7 @@ namespace kernel
 		public:
 			transpose(const std::vector<int> order);
 			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-			void back_propagate();
+			void backward();
 		};
 	}
 }
