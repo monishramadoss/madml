@@ -50,15 +50,15 @@ namespace kernel
 					createPipelineForward(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, U, 0, m_descriptor_set_forward);
-				bindTensor(m_device, V, 1, m_descriptor_set_forward);
-				bindTensor(m_device, W, 2, m_descriptor_set_forward);
-				bindTensor(m_device, x, 3, m_descriptor_set_forward);
-				bindTensor(m_device, h, 4, m_descriptor_set_forward);
-				bindTensor(m_device, b1, 5, m_descriptor_set_forward);
-				bindTensor(m_device, b2, 6, m_descriptor_set_forward);
-				bindTensor(m_device, y, 7, m_descriptor_set_forward);
-				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
+				bindTensor(m_device, *U, 0, m_descriptor_set_forward);
+				bindTensor(m_device, *V, 1, m_descriptor_set_forward);
+				bindTensor(m_device, *W, 2, m_descriptor_set_forward);
+				bindTensor(m_device, *x, 3, m_descriptor_set_forward);
+				bindTensor(m_device, *h, 4, m_descriptor_set_forward);
+				bindTensor(m_device, *b1, 5, m_descriptor_set_forward);
+				bindTensor(m_device, *b2, 6, m_descriptor_set_forward);
+				bindTensor(m_device, *y, 7, m_descriptor_set_forward);
+				bindTensor(m_device, *hn, 8, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 
@@ -119,17 +119,17 @@ namespace kernel
 					createPipelineForward(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, U, 0, m_descriptor_set_forward);
-				bindTensor(m_device, V, 1, m_descriptor_set_forward);
-				bindTensor(m_device, W, 2, m_descriptor_set_forward);
-				bindTensor(m_device, x, 3, m_descriptor_set_forward);
-				bindTensor(m_device, h, 4, m_descriptor_set_forward);
-				bindTensor(m_device, c, 5, m_descriptor_set_forward);
-				bindTensor(m_device, b1, 6, m_descriptor_set_forward);
-				bindTensor(m_device, b2, 7, m_descriptor_set_forward);
-				bindTensor(m_device, y, 8, m_descriptor_set_forward);
-				bindTensor(m_device, hn, 9, m_descriptor_set_forward);
-				bindTensor(m_device, cn, 10, m_descriptor_set_forward);
+				bindTensor(m_device, *U, 0, m_descriptor_set_forward);
+				bindTensor(m_device, *V, 1, m_descriptor_set_forward);
+				bindTensor(m_device, *W, 2, m_descriptor_set_forward);
+				bindTensor(m_device, *x, 3, m_descriptor_set_forward);
+				bindTensor(m_device, *h, 4, m_descriptor_set_forward);
+				bindTensor(m_device, *c, 5, m_descriptor_set_forward);
+				bindTensor(m_device, *b1, 6, m_descriptor_set_forward);
+				bindTensor(m_device, *b2, 7, m_descriptor_set_forward);
+				bindTensor(m_device, *y, 8, m_descriptor_set_forward);
+				bindTensor(m_device, *hn, 9, m_descriptor_set_forward);
+				bindTensor(m_device, *cn, 10, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 
@@ -188,15 +188,15 @@ namespace kernel
 					createPipelineForward(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, U, 0, m_descriptor_set_forward);
-				bindTensor(m_device, V, 1, m_descriptor_set_forward);
-				bindTensor(m_device, W, 2, m_descriptor_set_forward);
-				bindTensor(m_device, x, 3, m_descriptor_set_forward);
-				bindTensor(m_device, h, 4, m_descriptor_set_forward);
-				bindTensor(m_device, b1, 5, m_descriptor_set_forward);
-				bindTensor(m_device, b2, 6, m_descriptor_set_forward);
-				bindTensor(m_device, y, 7, m_descriptor_set_forward);
-				bindTensor(m_device, hn, 8, m_descriptor_set_forward);
+				bindTensor(m_device, *U, 0, m_descriptor_set_forward);
+				bindTensor(m_device, *V, 1, m_descriptor_set_forward);
+				bindTensor(m_device, *W, 2, m_descriptor_set_forward);
+				bindTensor(m_device, *x, 3, m_descriptor_set_forward);
+				bindTensor(m_device, *h, 4, m_descriptor_set_forward);
+				bindTensor(m_device, *b1, 5, m_descriptor_set_forward);
+				bindTensor(m_device, *b2, 6, m_descriptor_set_forward);
+				bindTensor(m_device, *y, 7, m_descriptor_set_forward);
+				bindTensor(m_device, *hn, 8, m_descriptor_set_forward);
 
 				recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 

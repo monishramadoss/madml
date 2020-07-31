@@ -50,16 +50,13 @@ namespace kernel
 
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
-			auto y = layer_construct_forward<vol2col_param>(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, m_param, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
+			y = layer_construct_forward<vol2col_param>(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, m_param, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
 
 		void vol2col::backward()
 		{
-			auto x = get_grad(inputs[0]);
-			auto y = get_grad(outputs[0]);
-
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
 			const int width = x->getShape()[x->getShape().size() - 1];
@@ -70,6 +67,7 @@ namespace kernel
 			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1) + m_param.pad_d + 1;
 			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h - 1) + m_param.pad_h + 1;
 			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
+
 			layer_construct_backward <vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), m_param);
 		}
 
@@ -117,17 +115,13 @@ namespace kernel
 			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
 			const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 			const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
-
-			auto y = layer_construct_forward<vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, m_param, Format::kFormatFp32, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
+			y = layer_construct_forward<vol2col_param>(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, m_param, Format::kFormatFp32, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
 
 		void col2vol::backward()
 		{
-			auto x = get_grad(inputs[0]);
-			auto y = get_grad(outputs[0]);
-
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
 			const int width = x->getShape()[x->getShape().size() - 1];
@@ -147,6 +141,11 @@ namespace kernel
 			m_type = "copy";
 		}
 
+		std::shared_ptr<tensor>& copy::forward(const std::shared_ptr<tensor>& x)
+		{
+			return layer_construct_forward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), x, m_param);
+		}
+
 		void copy::computeGroupCount()
 		{
 			m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
@@ -154,11 +153,6 @@ namespace kernel
 				m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
 			m_group_y = 1;
 			m_group_z = 1;
-		}
-
-		std::shared_ptr<tensor>copy::forward(std::shared_ptr<tensor>x)
-		{
-			return layer_construct_forward(shaders::unary_operator_spv, sizeof(shaders::unary_operator_spv), x, m_param);
 		}
 
 		void copy::backward()
@@ -190,8 +184,9 @@ namespace kernel
 				stride[i] = order[i];
 		}
 
-		std::shared_ptr<tensor>transpose::forward(std::shared_ptr<tensor>x)
+		std::shared_ptr<tensor>& transpose::forward(const std::shared_ptr<tensor>& x)
 		{
+			this->x = x;
 			for (size_t i = 0; i < m_param.num_axes; ++i)
 				new_shape[i] = x->getShape()[stride[i]];
 
@@ -203,19 +198,19 @@ namespace kernel
 				createPipelineForward(sizeof(transpose_param));
 			}
 
-			std::shared_ptr<tensor> y = std::make_shared<tensor>(tensor(0.0, new_shape));
+			y = std::make_shared<tensor>(tensor(0.0, new_shape));
 			stride = prepareStrides(x->getShape(), new_shape, stride);
+			tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 
-			std::shared_ptr<tensor>tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
-
-			bindTensor(m_device, x, 0, m_descriptor_set_forward);
-			bindTensor(m_device, y, 1, m_descriptor_set_forward);
-			bindTensor(m_device, tensor_stride, 2, m_descriptor_set_forward);
+			bindTensor(m_device, *x, 0, m_descriptor_set_forward);
+			bindTensor(m_device, *y, 1, m_descriptor_set_forward);
+			bindTensor(m_device, *tensor_stride, 2, m_descriptor_set_forward);
 			recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(transpose_param));
 
 			inputs.push_back(x->getId());
 			outputs.push_back(y->getId());
 			parents.push_back(get_input_id(x->getId()));
+
 			return y;
 		}
 

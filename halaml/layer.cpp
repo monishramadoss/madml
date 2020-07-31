@@ -408,28 +408,10 @@ namespace kernel
 		{
 		}
 
-		std::vector<std::shared_ptr<tensor>>& Module::get_tensors()
-		{
-			static std::vector<std::shared_ptr<tensor>> T;
-			return T;
-		}
-
-		std::vector<std::shared_ptr<tensor>>& Module::get_gradients()
-		{
-			static std::vector<std::shared_ptr<tensor>> G;
-			return G;
-		}
-
 		std::vector<Module*>& Module::get_module()
 		{
 			static std::vector<Module*> M;
 			return M;
-		}
-
-		std::shared_ptr<tensor>Module::get_grad(size_t id)
-		{
-			auto T = get_gradients();
-			return T[id];
 		}
 
 		bool& Module::sub_graph_bit()
@@ -450,18 +432,6 @@ namespace kernel
 			r = false;
 		}
 
-		void Module::add_tensor(std::shared_ptr<tensor>T)
-		{
-			auto& t = get_tensors();
-			t.push_back(T);
-		}
-
-		void Module::add_gradient(std::shared_ptr<tensor>G)
-		{
-			auto& g = get_gradients();
-			g.push_back(G);
-		}
-
 		void Module::add_module(Module* M)
 		{
 			auto& m = get_module();
@@ -470,15 +440,6 @@ namespace kernel
 
 		void Module::zero_grad()
 		{
-			auto& G = get_gradients();
-			auto& T = get_tensors();
-			if (G.size() != T.size())
-			{
-				for (auto t : T)
-				{
-					G.push_back(std::make_shared<tensor>(tensor(0.0, t->getShape())));
-				}
-			}
 		}
 
 		int Module::get_input_id(size_t i)

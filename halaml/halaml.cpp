@@ -12,36 +12,22 @@ using namespace std::chrono;
 void PrintDiffer(float* data, int size)
 {
 	std::map<float, int> diff_freq;
-
 	for (int i = 0; i < size; ++i)
-	{
 		diff_freq[data[i]] += 1;
-	}
-
 	std::cout << "{";
 	for (const auto df : diff_freq)
-	{
 		std::cout << df.first << ": " << df.second << ", ";
-	}
-
 	std::cout << "}" << std::endl;
 }
 
 void PrintDiffer(int* data, int size)
 {
 	std::map<int, int> diff_freq;
-
 	for (int i = 0; i < size; ++i)
-	{
 		diff_freq[static_cast<int>(data[i])] += 1;
-	}
-
 	std::cout << "{";
 	for (const auto df : diff_freq)
-	{
 		std::cout << df.first << ": " << df.second << ", ";
-	}
-
 	std::cout << "}" << std::endl;
 }
 
@@ -59,10 +45,10 @@ void PrintMatrix(float* data, std::vector<int> shape)
 }
 //#define TEST_TRANS
 //#define TEST_MATH
-#define TEST_NN
+//#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
-//#define TEST_MNIST
+#define TEST_MNIST
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -70,7 +56,7 @@ void test_fn()
 	{
 		const std::vector<int> shape_x{ 2, 3, 4 };
 		char* dat = kernel::init::normal_distribution_init(shape_x, 20, 2);
-		auto t1 = new kernel::tensor(dat, shape_x);
+		auto t1 = std::make_shared < kernel::tensor>(kernel::tensor(dat, shape_x));
 		auto k1 = kernel::layers::transpose(std::vector<int>{ 1, 2, 0});
 		auto t2 = k1.forward(t1);
 
@@ -86,13 +72,13 @@ void test_fn()
 	std::cout << "testing add_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2000 };
-		auto t1 = new kernel::tensor(6.0, shape_x);
-		auto t2 = new kernel::tensor(1.0, shape_x);
+		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(6.0, shape_x));
+		auto t2 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, shape_x));
 		auto k1 = kernel::layers::math::add();
 		auto t3 = k1.forward(t1, t2);
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		k1.execute();
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), 2000);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 	}
 #endif
 
@@ -104,7 +90,7 @@ void test_fn()
 		const int N = 240;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, shape_x));
-		auto layer = new kernel::layers::nn::dense(N, true);
+		auto layer = new kernel::layers::nn::dense(N, false);
 		auto layer2 = new kernel::layers::nn::dense(N, false);
 		auto t3 = layer->forward(t1);
 		auto t4 = layer2->forward(t3);
@@ -229,6 +215,7 @@ void test_fn()
 		auto t5 = l5.forward(tx);
 		auto t6 = l6.forward(t5);
 		l6.execute();
+		PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
 	}
 
 #endif

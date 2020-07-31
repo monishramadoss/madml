@@ -78,7 +78,7 @@ namespace kernel
 			virtual void bck_callback() {};
 			virtual void fwd_callback() = 0;
 
-			std::vector<size_t> parents;
+			std::vector<int> parents;
 			std::vector<size_t> children;
 			std::shared_ptr<Module> getptr();
 
@@ -93,18 +93,12 @@ namespace kernel
 			bool requires_sub_graph = false;
 			std::vector<Module*> sub_graph;
 
-			static std::vector<std::shared_ptr<tensor>>& get_tensors();
-			static std::vector<std::shared_ptr<tensor>>& get_gradients();
 			static std::vector<Module*>& get_module();
 			static bool& sub_graph_bit();
 			static void set_sub_graph();
 			static void unset_sub_graph();
 
-			static std::shared_ptr<tensor> get_grad(size_t id);
 			static void zero_grad();
-
-			static void add_tensor(std::shared_ptr<tensor>T);
-			static void add_gradient(std::shared_ptr<tensor>G);
 			static void add_module(Module* M);
 
 			int get_input_id(size_t i);
@@ -119,8 +113,7 @@ namespace kernel
 			std::vector<size_t> execution_order;
 			std::vector<std::vector<size_t>> adj_mat;
 			std::vector<bool> visted;
-
-			friend class tensor;
+			std::shared_ptr<tensor> x, y, w, b;
 		private:
 			//void BFS(std::vector<std::vector<int>> adj, int s = 0);
 		};
@@ -136,8 +129,8 @@ namespace kernel
 		bool m_in_place;
 		operator_param m_param;
 
-		template <typename T = operator_param> inline std::shared_ptr<tensor>layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
-		template <typename T = operator_param> inline std::shared_ptr<tensor>layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, std::shared_ptr<tensor>w, T m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 	};
 }
@@ -145,45 +138,44 @@ namespace kernel
 namespace kernel
 {
 	template<class T>
-	std::shared_ptr<tensor>Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, T m_param, Format fmt, std::vector<int> output_shape)
+	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, T& param, Format fmt, std::vector<int> output_shape)
 	{
 		inputs.push_back(x->getId());
-		std::shared_ptr<tensor>y;
+		this->x = x;
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
 			//else {
 		if (output_shape.size() != 0)
 			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
 		else
-			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
+			y = std::make_shared<tensor>(tensor(0.0, this->x->getShape()));
 		//}
 		outputs.push_back(y->getId());
 
 		if (m_pipeline_forward == nullptr)
 		{
-			m_param.total = x->count();
+			param.total = this->x->count();
 			computeGroupCount();
 			createShaderModuleForward(shader, codeSize);
 			createPipelineForward(sizeof(T));
 		}
 
-		bindTensor(m_device, x, 0, m_descriptor_set_forward);
-		bindTensor(m_device, y, 1, m_descriptor_set_forward);
+		bindTensor(m_device, *this->x, 0, m_descriptor_set_forward);
+		bindTensor(m_device, *y, 1, m_descriptor_set_forward);
 
-		recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
-
-		parents.push_back(get_input_id(x->getId()));
-
+		recordCommandBufferForward(static_cast<void*>(&param), sizeof(T));
+		parents.push_back(get_input_id(this->x->getId()));
+		runCommandBufferForward();
 		return y;
 	}
 
 	template<class T>
-	std::shared_ptr<tensor>Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, std::shared_ptr<tensor>x, std::shared_ptr<tensor>w, T m_param, Format fmt, std::vector<int> output_shape)
+	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, T& m_param, Format fmt, std::vector<int> output_shape)
 	{
 		inputs.push_back(x->getId());
 		inputs.push_back(w->getId());
-		std::shared_ptr<tensor>y;
-
+		this->x = x;
+		this->w = w;
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
 			//else {
@@ -197,19 +189,23 @@ namespace kernel
 		{
 			m_param.total = x->count();
 			computeGroupCount();
+			if (m_group_x == 0 || m_group_y == 0 || m_group_z == 0)
+			{
+				std::cout << "GROUP DIMMS OFF" << std::endl;
+			}
 			createShaderModuleForward(shader, codeSize);
 			createPipelineForward(sizeof(T));
 		}
 
-		bindTensor(m_device, x, 0, m_descriptor_set_forward);
-		bindTensor(m_device, w, 1, m_descriptor_set_forward);
-		bindTensor(m_device, y, 2, m_descriptor_set_forward);
+		bindTensor(m_device, *x, 0, m_descriptor_set_forward);
+		bindTensor(m_device, *w, 1, m_descriptor_set_forward);
+		bindTensor(m_device, *y, 2, m_descriptor_set_forward);
 
 		recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
 
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
-
+		runCommandBufferForward();
 		return y;
 	}
 
@@ -218,27 +214,8 @@ namespace kernel
 	{
 		if (m_pipeline_backward == nullptr)
 		{
-			computeGroupCount();
 			createShaderModuleBackward(shader, codeSize);
 			createPipelineBackward(sizeof(T));
-		}
-
-		int binding = 0;
-		for (size_t o : outputs)
-		{
-			bindTensor(m_device, get_grad(o), binding++, m_descriptor_set_backward);
-		}
-		for (size_t w : weights)
-		{
-			bindTensor(m_device, get_grad(w), binding++, m_descriptor_set_backward);
-		}
-		for (size_t b : biases)
-		{
-			bindTensor(m_device, get_grad(b), binding++, m_descriptor_set_backward);
-		}
-		for (size_t i : inputs)
-		{
-			bindTensor(m_device, get_grad(i), binding++, m_descriptor_set_backward);
 		}
 
 		recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(T));

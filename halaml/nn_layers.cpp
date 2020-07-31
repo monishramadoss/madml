@@ -20,20 +20,20 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>dense::forward(std::shared_ptr<tensor>x)
+			std::shared_ptr<tensor>& dense::forward(const std::shared_ptr<tensor>& x)
 			{
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				std::shared_ptr<tensor> w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[1], m_size}));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[1], m_size}));
 				weights.push_back(w->getId());
-				std::shared_ptr<tensor> y = mm->forward(x, w);
+				y = mm->forward(x, w);
 
 				if (USE_BIAS)
 				{
-					std::shared_ptr<tensor> b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
 					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
@@ -72,7 +72,7 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>conv::forward(std::shared_ptr<tensor>x)
+			std::shared_ptr<tensor>& conv::forward(const std::shared_ptr<tensor>& x)
 			{
 				set_sub_graph();
 				inputs.push_back(x->getId());
@@ -81,15 +81,15 @@ namespace kernel
 				sub_graph.push_back(kernel);
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
-				auto ir_vol2col = kernel->forward(x); //27 9
+				ir_vol2col = kernel->forward(x); //27 9
 				temporaries.push_back(ir_vol2col->getId());
-				auto y = mm->forward(w, ir_vol2col);
+				y = mm->forward(w, ir_vol2col);
 
 				if (USE_BIAS)
 				{
-					std::shared_ptr<tensor> b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
 					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
@@ -133,7 +133,7 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>convTranspose::forward(std::shared_ptr<tensor>x)
+			std::shared_ptr<tensor>& convTranspose::forward(const std::shared_ptr<tensor>& x)
 			{
 				set_sub_graph();
 				inputs.push_back(x->getId());
@@ -142,15 +142,15 @@ namespace kernel
 				sub_graph.push_back(kernel);
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				auto w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
-				auto ir_col2vol = kernel->forward(x);
+				ir_col2vol = kernel->forward(x);
 				temporaries.push_back(ir_col2vol->getId());
-				auto y = mm->forward(w, ir_col2vol);
+				y = mm->forward(w, ir_col2vol);
 
 				if (USE_BIAS)
 				{
-					std::shared_ptr<tensor> b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
 					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());

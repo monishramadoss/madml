@@ -72,7 +72,7 @@ namespace kernel
 			void computeGroupCount() override;
 		public:
 			copy();
-			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
+			std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
 			void backward();
 		};
 
@@ -89,9 +89,10 @@ namespace kernel
 			transpose_param m_param;
 			std::vector<int> new_shape;
 			std::vector<int> stride;
+			std::shared_ptr<tensor> tensor_stride;
 		public:
 			transpose(const std::vector<int> order);
-			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
+			std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
 			void backward();
 		};
 	}

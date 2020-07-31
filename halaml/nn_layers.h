@@ -15,7 +15,7 @@ namespace kernel
 			{
 			public:
 				dense(int size, bool use_bias);
-				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
+				std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
 				void fwd_callback() override;
 				void backward() override;
 				void update_weight() override
@@ -31,7 +31,7 @@ namespace kernel
 			{
 			public:
 				conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
-				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
+				std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
 				void fwd_callback() override;
 				void backward() override;
 				void update_weight() override
@@ -39,6 +39,7 @@ namespace kernel
 				};
 
 			private:
+				std::shared_ptr<tensor> ir_vol2col;
 				int m_num_filters;
 				dhw m_kernel_size, m_stride, m_padding, m_dilation;
 				bool USE_BIAS;
@@ -49,7 +50,7 @@ namespace kernel
 			public:
 				convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
 					bool use_bias);
-				std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
+				std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
 				void fwd_callback() override;
 				void backward() override;
 				void update_weight() override
@@ -57,6 +58,7 @@ namespace kernel
 				};
 
 			private:
+				std::shared_ptr<tensor> ir_col2vol;
 				int m_num_filters;
 				dhw m_kernel_size, m_stride, m_padding, m_dilation;
 				bool USE_BIAS;
