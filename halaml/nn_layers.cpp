@@ -232,13 +232,13 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> RNN::forward(std::shared_ptr<tensor>x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::forward(const std::shared_ptr<tensor>& x)
 			{
-				auto h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				return forward(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> RNN::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				inputs.push_back(x->getId());
 				weights.push_back(h->getId());
@@ -296,7 +296,7 @@ namespace kernel
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
 				parents.push_back(get_input_id(x->getId()));
-				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+				return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
 			void RNN::fwd_callback()
@@ -366,14 +366,14 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> LSTM::forward(std::shared_ptr<tensor>x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::forward(const std::shared_ptr<tensor>& x)
 			{
-				auto h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				auto c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				return forward(x, h, c);
 			}
 
-			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> LSTM::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>c)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
 			{
 				inputs.push_back(x->getId());
 				weights.push_back(h->getId());
@@ -438,7 +438,7 @@ namespace kernel
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
 				parents.push_back(get_input_id(x->getId()));
-				return std::make_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
+				return std::forward_as_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
 			void LSTM::fwd_callback()
@@ -508,13 +508,13 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> GRU::forward(std::shared_ptr<tensor>x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::forward(const std::shared_ptr<tensor>& x)
 			{
-				auto h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				return forward(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> GRU::forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				inputs.push_back(x->getId());
 				weights.push_back(h->getId());
@@ -573,7 +573,7 @@ namespace kernel
 				outputs.push_back(cache[cache.size() - 2]->getId());
 				outputs.push_back(cache.back()->getId());
 				parents.push_back(get_input_id(x->getId()));
-				return std::make_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+				return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
 			void GRU::fwd_callback()

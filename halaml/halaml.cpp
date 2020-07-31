@@ -47,8 +47,8 @@ void PrintMatrix(float* data, std::vector<int> shape)
 //#define TEST_MATH
 //#define TEST_NN
 //#define TEST_CNN
-//#define TEST_RNN
-#define TEST_MNIST
+#define TEST_RNN
+//#define TEST_MNIST
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -153,7 +153,7 @@ void test_fn()
 		int num_layers = 2;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto t1 = std::shared_ptr<kernel::tensor>(kernel::tensor(1, shape_x));
+		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
 		auto rnn_layer_1 = kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1.forward(t1);
 
@@ -179,7 +179,7 @@ void test_fn()
 		int num_layers = 2;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto t1 = new kernel::tensor(1, shape_x);
+		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
 		auto rnn_layer_1 = kernel::layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
 		auto tup = rnn_layer_1.forward(t1);
 

@@ -69,8 +69,8 @@ namespace kernel
 			public:
 				RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x);
-				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor> h);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
 				void fwd_callback() override;
 				void backward() override;
 				void update_weight() override
@@ -78,6 +78,7 @@ namespace kernel
 				};
 
 			private:
+				std::shared_ptr<tensor> x, h;
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
 				int m_output_size, m_seq_length;
 				bool USE_BIAS, bidirectional{};
@@ -91,14 +92,15 @@ namespace kernel
 			public:
 				LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x);
-				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h, std::shared_ptr<tensor>c);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c);
 				void fwd_callback() override;
 				void backward() override;
 				void update_weight() override
 				{
 				};
 			private:
+				std::shared_ptr<tensor> x, h, c;
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
 				int m_output_size, m_seq_length;
 				bool USE_BIAS, bidirectional{};
@@ -113,14 +115,15 @@ namespace kernel
 			public:
 				GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x);
-				std::tuple<std::shared_ptr<tensor>, std::shared_ptr<tensor>> forward(std::shared_ptr<tensor>x, std::shared_ptr<tensor>h);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
 				void fwd_callback() override;
 				void backward() override;
 				void update_weight() override
 				{
 				};
 			private:
+				std::shared_ptr<tensor> x, h;
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
 				int m_output_size, m_seq_length;
 				bool USE_BIAS, bidirectional{};
