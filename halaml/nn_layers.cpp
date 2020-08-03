@@ -20,8 +20,9 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>& dense::forward(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& dense::hook(const std::shared_ptr<tensor>& x)
 			{
+				this->x = x;
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
@@ -29,7 +30,7 @@ namespace kernel
 				sub_graph.push_back(mm);
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[1], m_size}));
 				weights.push_back(w->getId());
-				y = mm->forward(x, w);
+				y = mm->hook(x, w);
 
 				if (USE_BIAS)
 				{
@@ -37,29 +38,23 @@ namespace kernel
 					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
-					y = bias->forward(y, b);
+					y = bias->hook(y, b);
 				}
 
 				outputs.push_back(y->getId());
 				unset_sub_graph();
 				parents.push_back(get_input_id(x->getId()));
 				return y;
-			}
 
-			void dense::fwd_callback()
-			{
-				for (auto g : sub_graph)
-				{
-					g->fwd_callback();
-				}
-			}
-
-			void dense::backward()
-			{
 				// MxK KxN = MxN
 				// dw =  dy * x.T
 				// db = mean(dy)
 				// dx = W.T * dy
+			}
+
+			std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& x)
+			{
+				return hook(x);
 			}
 
 			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
@@ -72,8 +67,9 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>& conv::forward(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& conv::hook(const std::shared_ptr<tensor>& x)
 			{
+				this->x = x;
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
@@ -83,9 +79,9 @@ namespace kernel
 				sub_graph.push_back(mm);
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
-				ir_vol2col = kernel->forward(x); //27 9
+				ir_vol2col = kernel->hook(x); //27 9
 				temporaries.push_back(ir_vol2col->getId());
-				y = mm->forward(w, ir_vol2col);
+				y = mm->hook(w, ir_vol2col);
 
 				if (USE_BIAS)
 				{
@@ -93,7 +89,7 @@ namespace kernel
 					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
-					y = bias->forward(y, b);
+					y = bias->hook(y, b);
 				}
 
 				outputs.push_back(y->getId());
@@ -105,20 +101,9 @@ namespace kernel
 				return y;
 			}
 
-			void conv::fwd_callback()
+			std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x)
 			{
-				for (auto g : sub_graph)
-				{
-					g->fwd_callback();
-				}
-			}
-
-			void conv::backward()
-			{
-				// MxK KxN = MxN
-				// dw =  dy * x.T
-				// db = mean(dy)
-				// dx = W.T * dy
+				return hook(x);
 			}
 
 			convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
@@ -133,8 +118,9 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>& convTranspose::forward(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& convTranspose::hook(const std::shared_ptr<tensor>& x)
 			{
+				this->x = x;
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
@@ -144,9 +130,9 @@ namespace kernel
 				sub_graph.push_back(mm);
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
 				weights.push_back(w->getId());
-				ir_col2vol = kernel->forward(x);
+				ir_col2vol = kernel->hook(x);
 				temporaries.push_back(ir_col2vol->getId());
-				y = mm->forward(w, ir_col2vol);
+				y = mm->hook(w, ir_col2vol);
 
 				if (USE_BIAS)
 				{
@@ -154,7 +140,7 @@ namespace kernel
 					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
-					y = bias->forward(y, b);
+					y = bias->hook(y, b);
 				}
 
 				outputs.push_back(y->getId());
@@ -166,20 +152,9 @@ namespace kernel
 				return y;
 			}
 
-			void convTranspose::fwd_callback()
+			std::shared_ptr<tensor>& convTranspose::operator()(const std::shared_ptr<tensor>& x)
 			{
-				for (auto g : sub_graph)
-				{
-					g->fwd_callback();
-				}
-			}
-
-			void convTranspose::backward()
-			{
-				// MxK KxN = MxN
-				// dw =  dy * x.T
-				// db = mean(dy)
-				// dx = W.T * dy
+				return hook(x);
 			}
 
 			RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -232,14 +207,16 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::forward(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::hook(const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				return forward(x, h);
+				return hook(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
+				this->x = x;
+				this->h = h;
 				inputs.push_back(x->getId());
 				weights.push_back(h->getId());
 				const auto input_shape = x->getShape();
@@ -277,7 +254,7 @@ namespace kernel
 								output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
 							}
 							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
-							cells[cell_idx]->forward(
+							cells[cell_idx]->hook(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
 								cache[2 + cache_idx],
@@ -299,20 +276,14 @@ namespace kernel
 				return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
-			void RNN::fwd_callback()
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(const std::shared_ptr<tensor>& x)
 			{
-				for (auto g : cells)
-				{
-					g->fwd_callback();
-				}
+				return hook(x);
 			}
 
-			void RNN::backward()
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
-				// MxK KxN = MxN
-				// dw =  dy * x.T
-				// db = mean(dy)
-				// dx = W.T * dy
+				return hook(x, h);
 			}
 
 			LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -366,15 +337,18 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::forward(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				return forward(x, h, c);
+				return hook(x, h, c);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
 			{
+				this->x = x;
+				this->h = h;
+				this->c = c;
 				inputs.push_back(x->getId());
 				weights.push_back(h->getId());
 				weights.push_back(c->getId());
@@ -415,7 +389,7 @@ namespace kernel
 								output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
 							}
 							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
-							cells[cell_idx]->forward(
+							cells[cell_idx]->hook(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
 								cache[2 + cache_idx],
@@ -441,20 +415,13 @@ namespace kernel
 				return std::forward_as_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
-			void LSTM::fwd_callback()
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(const std::shared_ptr<tensor>& x)
 			{
-				for (auto g : cells)
-				{
-					g->fwd_callback();
-				}
+				return hook(x);
 			}
-
-			void LSTM::backward()
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
 			{
-				// MxK KxN = MxN
-				// dw =  dy * x.T
-				// db = mean(dy)
-				// dx = W.T * dy
+				return hook(x, h, c);
 			}
 
 			GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -508,14 +475,16 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::forward(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::hook(const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				return forward(x, h);
+				return hook(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
+				this->x = x;
+				this->h = h;
 				inputs.push_back(x->getId());
 				weights.push_back(h->getId());
 				const auto input_shape = x->getShape();
@@ -554,7 +523,7 @@ namespace kernel
 							}
 
 							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
-							cells[cell_idx]->forward(
+							cells[cell_idx]->hook(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
 								cache[2 + cache_idx],
@@ -576,20 +545,13 @@ namespace kernel
 				return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
-			void GRU::fwd_callback()
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(const std::shared_ptr<tensor>& x)
 			{
-				for (auto g : cells)
-				{
-					g->fwd_callback();
-				}
+				return hook(x);
 			}
-
-			void GRU::backward()
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
-				// MxK KxN = MxN
-				// dw =  dy * x.T
-				// db = mean(dy)
-				// dx = W.T * dy
+				return hook(x, h);
 			}
 		}
 	}

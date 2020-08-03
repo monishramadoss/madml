@@ -49,8 +49,7 @@ namespace kernel
 			vol2col_param m_param;
 		public:
 			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
-			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-			void backward();
+			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			std::vector<int> output_shape() const;
 		};
 
@@ -61,8 +60,7 @@ namespace kernel
 			vol2col_param m_param;
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
-			std::shared_ptr<tensor>forward(std::shared_ptr<tensor>x);
-			void backward();
+			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			std::vector<int> output_shape() const;
 		};
 
@@ -72,8 +70,7 @@ namespace kernel
 			void computeGroupCount() override;
 		public:
 			copy();
-			std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
-			void backward();
+			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 		};
 
 		struct transpose_param
@@ -88,12 +85,14 @@ namespace kernel
 			void computeGroupCount() override;
 			transpose_param m_param;
 			std::vector<int> new_shape;
+			std::vector<int> old_shape;
 			std::vector<int> stride;
+			std::vector<int> d_stride;
 			std::shared_ptr<tensor> tensor_stride;
+			std::shared_ptr<tensor> d_tensor_stride;
 		public:
 			transpose(const std::vector<int> order);
-			std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
-			void backward();
+			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 		};
 	}
 }

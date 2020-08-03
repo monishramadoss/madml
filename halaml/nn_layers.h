@@ -15,12 +15,13 @@ namespace kernel
 			{
 			public:
 				dense(int size, bool use_bias);
-				std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
-				void fwd_callback() override;
-				void backward() override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
+				std::shared_ptr<tensor>& operator() (const std::shared_ptr<tensor>& x);
 				void update_weight() override
 				{
 				};
+			protected:
+				void run() override {};
 
 			private:
 				int m_size;
@@ -31,12 +32,13 @@ namespace kernel
 			{
 			public:
 				conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
-				std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
-				void fwd_callback() override;
-				void backward() override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
+				std::shared_ptr<tensor>& operator() (const std::shared_ptr<tensor>& x);
 				void update_weight() override
 				{
 				};
+			protected:
+				void run() override {};
 
 			private:
 				std::shared_ptr<tensor> ir_vol2col;
@@ -48,14 +50,14 @@ namespace kernel
 			class convTranspose : public Module
 			{
 			public:
-				convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-					bool use_bias);
-				std::shared_ptr<tensor>& forward(const std::shared_ptr<tensor>& x);
-				void fwd_callback() override;
-				void backward() override;
+				convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
+				std::shared_ptr<tensor>& operator() (const std::shared_ptr<tensor>& x);
 				void update_weight() override
 				{
 				};
+			protected:
+				void run() override {};
 
 			private:
 				std::shared_ptr<tensor> ir_col2vol;
@@ -69,13 +71,16 @@ namespace kernel
 			public:
 				RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x);
-				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
-				void fwd_callback() override;
-				void backward() override;
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> hook(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
+
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
 				void update_weight() override
 				{
 				};
+			protected:
+				void run() override {};
 
 			private:
 				std::shared_ptr<tensor> x, h;
@@ -92,13 +97,17 @@ namespace kernel
 			public:
 				LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x);
-				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c);
-				void fwd_callback() override;
-				void backward() override;
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> hook(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c);
+
 				void update_weight() override
 				{
 				};
+			protected:
+				void run() override {};
+
 			private:
 				std::shared_ptr<tensor> x, h, c;
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
@@ -115,13 +124,16 @@ namespace kernel
 			public:
 				GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
 					int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
-				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x);
-				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> forward(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
-				void fwd_callback() override;
-				void backward() override;
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> hook(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
+				std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
 				void update_weight() override
 				{
 				};
+			protected:
+				void run() override {};
+
 			private:
 				std::shared_ptr<tensor> x, h;
 				int m_vocab_size, m_hidden_size, m_num_layers, m_directions;

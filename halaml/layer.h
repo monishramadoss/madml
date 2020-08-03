@@ -25,41 +25,26 @@ namespace kernel
 	public:
 		layer();
 		virtual ~layer();
-		void initVulkanThing(int buffer_num_forward, int buffer_num_backward = -1);
+		void initVulkanThing(int buffer_num_forward);
 
-		void createDescriptorSetLayoutForward(int buffer_num);
-		void createDescriptorSetForward(int buffer_num);
-		void createShaderModuleForward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
-		void createPipelineForward(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
-		void createCommandBufferForward();
-		void recordCommandBufferForward(void* push_constants = nullptr, size_t push_constants_size = 0) const;
-		void runCommandBufferForward() const;
+		void createDescriptorSetLayout(int buffer_num);
+		void createDescriptorSet(int buffer_num);
+		void createShaderModule(const uint32_t* spv, size_t sz, const std::string& source = std::string());
+		void createPipeline(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
+		void createCommandBuffer();
+		void recordCommandBuffer(void* push_constants = nullptr, size_t push_constants_size = 0) const;
+		void runCommandBuffer() const;
 
-		void createDescriptorSetLayoutBackward(int buffer_num);
-		void createDescriptorSetBackward(int buffer_num);
-		void createShaderModuleBackward(const uint32_t* spv, size_t sz, const std::string& source = std::string());
-		void createPipelineBackward(size_t push_constants_size = 0, VkSpecializationInfo* specialization_info = nullptr);
-		void createCommandBufferBackward();
-		void recordCommandBufferBackward(void* push_constants = nullptr, size_t push_constants_size = 0);
-		void runCommandBufferBackward();
 		virtual void computeGroupCount() = 0;
 		VkDevice m_device;
 
-		VkPipeline m_pipeline_forward;
-		VkCommandBuffer m_cmd_buffer_forward;
-		VkDescriptorPool m_descriptor_pool_forward;
-		VkDescriptorSet m_descriptor_set_forward;
-		VkDescriptorSetLayout m_descriptor_set_layout_forward;
-		VkPipelineLayout m_pipeline_layout_forward;
-		VkShaderModule m_module_forward;
-
-		VkPipeline m_pipeline_backward;
-		VkCommandBuffer m_cmd_buffer_backward;
-		VkDescriptorPool m_descriptor_pool_backward;
-		VkDescriptorSet m_descriptor_set_backward;
-		VkDescriptorSetLayout m_descriptor_set_layout_backward;
-		VkPipelineLayout m_pipeline_layout_backward;
-		VkShaderModule m_module_backward;
+		VkPipeline m_pipeline;
+		VkCommandBuffer m_cmd_buffer;
+		VkDescriptorPool m_descriptor_pool;
+		VkDescriptorSet m_descriptor_set;
+		VkDescriptorSetLayout m_descriptor_set_layout;
+		VkPipelineLayout m_pipeline_layout;
+		VkShaderModule m_module;
 
 		int m_group_x;
 		int m_group_y;
@@ -74,9 +59,8 @@ namespace kernel
 			virtual void update_weight();
 			void execute();
 			void execute_b();
-			virtual void backward() = 0;
-			virtual void bck_callback() {};
-			virtual void fwd_callback() = 0;
+
+			virtual void run() = 0;
 
 			std::vector<int> parents;
 			std::vector<size_t> children;
@@ -98,6 +82,9 @@ namespace kernel
 			static void set_sub_graph();
 			static void unset_sub_graph();
 
+			static bool& train();
+			static void eval();
+
 			static void zero_grad();
 			static void add_module(Module* M);
 
@@ -114,6 +101,7 @@ namespace kernel
 			std::vector<std::vector<size_t>> adj_mat;
 			std::vector<bool> visted;
 			std::shared_ptr<tensor> x, y, w, b;
+			std::shared_ptr<tensor> dx, dy, dw, db;
 		private:
 			//void BFS(std::vector<std::vector<int>> adj, int s = 0);
 		};
@@ -122,17 +110,37 @@ namespace kernel
 	class Base_Layer : public layer, public layers::Module
 	{
 	public:
-		Base_Layer(int forward_buffers, int backward_buffers = -1, bool in_place = false);
-		virtual void fwd_callback() override;
-		virtual void bck_callback() override;
+		Base_Layer(int forward_buffers, bool in_place = false);
+
 	protected:
 		bool m_in_place;
 		operator_param m_param;
-
+		virtual void run() override;
 		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
-		template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
+		//template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 	};
+
+	namespace layers
+	{
+		class unary_operator : public Base_Layer
+		{
+		protected:
+			void computeGroupCount() override;
+		public:
+			unary_operator(bool in_place);
+			virtual std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) = 0;
+		};
+
+		class binary_operator : public Base_Layer
+		{
+		protected:
+			void computeGroupCount() override;
+		public:
+			binary_operator(bool in_place);
+			virtual std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) = 0;
+		};
+	}
 }
 
 namespace kernel
@@ -152,20 +160,20 @@ namespace kernel
 		//}
 		outputs.push_back(y->getId());
 
-		if (m_pipeline_forward == nullptr)
+		if (m_pipeline == nullptr)
 		{
 			param.total = this->x->count();
 			computeGroupCount();
-			createShaderModuleForward(shader, codeSize);
-			createPipelineForward(sizeof(T));
+			createShaderModule(shader, codeSize);
+			createPipeline(sizeof(T));
 		}
 
-		bindTensor(m_device, *this->x, 0, m_descriptor_set_forward);
-		bindTensor(m_device, *y, 1, m_descriptor_set_forward);
+		bindTensor(m_device, *this->x, 0, m_descriptor_set);
+		bindTensor(m_device, *y, 1, m_descriptor_set);
 
-		recordCommandBufferForward(static_cast<void*>(&param), sizeof(T));
+		recordCommandBuffer(static_cast<void*>(&param), sizeof(T));
 		parents.push_back(get_input_id(this->x->getId()));
-		runCommandBufferForward();
+		runCommandBuffer();
 		return y;
 	}
 
@@ -185,7 +193,7 @@ namespace kernel
 			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
 		//}
 		outputs.push_back(y->getId());
-		if (m_pipeline_forward == nullptr)
+		if (m_pipeline == nullptr)
 		{
 			m_param.total = x->count();
 			computeGroupCount();
@@ -193,32 +201,20 @@ namespace kernel
 			{
 				std::cout << "GROUP DIMMS OFF" << std::endl;
 			}
-			createShaderModuleForward(shader, codeSize);
-			createPipelineForward(sizeof(T));
+			createShaderModule(shader, codeSize);
+			createPipeline(sizeof(T));
 		}
 
-		bindTensor(m_device, *x, 0, m_descriptor_set_forward);
-		bindTensor(m_device, *w, 1, m_descriptor_set_forward);
-		bindTensor(m_device, *y, 2, m_descriptor_set_forward);
+		bindTensor(m_device, *x, 0, m_descriptor_set);
+		bindTensor(m_device, *w, 1, m_descriptor_set);
+		bindTensor(m_device, *y, 2, m_descriptor_set);
 
-		recordCommandBufferForward(static_cast<void*>(&m_param), sizeof(T));
+		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
 
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
-		runCommandBufferForward();
+		runCommandBuffer();
 		return y;
-	}
-
-	template<class T>
-	void Base_Layer::layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param)
-	{
-		if (m_pipeline_backward == nullptr)
-		{
-			createShaderModuleBackward(shader, codeSize);
-			createPipelineBackward(sizeof(T));
-		}
-
-		recordCommandBufferBackward(static_cast<void*>(&m_param), sizeof(T));
 	}
 }
 

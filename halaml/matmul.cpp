@@ -33,7 +33,7 @@ namespace kernel
 			m_group_z = 1;
 		}
 
-		std::shared_ptr<tensor> matmul::forward(std::shared_ptr<tensor> x, std::shared_ptr<tensor> w)
+		std::shared_ptr<tensor>& matmul::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			if (x->getShape()[1] != w->getShape()[0])
 				std::cerr << "Mat mul dim ERROR" << std::endl;
@@ -41,7 +41,5 @@ namespace kernel
 			auto y = layer_construct_forward<matmul_param>(shaders::gemm_spv, sizeof(shaders::gemm_spv), x, w, m_param, Format::kFormatFp32, std::vector<int>{x->getShape()[0], w->getShape()[1]});
 			return y;
 		}
-
-		void matmul::backward() {}
 	}
 }
