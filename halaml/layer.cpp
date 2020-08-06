@@ -252,6 +252,16 @@ namespace kernel
 				}
 				else
 					std::cout << M[m_idx]->m_type << std::endl;
+
+				if (M[m_idx]->x != nullptr)
+					M[m_idx]->dy = std::make_shared<tensor>(tensor(0.0, M[m_idx]->x->getShape()));
+
+				if (M[m_idx]->w != nullptr)
+					M[m_idx]->dw = std::make_shared<tensor>(tensor(0.0, M[m_idx]->w->getShape()));
+				if (M[m_idx]->b != nullptr)
+					M[m_idx]->db = std::make_shared<tensor>(tensor(0.0, M[m_idx]->b->getShape()));
+
+				M[m_idx]->set_derivative();
 			}
 			std::cout << "\n\n";
 			for (auto i = execution_order.rbegin(); i != execution_order.rend(); ++i)
@@ -321,7 +331,9 @@ namespace kernel
 					return m->id;
 				}
 				if (std::find(m->weights.begin(), m->weights.end(), i) != m->weights.end())
+				{
 					return -2;
+				}
 				if (std::find(m->biases.begin(), m->biases.end(), i) != m->biases.end())
 					return -3;
 				if (std::find(m->temporaries.begin(), m->temporaries.end(), i) != m->temporaries.end())
@@ -350,7 +362,7 @@ namespace kernel
 	Base_Layer::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
 	{
 		update_id();
-		bool is_derivative = 0;
+		bool is_derivative = m_type.find("d_") != std::string::npos;
 		if (!sub_graph_bit() && train() && !is_derivative)
 			add_module(this);
 		else if (is_derivative)

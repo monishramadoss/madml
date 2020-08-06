@@ -97,6 +97,8 @@ namespace kernel
 			static int& get_object_id();
 			void update_id();
 
+			virtual void set_derivative() {};
+
 			std::vector<size_t> execution_order;
 			std::vector<std::vector<size_t>> adj_mat;
 			std::vector<bool> visted;
@@ -172,8 +174,8 @@ namespace kernel
 		bindTensor(m_device, *y, 1, m_descriptor_set);
 
 		recordCommandBuffer(static_cast<void*>(&param), sizeof(T));
+
 		parents.push_back(get_input_id(this->x->getId()));
-		runCommandBuffer();
 		return y;
 	}
 
@@ -213,7 +215,6 @@ namespace kernel
 
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
-		runCommandBuffer();
 		return y;
 	}
 }

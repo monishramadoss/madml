@@ -32,6 +32,7 @@ namespace kernel
 #include "buffer.h"
 #include "layer.h"
 
+#include "derivatives.h"
 #include "math.h"
 #include "matmul.h"
 #include "activation.h"
