@@ -181,6 +181,24 @@ namespace kernel
 		vkDestroyFence(m_device, fence, nullptr);
 	}
 
+	void layer::bindTensor(std::shared_ptr<tensor> tensor, int binding)
+	{
+		VkDescriptorBufferInfo desc_buffer_info = {};
+		desc_buffer_info.buffer = tensor->getBuffer()->getVkBuffer();
+		desc_buffer_info.offset = 0;
+		desc_buffer_info.range = tensor->size();
+
+		VkWriteDescriptorSet write_descriptor_set = {};
+		write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		write_descriptor_set.dstSet = m_descriptor_set;
+		write_descriptor_set.dstBinding = binding;
+		write_descriptor_set.descriptorCount = 1;
+		write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		write_descriptor_set.pBufferInfo = &desc_buffer_info;
+
+		vkUpdateDescriptorSets(m_device, 1, &write_descriptor_set, 0, nullptr);
+	}
+
 	namespace layers
 	{
 		void Module::update_weight()
@@ -242,6 +260,15 @@ namespace kernel
 				DFS_f(0, visted, adj_mat, execution_order);
 			}
 
+			for (auto l : adj_mat)
+			{
+				for (auto i : l)
+				{
+					std::cout << i << " ";
+				}
+				std::cout << std::endl;
+			}
+
 			for (size_t m_idx : execution_order)
 			{
 				if (M[m_idx]->requires_sub_graph)
@@ -252,26 +279,16 @@ namespace kernel
 				}
 				else
 					std::cout << M[m_idx]->m_type << std::endl;
-
-				if (M[m_idx]->x != nullptr)
-					M[m_idx]->dy = std::make_shared<tensor>(tensor(0.0, M[m_idx]->x->getShape()));
-
-				if (M[m_idx]->w != nullptr)
-					M[m_idx]->dw = std::make_shared<tensor>(tensor(0.0, M[m_idx]->w->getShape()));
-				if (M[m_idx]->b != nullptr)
-					M[m_idx]->db = std::make_shared<tensor>(tensor(0.0, M[m_idx]->b->getShape()));
-
-				M[m_idx]->set_derivative();
-			}
-			std::cout << "\n\n";
-			for (auto i = execution_order.rbegin(); i != execution_order.rend(); ++i)
-			{
-				std::cout << M[*i]->m_type << std::endl;
 			}
 		}
 
 		void Module::execute_b()
 		{
+			auto& M = get_module();
+			for (auto i = execution_order.rbegin(); i != execution_order.rend(); ++i)
+			{
+				std::cout << M[*i]->m_type << std::endl;
+			}
 		}
 
 		std::vector<Module*>& Module::get_module()
@@ -362,13 +379,22 @@ namespace kernel
 	Base_Layer::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
 	{
 		update_id();
-		bool is_derivative = m_type.find("d_") != std::string::npos;
-		if (!sub_graph_bit() && train() && !is_derivative)
+		if (!sub_graph_bit())
 			add_module(this);
-		else if (is_derivative)
-			nullptr;
-
+		bck_shader = nullptr;
+		bck_codeSize = 0;
 		initVulkanThing(forward_buffers);
+	}
+
+	void Base_Layer::computeGroupCount()
+	{
+	}
+
+	void Base_Layer::set_group(int x, int y, int z)
+	{
+		m_group_x = x;
+		m_group_y = y;
+		m_group_z = z;
 	}
 
 	void Base_Layer::run()

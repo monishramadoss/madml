@@ -19,7 +19,6 @@ namespace kernel
 	}
 
 	std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind, const std::string& data);
-	void bindTensor(VkDevice& device, tensor& tensor, int binding, VkDescriptorSet descriptor_set);
 
 	inline bool checkFormat(Format fmt) { return fmt > Format::kFormatInvalid && fmt < Format::kFormatNum; }
 

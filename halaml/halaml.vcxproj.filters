@@ -60,9 +60,6 @@
     <ClInclude Include="rnn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="derivatives.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activation.cpp">
@@ -102,9 +99,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="rnn.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="derivatives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

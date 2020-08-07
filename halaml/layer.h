@@ -34,6 +34,7 @@ namespace kernel
 		void createCommandBuffer();
 		void recordCommandBuffer(void* push_constants = nullptr, size_t push_constants_size = 0) const;
 		void runCommandBuffer() const;
+		void bindTensor(std::shared_ptr<tensor> tensor, int binding);
 
 		virtual void computeGroupCount() = 0;
 		VkDevice m_device;
@@ -65,6 +66,7 @@ namespace kernel
 			std::vector<int> parents;
 			std::vector<size_t> children;
 			std::shared_ptr<Module> getptr();
+			std::shared_ptr<tensor> dx, dy, dw, db;
 
 		protected:
 			std::string m_type;
@@ -97,13 +99,11 @@ namespace kernel
 			static int& get_object_id();
 			void update_id();
 
-			virtual void set_derivative() {};
-
 			std::vector<size_t> execution_order;
 			std::vector<std::vector<size_t>> adj_mat;
 			std::vector<bool> visted;
 			std::shared_ptr<tensor> x, y, w, b;
-			std::shared_ptr<tensor> dx, dy, dw, db;
+
 		private:
 			//void BFS(std::vector<std::vector<int>> adj, int s = 0);
 		};
@@ -115,8 +115,13 @@ namespace kernel
 		Base_Layer(int forward_buffers, bool in_place = false);
 
 	protected:
+		const uint32_t* bck_shader;
+		size_t bck_codeSize;
+		std::shared_ptr<Base_Layer> derivative;
 		bool m_in_place;
 		operator_param m_param;
+		void computeGroupCount() override;
+		void set_group(int x, int y, int z);
 		virtual void run() override;
 		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
@@ -148,44 +153,64 @@ namespace kernel
 namespace kernel
 {
 	template<class T>
-	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, T& param, Format fmt, std::vector<int> output_shape)
+	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, T& param, Format fmt, std::vector<int> output_shape)
 	{
+		x = _x;
 		inputs.push_back(x->getId());
-		this->x = x;
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
 			//else {
 		if (output_shape.size() != 0)
 			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
 		else
-			y = std::make_shared<tensor>(tensor(0.0, this->x->getShape()));
+			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
 		//}
 		outputs.push_back(y->getId());
 
 		if (m_pipeline == nullptr)
 		{
-			param.total = this->x->count();
+			param.total = x->count();
 			computeGroupCount();
 			createShaderModule(shader, codeSize);
 			createPipeline(sizeof(T));
 		}
 
-		bindTensor(m_device, *this->x, 0, m_descriptor_set);
-		bindTensor(m_device, *y, 1, m_descriptor_set);
+		bindTensor(_x, 0);
+		bindTensor(y, 1);
 
 		recordCommandBuffer(static_cast<void*>(&param), sizeof(T));
 
-		parents.push_back(get_input_id(this->x->getId()));
+		parents.push_back(get_input_id(get_input_id(x->getId())));
+		if (train())
+		{
+			auto M = get_module();
+			int i = parents[0];
+
+			if (!dy)
+				dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
+
+			derivative = std::make_shared<Base_Layer>(Base_Layer(2, false));
+			derivative->set_group(m_group_x, m_group_y, m_group_z);
+			dx = derivative->layer_construct_forward<T>(bck_shader, bck_codeSize, dy, param, fmt, x->getShape());
+
+			if (i > 0)
+			{
+				auto m1 = M[i];
+				m1->dy = dx;
+			}
+		}
+
 		return y;
 	}
 
 	template<class T>
-	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, T& m_param, Format fmt, std::vector<int> output_shape)
+	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w, T& param, Format fmt, std::vector<int> output_shape)
 	{
+		x = _x;
+		w = _w;
+
 		inputs.push_back(x->getId());
 		inputs.push_back(w->getId());
-		this->x = x;
-		this->w = w;
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
 			//else {
@@ -197,7 +222,7 @@ namespace kernel
 		outputs.push_back(y->getId());
 		if (m_pipeline == nullptr)
 		{
-			m_param.total = x->count();
+			param.total = x->count();
 			computeGroupCount();
 			if (m_group_x == 0 || m_group_y == 0 || m_group_z == 0)
 			{
@@ -207,14 +232,40 @@ namespace kernel
 			createPipeline(sizeof(T));
 		}
 
-		bindTensor(m_device, *x, 0, m_descriptor_set);
-		bindTensor(m_device, *w, 1, m_descriptor_set);
-		bindTensor(m_device, *y, 2, m_descriptor_set);
+		bindTensor(x, 0);
+		bindTensor(w, 1);
+		bindTensor(y, 2);
 
-		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
+		recordCommandBuffer(static_cast<void*>(&param), sizeof(T));
 
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
+		if (train() && bck_codeSize)
+		{
+			int i = parents[0];
+			int j = parents[1];
+			auto M = get_module();
+
+			if (!dw)
+				dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
+			if (!dy)
+				dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
+
+			derivative = std::make_shared<Base_Layer>(Base_Layer(3, false));
+			derivative->set_group(m_group_x, m_group_y, m_group_z);
+			dx = derivative->layer_construct_forward<T>(bck_shader, bck_codeSize, dy, dw, param, fmt, x->getShape());
+
+			if (i > 0)
+			{
+				auto m1 = M[i];
+				m1->dy = dx;
+			}
+			if (j > 0)
+			{
+				auto m2 = M[j];
+				m2->dy = dw;
+			}
+		}
 		return y;
 	}
 }

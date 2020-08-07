@@ -152,9 +152,9 @@ namespace kernel
 				stride[i] = order[i];
 		}
 
-		std::shared_ptr<tensor>& transpose::hook(const std::shared_ptr<tensor>& x)
+		std::shared_ptr<tensor>& transpose::hook(const std::shared_ptr<tensor>& _x)
 		{
-			this->x = x;
+			this->x = _x;
 			for (size_t i = 0; i < m_param.num_axes; ++i)
 				new_shape[i] = x->getShape()[stride[i]];
 			old_shape = x->getShape();
@@ -170,9 +170,9 @@ namespace kernel
 			stride = prepareStrides(old_shape, new_shape, stride);
 			tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 
-			bindTensor(m_device, *x, 0, m_descriptor_set);
-			bindTensor(m_device, *y, 1, m_descriptor_set);
-			bindTensor(m_device, *tensor_stride, 2, m_descriptor_set);
+			bindTensor(x, 0);
+			bindTensor(y, 1);
+			bindTensor(tensor_stride, 2);
 			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(transpose_param));
 
 			inputs.push_back(x->getId());

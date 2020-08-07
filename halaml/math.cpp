@@ -16,6 +16,8 @@ namespace kernel
 			abs::abs(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "abs";
+				bck_shader = shaders::d_abs_spv;
+				bck_codeSize = sizeof(shaders::d_abs_spv);
 			}
 
 			std::shared_ptr<tensor>& abs::hook(const std::shared_ptr<tensor>& x)
@@ -26,6 +28,8 @@ namespace kernel
 			ceil::ceil(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "ceil";
+				bck_shader = shaders::unary_operator_spv;
+				bck_codeSize = sizeof(shaders::unary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& ceil::hook(const std::shared_ptr<tensor>& x)
@@ -36,6 +40,8 @@ namespace kernel
 			clip::clip(float min, float max, bool in_place) : unary_operator(in_place), m_param({ 0, min, max })
 			{
 				m_type = "clip";
+				bck_shader = shaders::unary_operator_spv;
+				bck_codeSize = sizeof(shaders::unary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& clip::hook(const std::shared_ptr<tensor>& x)
@@ -46,6 +52,8 @@ namespace kernel
 			exp::exp(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "exp";
+				bck_shader = shaders::d_exp_spv;
+				bck_codeSize = sizeof(shaders::d_exp_spv);
 			}
 
 			std::shared_ptr<tensor>& exp::hook(const std::shared_ptr<tensor>& x)
@@ -56,6 +64,8 @@ namespace kernel
 			floor::floor(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "floor";
+				bck_shader = shaders::unary_operator_spv;
+				bck_codeSize = sizeof(shaders::unary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& floor::hook(const std::shared_ptr<tensor>& x)
@@ -66,6 +76,8 @@ namespace kernel
 			ln::ln(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "ln";
+				bck_shader = shaders::d_ln_spv;
+				bck_codeSize = sizeof(shaders::d_ln_spv);
 			}
 
 			std::shared_ptr<tensor>& ln::hook(const std::shared_ptr<tensor>& x)
@@ -76,6 +88,8 @@ namespace kernel
 			round::round(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "round";
+				bck_shader = shaders::unary_operator_spv;
+				bck_codeSize = sizeof(shaders::unary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& round::hook(const std::shared_ptr<tensor>& x)
@@ -86,6 +100,8 @@ namespace kernel
 			sqrt::sqrt(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "sqrt";
+				bck_shader = shaders::d_sqrt_spv;
+				bck_codeSize = sizeof(shaders::d_sqrt_spv);
 			}
 
 			std::shared_ptr<tensor>& sqrt::hook(const std::shared_ptr<tensor>& x)
@@ -96,6 +112,8 @@ namespace kernel
 			acos::acos(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "acos";
+				bck_shader = shaders::d_acos_spv;
+				bck_codeSize = sizeof(shaders::d_acos_spv);
 			}
 
 			std::shared_ptr<tensor>& acos::hook(const std::shared_ptr<tensor>& x)
@@ -106,6 +124,8 @@ namespace kernel
 			acosh::acosh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "acosh";
+				bck_shader = shaders::d_acosh_spv;
+				bck_codeSize = sizeof(shaders::d_acosh_spv);
 			}
 
 			std::shared_ptr<tensor>& acosh::hook(const std::shared_ptr<tensor>& x)
@@ -116,6 +136,8 @@ namespace kernel
 			asin::asin(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "asin";
+				bck_shader = shaders::d_asin_spv;
+				bck_codeSize = sizeof(shaders::d_asin_spv);
 			}
 
 			std::shared_ptr<tensor>& asin::hook(const std::shared_ptr<tensor>&)
@@ -126,6 +148,8 @@ namespace kernel
 			asinh::asinh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "asinh";
+				bck_shader = shaders::d_asinh_spv;
+				bck_codeSize = sizeof(shaders::d_asinh_spv);
 			}
 
 			std::shared_ptr<tensor>& asinh::hook(const std::shared_ptr<tensor>& x)
@@ -136,6 +160,8 @@ namespace kernel
 			atan::atan(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "atan";
+				bck_shader = shaders::d_atan_spv;
+				bck_codeSize = sizeof(shaders::d_atan_spv);
 			}
 
 			std::shared_ptr<tensor>& atan::hook(const std::shared_ptr<tensor>& x)
@@ -146,6 +172,8 @@ namespace kernel
 			atanh::atanh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "atan";
+				bck_shader = shaders::d_atanh_spv;
+				bck_codeSize = sizeof(shaders::d_atanh_spv);
 			}
 
 			std::shared_ptr<tensor>& atanh::hook(const std::shared_ptr<tensor>& x)
@@ -156,6 +184,8 @@ namespace kernel
 			cos::cos(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "cos";
+				bck_shader = shaders::d_cos_spv;
+				bck_codeSize = sizeof(shaders::d_cos_spv);
 			}
 
 			std::shared_ptr<tensor>& cos::hook(const std::shared_ptr<tensor>& x)
@@ -166,6 +196,8 @@ namespace kernel
 			cosh::cosh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "cosh";
+				bck_shader = shaders::d_cosh_spv;
+				bck_codeSize = sizeof(shaders::d_cosh_spv);
 			}
 
 			std::shared_ptr<tensor>& cosh::hook(const std::shared_ptr<tensor>& x)
@@ -176,6 +208,8 @@ namespace kernel
 			sin::sin(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "sin";
+				bck_shader = shaders::d_sin_spv;
+				bck_codeSize = sizeof(shaders::d_sin_spv);
 			}
 
 			std::shared_ptr<tensor>& sin::hook(const std::shared_ptr<tensor>& x)
@@ -186,6 +220,8 @@ namespace kernel
 			sinh::sinh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "sinh";
+				bck_shader = shaders::d_sinh_spv;
+				bck_codeSize = sizeof(shaders::d_sinh_spv);
 			}
 
 			std::shared_ptr<tensor>& sinh::hook(const std::shared_ptr<tensor>& x)
@@ -196,6 +232,8 @@ namespace kernel
 			tan::tan(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "tan";
+				bck_shader = shaders::d_tan_spv;
+				bck_codeSize = sizeof(shaders::d_tan_spv);
 			}
 
 			std::shared_ptr<tensor>& tan::hook(const std::shared_ptr<tensor>& x)
@@ -206,6 +244,8 @@ namespace kernel
 			tanh::tanh(bool in_place) : unary_operator(in_place)
 			{
 				m_type = "tanh";
+				bck_shader = shaders::d_tanh_spv;
+				bck_codeSize = sizeof(shaders::d_tanh_spv);
 			}
 
 			std::shared_ptr<tensor>& tanh::hook(const std::shared_ptr<tensor>& x)
@@ -225,23 +265,20 @@ namespace kernel
 			add::add(bool in_place) : binary_operator(in_place)
 			{
 				m_type = "add";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& add::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 			{
-				return layer_construct_forward(shaders::add_spv, sizeof(shaders::add_spv), x, w, this->m_param);;
-			}
-
-			void add::set_derivative()
-			{
-				f_prime = new derivative::math::add();
-				dx = f_prime->hook(dy, dw);
+				return layer_construct_forward(shaders::add_spv, sizeof(shaders::add_spv), x, w, this->m_param);
 			}
 
 			sub::sub(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::sub();
 				m_type = "sub";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& sub::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -251,8 +288,9 @@ namespace kernel
 
 			mul::mul(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::mul();
 				m_type = "mul";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& mul::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -262,8 +300,9 @@ namespace kernel
 
 			div::div(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::div();
 				m_type = "div";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& div::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -273,8 +312,9 @@ namespace kernel
 
 			mod::mod(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::mod();
 				m_type = "mod";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& mod::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -284,8 +324,9 @@ namespace kernel
 
 			pow::pow(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::pow();
 				m_type = "pow";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& pow::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -295,8 +336,9 @@ namespace kernel
 
 			max::max(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::max();
 				m_type = "max";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& max::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -306,8 +348,9 @@ namespace kernel
 
 			min::min(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::min();
 				m_type = "min";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& min::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -317,8 +360,9 @@ namespace kernel
 
 			eq::eq(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::eq();
 				m_type = "eq";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& eq::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -328,8 +372,9 @@ namespace kernel
 
 			ne::ne(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::ne();
 				m_type = "ne";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& ne::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -339,8 +384,9 @@ namespace kernel
 
 			lt::lt(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::lt();
 				m_type = "lt";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& lt::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -350,8 +396,9 @@ namespace kernel
 
 			le::le(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::le();
 				m_type = "le";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& le::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -361,8 +408,9 @@ namespace kernel
 
 			gt::gt(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::gt();
 				m_type = "gt";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& gt::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -372,8 +420,9 @@ namespace kernel
 
 			ge::ge(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::ge();
 				m_type = "ge";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& ge::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -383,8 +432,9 @@ namespace kernel
 
 			xr::xr(bool in_place) : binary_operator(in_place)
 			{
-				f_prime = new derivative::math::xr();
 				m_type = "xor";
+				bck_shader = shaders::binary_operator_spv;
+				bck_codeSize = sizeof(shaders::binary_operator_spv);
 			}
 
 			std::shared_ptr<tensor>& xr::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)

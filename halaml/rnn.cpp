@@ -50,15 +50,15 @@ namespace kernel
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, *U, 0, m_descriptor_set);
-				bindTensor(m_device, *V, 1, m_descriptor_set);
-				bindTensor(m_device, *W, 2, m_descriptor_set);
-				bindTensor(m_device, *x, 3, m_descriptor_set);
-				bindTensor(m_device, *h, 4, m_descriptor_set);
-				bindTensor(m_device, *b1, 5, m_descriptor_set);
-				bindTensor(m_device, *b2, 6, m_descriptor_set);
-				bindTensor(m_device, *y, 7, m_descriptor_set);
-				bindTensor(m_device, *hn, 8, m_descriptor_set);
+				bindTensor(U, 0);
+				bindTensor(V, 1);
+				bindTensor(W, 2);
+				bindTensor(x, 3);
+				bindTensor(h, 4);
+				bindTensor(b1, 5);
+				bindTensor(b2, 6);
+				bindTensor(y, 7);
+				bindTensor(hn, 8);
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 
@@ -115,17 +115,17 @@ namespace kernel
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, *U, 0, m_descriptor_set);
-				bindTensor(m_device, *V, 1, m_descriptor_set);
-				bindTensor(m_device, *W, 2, m_descriptor_set);
-				bindTensor(m_device, *x, 3, m_descriptor_set);
-				bindTensor(m_device, *h, 4, m_descriptor_set);
-				bindTensor(m_device, *c, 5, m_descriptor_set);
-				bindTensor(m_device, *b1, 6, m_descriptor_set);
-				bindTensor(m_device, *b2, 7, m_descriptor_set);
-				bindTensor(m_device, *y, 8, m_descriptor_set);
-				bindTensor(m_device, *hn, 9, m_descriptor_set);
-				bindTensor(m_device, *cn, 10, m_descriptor_set);
+				bindTensor(U, 0);
+				bindTensor(V, 1);
+				bindTensor(W, 2);
+				bindTensor(x, 3);
+				bindTensor(h, 4);
+				bindTensor(c, 5);
+				bindTensor(b1, 6);
+				bindTensor(b2, 7);
+				bindTensor(y, 8);
+				bindTensor(hn, 9);
+				bindTensor(cn, 10);
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 
@@ -182,15 +182,15 @@ namespace kernel
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
-				bindTensor(m_device, *U, 0, m_descriptor_set);
-				bindTensor(m_device, *V, 1, m_descriptor_set);
-				bindTensor(m_device, *W, 2, m_descriptor_set);
-				bindTensor(m_device, *x, 3, m_descriptor_set);
-				bindTensor(m_device, *h, 4, m_descriptor_set);
-				bindTensor(m_device, *b1, 5, m_descriptor_set);
-				bindTensor(m_device, *b2, 6, m_descriptor_set);
-				bindTensor(m_device, *y, 7, m_descriptor_set);
-				bindTensor(m_device, *hn, 8, m_descriptor_set);
+				bindTensor(U, 0);
+				bindTensor(V, 1);
+				bindTensor(W, 2);
+				bindTensor(x, 3);
+				bindTensor(h, 4);
+				bindTensor(b1, 5);
+				bindTensor(b2, 6);
+				bindTensor(y, 7);
+				bindTensor(hn, 8);
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 

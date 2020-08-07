@@ -166,8 +166,6 @@ namespace kernel
 			public:
 				add(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::add* f_prime;
-				void set_derivative() override;
 			};
 
 			class sub : public binary_operator
@@ -175,7 +173,6 @@ namespace kernel
 			public:
 				sub(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::sub* f_prime;
 			};
 
 			class mul : public binary_operator
@@ -183,7 +180,6 @@ namespace kernel
 			public:
 				mul(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::mul* f_prime;
 			};
 
 			class div : public binary_operator
@@ -191,7 +187,6 @@ namespace kernel
 			public:
 				div(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::div* f_prime;
 			};
 
 			class mod : public binary_operator
@@ -199,7 +194,6 @@ namespace kernel
 			public:
 				mod(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::mod* f_prime;
 			};
 
 			class pow : public binary_operator
@@ -207,7 +201,6 @@ namespace kernel
 			public:
 				pow(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::pow* f_prime;
 			};
 
 			class max : public binary_operator
@@ -215,7 +208,6 @@ namespace kernel
 			public:
 				max(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::max* f_prime;
 			};
 
 			class min : public binary_operator
@@ -223,7 +215,6 @@ namespace kernel
 			public:
 				min(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::min* f_prime;
 			};
 
 			class eq : public binary_operator
@@ -231,7 +222,6 @@ namespace kernel
 			public:
 				eq(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::eq* f_prime;
 			};
 
 			class ne : public binary_operator
@@ -239,7 +229,6 @@ namespace kernel
 			public:
 				ne(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::ne* f_prime;
 			};
 
 			class lt : public binary_operator
@@ -247,7 +236,6 @@ namespace kernel
 			public:
 				lt(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::lt* f_prime;
 			};
 
 			class le : public binary_operator
@@ -255,7 +243,6 @@ namespace kernel
 			public:
 				le(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::le* f_prime;
 			};
 
 			class gt : public binary_operator
@@ -263,7 +250,6 @@ namespace kernel
 			public:
 				gt(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::gt* f_prime;
 			};
 
 			class ge : public binary_operator
@@ -271,7 +257,6 @@ namespace kernel
 			public:
 				ge(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::ge* f_prime;
 			};
 
 			class xr : public binary_operator
@@ -279,7 +264,6 @@ namespace kernel
 			public:
 				xr(bool in_place = false);
 				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
-				derivative::math::xr* f_prime;
 			};
 		}
 	}
