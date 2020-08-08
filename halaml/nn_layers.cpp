@@ -58,8 +58,8 @@ namespace kernel
 			}
 
 			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-				m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+			           bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+			                            m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 			{
 				m_type = "conv";
 				update_id();
@@ -77,7 +77,10 @@ namespace kernel
 				sub_graph.push_back(kernel);
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{
+					                                    m_num_filters,
+					                                    input_shape[0] * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w
+				                                    }));
 				weights.push_back(w->getId());
 				ir_vol2col = kernel->hook(x); //27 9
 				temporaries.push_back(ir_vol2col->getId());
@@ -107,10 +110,10 @@ namespace kernel
 			}
 
 			convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-				int padding_type,
-				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
-				m_stride(stride), m_padding(padding), m_dilation(dilation),
-				USE_BIAS(use_bias)
+			                             int padding_type,
+			                             bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
+			                                              m_stride(stride), m_padding(padding), m_dilation(dilation),
+			                                              USE_BIAS(use_bias)
 			{
 				m_type = "convT";
 				update_id();
@@ -128,7 +131,10 @@ namespace kernel
 				sub_graph.push_back(kernel);
 				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w}));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{
+					                                    m_num_filters,
+					                                    input_shape[0] * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w
+				                                    }));
 				weights.push_back(w->getId());
 				ir_col2vol = kernel->hook(x);
 				temporaries.push_back(ir_col2vol->getId());
@@ -158,7 +164,7 @@ namespace kernel
 			}
 
 			RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-				float dropout, bool bias, std::string nonlinearity) :
+			         float dropout, bool bias, std::string nonlinearity) :
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
 			{
@@ -180,9 +186,11 @@ namespace kernel
 
 						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size})));
+						weights_biases.
+							push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size})));
 						weights.push_back(weights_biases.back()->getId());
 						if (USE_BIAS)
 						{
@@ -213,7 +221,8 @@ namespace kernel
 				return hook(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::hook(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				this->x = x;
 				this->h = h;
@@ -228,8 +237,10 @@ namespace kernel
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				}
 
 				for (int dir = 0; dir < m_directions; ++dir)
@@ -238,7 +249,8 @@ namespace kernel
 					{
 						for (int i = 0; i < input_shape[0]; ++i)
 						{
-							const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<uint64_t>(l) * 5;
+							const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
+								uint64_t>(l) * 5;
 							const uint64_t cache_idx = static_cast<uint64_t>(l) * 2;
 							const uint64_t direction = dir == 1 ? input_shape[0] - i - 1 : i;
 
@@ -253,7 +265,8 @@ namespace kernel
 								weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
 								output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
 							}
-							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
+							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+								uint64_t>(m_seq_length) * l + i;
 							cells[cell_idx]->hook(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
@@ -281,13 +294,14 @@ namespace kernel
 				return hook(x);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				return hook(x, h);
 			}
 
 			LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-				float dropout, bool bias, std::string nonlinearity) :
+			           float dropout, bool bias, std::string nonlinearity) :
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 			{
@@ -307,11 +321,14 @@ namespace kernel
 						const int input = l == 0 ? m_vocab_size : m_hidden_size;
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 4})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 4})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 4})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 4})));
 						weights.push_back(weights_biases.back()->getId());
 
 						if (USE_BIAS)
@@ -337,14 +354,16 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(
+				const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				return hook(x, h, c);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
 			{
 				this->x = x;
 				this->h = h;
@@ -362,9 +381,12 @@ namespace kernel
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				}
 
 				for (int dir = 0; dir < m_directions; ++dir)
@@ -373,7 +395,8 @@ namespace kernel
 					{
 						for (int i = 0; i < input_shape[0]; ++i)
 						{
-							const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<uint64_t>(l) * 5;
+							const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
+								uint64_t>(l) * 5;
 							const uint64_t cache_idx = static_cast<uint64_t>(l) * 2;
 							const uint64_t direction = dir == 1 ? input_shape[0] - i - 1 : i;
 
@@ -388,7 +411,8 @@ namespace kernel
 								weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
 								output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
 							}
-							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
+							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+								uint64_t>(m_seq_length) * l + i;
 							cells[cell_idx]->hook(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
@@ -415,17 +439,20 @@ namespace kernel
 				return std::forward_as_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
+				const std::shared_ptr<tensor>& x)
 			{
 				return hook(x);
 			}
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
+
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
 			{
 				return hook(x, h, c);
 			}
 
 			GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-				float dropout, bool bias, std::string nonlinearity) :
+			         float dropout, bool bias, std::string nonlinearity) :
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 			{
@@ -445,11 +472,14 @@ namespace kernel
 						const int input = l == 0 ? m_vocab_size : m_hidden_size;
 						const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 3})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 3})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3})));
 						weights.push_back(weights_biases.back()->getId());
-						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 3})));
+						weights_biases.push_back(
+							std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 3})));
 						weights.push_back(weights_biases.back()->getId());
 
 						if (USE_BIAS)
@@ -481,7 +511,8 @@ namespace kernel
 				return hook(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::hook(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				this->x = x;
 				this->h = h;
@@ -496,8 +527,10 @@ namespace kernel
 				for (int l = 0; l < m_num_layers; ++l)
 				{
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
-					cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+					cache.push_back(
+						std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 				}
 
 				for (int dir = 0; dir < m_directions; ++dir)
@@ -506,7 +539,8 @@ namespace kernel
 					{
 						for (int i = 0; i < input_shape[0]; ++i)
 						{
-							const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<uint64_t>(l) * 5;
+							const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
+								uint64_t>(l) * 5;
 							const uint64_t cache_idx = static_cast<uint64_t>(l) * 2;
 							const uint64_t direction = dir == 1 ? input_shape[0] - i - 1 : i;
 
@@ -522,7 +556,8 @@ namespace kernel
 								output_offset += static_cast<uint64_t>(m_seq_length) * cache[cache_idx + 2]->getShape()[2];
 							}
 
-							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
+							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+								uint64_t>(m_seq_length) * l + i;
 							cells[cell_idx]->hook(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
@@ -549,7 +584,9 @@ namespace kernel
 			{
 				return hook(x);
 			}
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				return hook(x, h);
 			}

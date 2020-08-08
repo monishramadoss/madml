@@ -14,8 +14,10 @@ namespace kernel
 
 		{
 			m_type = "vol2col";
-			m_param = { 0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
-					dilation.w, dilation.d,	0, 0, 0, 0, 0, 0 };
+			m_param = {
+				0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
+				dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
+			};
 			bck_shader = shaders::col2vol_spv;
 			bck_codeSize = sizeof(shaders::col2vol_spv);
 		}
@@ -45,13 +47,17 @@ namespace kernel
 			m_param.depth_vol = depth;
 			m_param.height_vol = height;
 			m_param.width_vol = width;
-			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.stride_d + 1;
-			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.stride_h + 1;
-			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.stride_w + 1;
+			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.
+				stride_d + 1;
+			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.
+				stride_h + 1;
+			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.
+				stride_w + 1;
 
 			const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 			const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
-			y = layer_construct_forward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
+			y = layer_construct_forward(shaders::vol2col_spv, sizeof(shaders::vol2col_spv), x, Format::kFormatFp32,
+			                            std::vector<int>{output_length * n_out_plane});
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
@@ -61,10 +67,11 @@ namespace kernel
 			return std::vector<int>{m_param.depth_col, m_param.height_col, m_param.width_col};
 		}
 
-		col2vol::col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) : Base_Layer <vol2col_param>(2)
+		col2vol::col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) : Base_Layer<vol2col_param>(2)
 		{
 			m_type = "col2vol";
-			m_param = { 0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
+			m_param = {
+				0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
 				dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
 			};
 			bck_shader = shaders::vol2col_spv;
@@ -96,12 +103,18 @@ namespace kernel
 			m_param.depth_col = depth;
 			m_param.height_col = height;
 			m_param.width_col = width;
-			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1) + m_param.pad_d + 1;
-			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h - 1) + m_param.pad_h + 1;
-			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
+			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1)
+				+ m_param.pad_d + 1;
+			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h -
+				1) + m_param.pad_h + 1;
+			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1)
+				+ m_param.pad_w + 1;
 			const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 			const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
-			y = layer_construct_forward(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, Format::kFormatFp32, std::vector<int>{n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)});
+			y = layer_construct_forward(shaders::col2vol_spv, sizeof(shaders::col2vol_spv), x, Format::kFormatFp32,
+			                            std::vector<int>{
+				                            n_out_plane * (m_param.depth_vol * m_param.height_vol * m_param.width_vol)
+			                            });
 			y->reshape(std::vector<int>{n_out_plane, output_length});
 			return y;
 		}
@@ -170,7 +183,8 @@ namespace kernel
 
 			y = std::make_shared<tensor>(tensor(0.0, new_shape));
 			stride = prepareStrides(old_shape, new_shape, stride);
-			tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
+			tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3},
+			                                                Format::kFormatInt32));
 
 			bindTensor(x, 0);
 			bindTensor(y, 1);

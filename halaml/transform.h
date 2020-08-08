@@ -88,7 +88,7 @@ namespace kernel
 			std::shared_ptr<tensor> tensor_stride;
 			std::shared_ptr<tensor> d_tensor_stride;
 		public:
-			transpose(const std::vector<int> order);
+			transpose(std::vector<int> order);
 			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 		};
 	}

@@ -15,6 +15,7 @@ namespace kernel
 	}
 
 	class context;
+
 	struct operator_param
 	{
 		int total;
@@ -112,7 +113,7 @@ namespace kernel
 		};
 	}
 
-	template<class T = operator_param>
+	template <class T = operator_param>
 	class Base_Layer : public layer, public layers::Module
 	{
 	public:
@@ -126,18 +127,22 @@ namespace kernel
 		T m_param;
 		void computeGroupCount() override;
 		void set_group(int x, int y, int z);
-		virtual int set_backward() override;
-		virtual void run() override;
-		inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
-		inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		int set_backward() override;
+		void run() override;
+		std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
+		                                                 const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
+		                                                 std::vector<int> output_shape = {});
+		std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
+		                                                 const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
+		                                                 Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		//template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 	};
 }
 
 namespace kernel
 {
-	template<typename T>
-	Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
+	template <typename T>
+	Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({0})
 	{
 		update_id();
 		if (!sub_graph_bit())
@@ -148,12 +153,12 @@ namespace kernel
 		initVulkanThing(forward_buffers);
 	}
 
-	template<typename T>
+	template <typename T>
 	void Base_Layer<T>::computeGroupCount()
 	{
 	}
 
-	template<typename T>
+	template <typename T>
 	void Base_Layer<T>::set_group(int x, int y, int z)
 	{
 		m_group_x = x;
@@ -161,7 +166,7 @@ namespace kernel
 		m_group_z = z;
 	}
 
-	template<typename T>
+	template <typename T>
 	int Base_Layer<T>::set_backward()
 	{
 		if (train() && bck_codeSize)
@@ -194,14 +199,16 @@ namespace kernel
 		return -2;
 	}
 
-	template<typename T>
-	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, Format fmt, std::vector<int> output_shape)
+	template <typename T>
+	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
+	                                                                const std::shared_ptr<tensor>& _x, Format fmt,
+	                                                                std::vector<int> output_shape)
 	{
 		x = _x;
 		inputs.push_back(x->getId());
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
-			//else {
+		//else {
 		if (output_shape.size() != 0)
 			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
 		else
@@ -233,8 +240,11 @@ namespace kernel
 		return y;
 	}
 
-	template<typename T>
-	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w, Format fmt, std::vector<int> output_shape)
+	template <typename T>
+	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
+	                                                                const std::shared_ptr<tensor>& _x,
+	                                                                const std::shared_ptr<tensor>& _w, Format fmt,
+	                                                                std::vector<int> output_shape)
 	{
 		x = _x;
 		w = _w;
@@ -243,7 +253,7 @@ namespace kernel
 		inputs.push_back(w->getId());
 		/*if (m_in_place && output_shape.size() == 0)
 			y = x;*/
-			//else {
+		//else {
 		if (output_shape.size() != 0)
 			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
 		else
@@ -277,7 +287,7 @@ namespace kernel
 		return y;
 	}
 
-	template<typename T>
+	template <typename T>
 	void Base_Layer<T>::run()
 	{
 		runCommandBuffer();

@@ -20,7 +20,7 @@ namespace kernel
 		matmul::matmul() : Base_Layer<matmul_param>(3)
 		{
 			m_type = "matmul";
-			m_param = { 0, 0, 0 };
+			m_param = {0, 0, 0};
 		}
 
 		void matmul::computeGroupCount()
@@ -38,8 +38,9 @@ namespace kernel
 		{
 			if (x->getShape()[1] != w->getShape()[0])
 				std::cerr << "Mat mul dim ERROR" << std::endl;
-			m_param = { 0, x->getShape()[0], w->getShape()[1], x->getShape()[1] };
-			y = layer_construct_forward(shaders::gemm_spv, sizeof(shaders::gemm_spv), x, w, Format::kFormatFp32, std::vector<int>{x->getShape()[0], w->getShape()[1]});
+			m_param = {0, x->getShape()[0], w->getShape()[1], x->getShape()[1]};
+			y = layer_construct_forward(shaders::gemm_spv, sizeof(shaders::gemm_spv), x, w, Format::kFormatFp32,
+			                            std::vector<int>{x->getShape()[0], w->getShape()[1]});
 			return y;
 		}
 	}

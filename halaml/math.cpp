@@ -40,7 +40,7 @@ namespace kernel
 			clip::clip(float min, float max, bool in_place) : Base_Layer<clip_operator_param>(2, in_place)
 			{
 				m_type = "clip";
-				m_param = { 0, min, max };
+				m_param = {0, min, max};
 				bck_shader = shaders::unary_operator_spv;
 				bck_codeSize = sizeof(shaders::unary_operator_spv);
 			}
@@ -392,7 +392,8 @@ namespace kernel
 
 			std::shared_ptr<tensor>& lt::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 			{
-				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w, Format::kFormatBool);
+				return layer_construct_forward(shaders::less_than_spv, sizeof(shaders::less_than_spv), x, w,
+				                               Format::kFormatBool);
 			}
 
 			le::le(bool in_place) : Base_Layer<>(3, in_place)
@@ -416,7 +417,8 @@ namespace kernel
 
 			std::shared_ptr<tensor>& gt::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 			{
-				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w, Format::kFormatBool);
+				return layer_construct_forward(shaders::greater_than_spv, sizeof(shaders::greater_than_spv), x, w,
+				                               Format::kFormatBool);
 			}
 
 			ge::ge(bool in_place) : Base_Layer<>(3, in_place)
@@ -428,7 +430,8 @@ namespace kernel
 
 			std::shared_ptr<tensor>& ge::hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 			{
-				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w, Format::kFormatBool);
+				return layer_construct_forward(shaders::greater_eq_spv, sizeof(shaders::greater_eq_spv), x, w,
+				                               Format::kFormatBool);
 			}
 
 			xr::xr(bool in_place) : Base_Layer<>(3, in_place)
