@@ -21,7 +21,7 @@ namespace kernel
 				int output_offset;
 			};
 
-			class RNNCell : public Base_Layer
+			class RNNCell : public Base_Layer<RNN_cell_param>
 			{
 			private:
 				void computeGroupCount() override;
@@ -36,7 +36,7 @@ namespace kernel
 				};
 			};
 
-			class LSTMCell : public Base_Layer
+			class LSTMCell : public Base_Layer<RNN_cell_param>
 			{
 			private:
 				void computeGroupCount() override;
@@ -51,7 +51,7 @@ namespace kernel
 				};
 			};
 
-			class GRUCell : public Base_Layer
+			class GRUCell : public Base_Layer<RNN_cell_param>
 			{
 			private:
 				void computeGroupCount() override;

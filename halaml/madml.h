@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
 
+#include <pybind11/pybind11.h>
+namespace py = pybind11;
+
 namespace kernel
 {
 	enum class Format

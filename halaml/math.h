@@ -12,18 +12,18 @@ namespace kernel
 		namespace math
 		{
 			// Unary Operators
-			class abs : public unary_operator
+			class abs : public Base_Layer<>
 			{
 			public:
 				abs(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class ceil : public unary_operator
+			class ceil : public Base_Layer<>
 			{
 			public:
 				ceil(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
 			struct clip_operator_param
@@ -33,237 +33,236 @@ namespace kernel
 				float max;
 			};
 
-			class clip : public unary_operator
+			class clip : public Base_Layer<clip_operator_param>
 			{
-				clip_operator_param m_param;
 			public:
 				clip(float min = 0.0f, float max = 1.0f, bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class exp : public unary_operator
+			class exp : public Base_Layer<>
 			{
 			public:
 				exp(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class floor : public unary_operator
+			class floor : public Base_Layer<>
 			{
 			public:
 				floor(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class ln : public unary_operator
+			class ln : public Base_Layer<>
 			{
 			public:
 				ln(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class round : public unary_operator
+			class round : public Base_Layer<>
 			{
 			public:
 				round(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class sqrt : public unary_operator
+			class sqrt : public Base_Layer<>
 			{
 			public:
 				sqrt(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class acos : public unary_operator
+			class acos : public Base_Layer<>
 			{
 			public:
 				acos(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class acosh : public unary_operator
+			class acosh : public Base_Layer<>
 			{
 			public:
 				acosh(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class asin : public unary_operator
+			class asin : public Base_Layer<>
 			{
 			public:
 				asin(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class asinh : public unary_operator
+			class asinh : public Base_Layer<>
 			{
 			public:
 				asinh(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class atan : public unary_operator
+			class atan : public Base_Layer<>
 			{
 			public:
 				atan(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class atanh : public unary_operator
+			class atanh : public Base_Layer<>
 			{
 			public:
 				atanh(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class cos : public unary_operator
+			class cos : public Base_Layer<>
 			{
 			public:
 				cos(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class cosh : public unary_operator
+			class cosh : public Base_Layer<>
 			{
 			public:
 				cosh(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class sin : public unary_operator
+			class sin : public Base_Layer<>
 			{
 			public:
 				sin(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class sinh : public unary_operator
+			class sinh : public Base_Layer<>
 			{
 			public:
 				sinh(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class tan : public unary_operator
+			class tan : public Base_Layer<>
 			{
 			public:
 				tan(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
-			class tanh : public unary_operator
+			class tanh : public Base_Layer<>
 			{
 			public:
 				tanh(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			};
 
 			// BINARY OPERATORS
-			class add : public binary_operator
+			class add : public Base_Layer<>
 			{
 			public:
 				add(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class sub : public binary_operator
+			class sub : public Base_Layer<>
 			{
 			public:
 				sub(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class mul : public binary_operator
+			class mul : public Base_Layer<>
 			{
 			public:
 				mul(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class div : public binary_operator
+			class div : public Base_Layer<>
 			{
 			public:
 				div(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class mod : public binary_operator
+			class mod : public Base_Layer<>
 			{
 			public:
 				mod(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class pow : public binary_operator
+			class pow : public Base_Layer<>
 			{
 			public:
 				pow(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class max : public binary_operator
+			class max : public Base_Layer<>
 			{
 			public:
 				max(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class min : public binary_operator
+			class min : public Base_Layer<>
 			{
 			public:
 				min(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class eq : public binary_operator
+			class eq : public Base_Layer<>
 			{
 			public:
 				eq(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class ne : public binary_operator
+			class ne : public Base_Layer<>
 			{
 			public:
 				ne(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class lt : public binary_operator
+			class lt : public Base_Layer<>
 			{
 			public:
 				lt(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class le : public binary_operator
+			class le : public Base_Layer<>
 			{
 			public:
 				le(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class gt : public binary_operator
+			class gt : public Base_Layer<>
 			{
 			public:
 				gt(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class ge : public binary_operator
+			class ge : public Base_Layer<>
 			{
 			public:
 				ge(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 
-			class xr : public binary_operator
+			class xr : public Base_Layer<>
 			{
 			public:
 				xr(bool in_place = false);
-				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) override;
+				std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 			};
 		}
 	}

@@ -42,29 +42,27 @@ namespace kernel
 			int depth_vol;
 		};
 
-		class vol2col : public Base_Layer
+		class vol2col : public Base_Layer<vol2col_param>
 		{
 		private:
 			void computeGroupCount() override;
-			vol2col_param m_param;
 		public:
 			vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			std::vector<int> output_shape() const;
 		};
 
-		class col2vol : public Base_Layer
+		class col2vol : public Base_Layer<vol2col_param>
 		{
 		private:
 			void computeGroupCount() override;
-			vol2col_param m_param;
 		public:
 			col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
 			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x);
 			std::vector<int> output_shape() const;
 		};
 
-		class copy : public Base_Layer
+		class copy : public Base_Layer<>
 		{
 		private:
 			void computeGroupCount() override;
@@ -79,11 +77,10 @@ namespace kernel
 			int num_axes;
 		};
 
-		class transpose : public Base_Layer
+		class transpose : public Base_Layer<transpose_param>
 		{
 		private:
 			void computeGroupCount() override;
-			transpose_param m_param;
 			std::vector<int> new_shape;
 			std::vector<int> old_shape;
 			std::vector<int> stride;

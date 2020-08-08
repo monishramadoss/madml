@@ -176,5 +176,32 @@ namespace kernel
 			}
 			return reinterpret_cast<char*>(ret);
 		}
+
+		char* uniform_distribution_init(std::vector<int> shape, float min, float max)
+		{
+			std::default_random_engine generator;
+			std::uniform_real_distribution<float> distribution(min, max);
+
+			const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
+			auto ret = new float[_shape];
+			for (int i = 0; i < _shape; ++i)
+			{
+				auto number = distribution(generator);
+				ret[i] = number;
+			}
+			return reinterpret_cast<char*>(ret);
+		}
+
+		char* xavier_uniform_init(std::vector<int> shape, float gain, float fan_in, float fan_out)
+		{
+			float a = gain * std::sqrtf(6 / (fan_in + fan_out));
+			return uniform_distribution_init(shape, -a, a);
+		}
+
+		char* xavier_normal_init(std::vector<int> shape, float gain, float fan_in, float fan_out)
+		{
+			float a = gain * std::sqrtf(2 / (fan_in + fan_out));
+			return normal_distribution_init(shape, 0, a * a);
+		}
 	}
 }

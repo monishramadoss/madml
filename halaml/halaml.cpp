@@ -49,6 +49,7 @@ void PrintMatrix(float* data, std::vector<int> shape)
 //#define TEST_CNN
 //#define TEST_RNN
 //#define TEST_MNIST
+
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -72,13 +73,15 @@ void test_fn()
 	std::cout << "testing add_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2000 };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(6.0, shape_x));
-		auto t2 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, shape_x));
-		auto k1 = kernel::layers::math::abs();
-		auto t3 = k1.hook(t1);
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		k1.execute();
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(-6.0, shape_x));
+		auto t2 = std::make_shared<kernel::tensor>(kernel::tensor(-1.0, shape_x));
+		auto k1 = kernel::layers::math::add();
+		auto k2 = kernel::layers::math::abs();
+		auto k3 = kernel::layers::math::abs();
+
+		auto t4 = k2.hook(t2);
+		auto t5 = k3.hook(t1);
+		auto t3 = k1.hook(t4, t5);
 	}
 #endif
 

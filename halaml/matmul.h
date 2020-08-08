@@ -16,11 +16,10 @@ namespace kernel
 			int k;
 		};
 
-		class matmul : public Base_Layer
+		class matmul : public Base_Layer<matmul_param>
 		{
 		private:
 			void computeGroupCount() override;
-			matmul_param m_param{};
 		public:
 			matmul();
 			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);

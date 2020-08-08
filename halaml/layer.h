@@ -98,9 +98,12 @@ namespace kernel
 			int id = 0;
 			static int& get_object_id();
 			void update_id();
+			virtual int set_backward() { return -1; }
 
 			std::vector<size_t> execution_order;
-			std::vector<std::vector<size_t>> adj_mat;
+			std::vector<int> backward_execution_order;
+
+			std::vector<std::vector<int>> adj_mat;
 			std::vector<bool> visted;
 			std::shared_ptr<tensor> x, y, w, b;
 
@@ -109,6 +112,7 @@ namespace kernel
 		};
 	}
 
+	template<class T = operator_param>
 	class Base_Layer : public layer, public layers::Module
 	{
 	public:
@@ -117,43 +121,81 @@ namespace kernel
 	protected:
 		const uint32_t* bck_shader;
 		size_t bck_codeSize;
-		std::shared_ptr<Base_Layer> derivative;
+		Base_Layer* derivative;
 		bool m_in_place;
-		operator_param m_param;
+		T m_param;
 		void computeGroupCount() override;
 		void set_group(int x, int y, int z);
+		virtual int set_backward() override;
 		virtual void run() override;
-		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
-		template <typename T = operator_param> inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, T& m_param, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+		inline std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 		//template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 	};
-
-	namespace layers
-	{
-		class unary_operator : public Base_Layer
-		{
-		protected:
-			void computeGroupCount() override;
-		public:
-			unary_operator(bool in_place);
-			virtual std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x) = 0;
-		};
-
-		class binary_operator : public Base_Layer
-		{
-		protected:
-			void computeGroupCount() override;
-		public:
-			binary_operator(bool in_place);
-			virtual std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w) = 0;
-		};
-	}
 }
 
 namespace kernel
 {
-	template<class T>
-	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, T& param, Format fmt, std::vector<int> output_shape)
+	template<typename T>
+	Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
+	{
+		update_id();
+		if (!sub_graph_bit())
+			add_module(this);
+		bck_shader = nullptr;
+		bck_codeSize = 0;
+		derivative = nullptr;
+		initVulkanThing(forward_buffers);
+	}
+
+	template<typename T>
+	void Base_Layer<T>::computeGroupCount()
+	{
+	}
+
+	template<typename T>
+	void Base_Layer<T>::set_group(int x, int y, int z)
+	{
+		m_group_x = x;
+		m_group_y = y;
+		m_group_z = z;
+	}
+
+	template<typename T>
+	int Base_Layer<T>::set_backward()
+	{
+		if (train() && bck_codeSize)
+		{
+			int i = parents[0];
+			auto M = get_module();
+			if (!dy)
+				dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
+
+			if (parents.size() > 1)
+			{
+				int j = parents[1];
+				if (!dw)
+					dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
+				if (j > 0)
+					M[j]->dy = dw;
+
+				dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
+			}
+			else
+			{
+				dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
+			}
+
+			if (i >= 0)
+				M[i]->dy = dx;
+
+			return dy->getId();
+		}
+		return -2;
+	}
+
+	template<typename T>
+	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, Format fmt, std::vector<int> output_shape)
 	{
 		x = _x;
 		inputs.push_back(x->getId());
@@ -169,42 +211,30 @@ namespace kernel
 
 		if (m_pipeline == nullptr)
 		{
-			param.total = x->count();
+			m_param.total = x->count();
 			computeGroupCount();
 			createShaderModule(shader, codeSize);
 			createPipeline(sizeof(T));
 		}
 
-		bindTensor(_x, 0);
+		bindTensor(x, 0);
 		bindTensor(y, 1);
 
-		recordCommandBuffer(static_cast<void*>(&param), sizeof(T));
+		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
+		parents.push_back(get_input_id(x->getId()));
 
-		parents.push_back(get_input_id(get_input_id(x->getId())));
-		if (train())
+		if (train() && bck_codeSize)
 		{
-			auto M = get_module();
-			int i = parents[0];
-
-			if (!dy)
-				dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
-
-			derivative = std::make_shared<Base_Layer>(Base_Layer(2, false));
+			derivative = new Base_Layer<T>(2, false);
+			derivative->m_param = m_param;
 			derivative->set_group(m_group_x, m_group_y, m_group_z);
-			dx = derivative->layer_construct_forward<T>(bck_shader, bck_codeSize, dy, param, fmt, x->getShape());
-
-			if (i > 0)
-			{
-				auto m1 = M[i];
-				m1->dy = dx;
-			}
 		}
 
 		return y;
 	}
 
-	template<class T>
-	std::shared_ptr<tensor>& Base_Layer::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w, T& param, Format fmt, std::vector<int> output_shape)
+	template<typename T>
+	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w, Format fmt, std::vector<int> output_shape)
 	{
 		x = _x;
 		w = _w;
@@ -220,14 +250,11 @@ namespace kernel
 			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
 		//}
 		outputs.push_back(y->getId());
+
 		if (m_pipeline == nullptr)
 		{
-			param.total = x->count();
+			m_param.total = x->count();
 			computeGroupCount();
-			if (m_group_x == 0 || m_group_y == 0 || m_group_z == 0)
-			{
-				std::cout << "GROUP DIMMS OFF" << std::endl;
-			}
 			createShaderModule(shader, codeSize);
 			createPipeline(sizeof(T));
 		}
@@ -236,37 +263,24 @@ namespace kernel
 		bindTensor(w, 1);
 		bindTensor(y, 2);
 
-		recordCommandBuffer(static_cast<void*>(&param), sizeof(T));
+		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
 
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
+
 		if (train() && bck_codeSize)
 		{
-			int i = parents[0];
-			int j = parents[1];
-			auto M = get_module();
-
-			if (!dw)
-				dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
-			if (!dy)
-				dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
-
-			derivative = std::make_shared<Base_Layer>(Base_Layer(3, false));
+			derivative = new Base_Layer(3, false);
 			derivative->set_group(m_group_x, m_group_y, m_group_z);
-			dx = derivative->layer_construct_forward<T>(bck_shader, bck_codeSize, dy, dw, param, fmt, x->getShape());
-
-			if (i > 0)
-			{
-				auto m1 = M[i];
-				m1->dy = dx;
-			}
-			if (j > 0)
-			{
-				auto m2 = M[j];
-				m2->dy = dw;
-			}
 		}
+
 		return y;
+	}
+
+	template<typename T>
+	void Base_Layer<T>::run()
+	{
+		runCommandBuffer();
 	}
 }
 

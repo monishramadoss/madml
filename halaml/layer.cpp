@@ -205,7 +205,7 @@ namespace kernel
 		{
 		}
 
-		void DFS_f(size_t start, std::vector<bool>& visited, std::vector<std::vector<size_t>>& adj, std::vector<size_t>& execution_order)
+		void DFS_f(size_t start, std::vector<bool>& visited, std::vector<std::vector<int>>& adj, std::vector<size_t>& execution_order)
 		{
 			execution_order.push_back(start);
 			visited[start] = true;
@@ -220,66 +220,53 @@ namespace kernel
 
 		void Module::execute()
 		{
-			auto& M = get_module();
-			/// <summary>
-			///  input = -1;
-			///  weight = -2;
-			///  bias = -3;
-			///  temp = -4;
-			/// </summary>
-			if (execution_order.size() == 0)
-			{
-				adj_mat.resize(M.size(), std::vector<size_t>(M.size(), 0));
-				visted.resize(M.size(), false);
-
-				for (auto m : M)
+			/*	auto& M = get_module();
+				/// <summary>
+				///  input = -1;
+				///  weight = -2;
+				///  bias = -3;
+				///  temp = -4;
+				/// </summary>
+				if (execution_order.size() == 0)
 				{
-					for (auto p : m->parents)
+					adj_mat.resize(M.size(), std::vector<int>(M.size(), 0));
+					visted.resize(M.size(), false);
+
+					for (auto m : M)
 					{
-						adj_mat[m->id][p] = -1;
+						for (auto p : m->parents)
+						{
+							adj_mat[m->id][p] = -1;
+						}
+					}
+
+					for (size_t i = 0; i < M.size(); ++i)
+					{
+						for (size_t j = 0; j < M.size(); ++j)
+						{
+							if (adj_mat[i][j] == -1)
+								M[j]->children.push_back(i);
+						}
+					}
+
+					for (auto m : M)
+					{
+						for (auto c : m->children)
+						{
+							adj_mat[m->id][c] = 1;
+						}
 					}
 				}
 
-				for (size_t i = 0; i < M.size(); ++i)
+				for (auto l : adj_mat)
 				{
-					for (size_t j = 0; j < M.size(); ++j)
+					for (auto i : l)
 					{
-						if (adj_mat[i][j])
-							M[j]->children.push_back(i);
+						std::cout << i << " ";
 					}
+					std::cout << std::endl;
 				}
-
-				for (auto m : M)
-				{
-					for (auto c : m->children)
-					{
-						adj_mat[m->id][c] = 1;
-					}
-				}
-
-				DFS_f(0, visted, adj_mat, execution_order);
-			}
-
-			for (auto l : adj_mat)
-			{
-				for (auto i : l)
-				{
-					std::cout << i << " ";
-				}
-				std::cout << std::endl;
-			}
-
-			for (size_t m_idx : execution_order)
-			{
-				if (M[m_idx]->requires_sub_graph)
-				{
-					std::cout << M[m_idx]->m_type << std::endl;
-					//for (auto g : M[m_idx]->sub_graph)
-						//std::cout << g->m_type << std::endl;
-				}
-				else
-					std::cout << M[m_idx]->m_type << std::endl;
-			}
+			*/
 		}
 
 		void Module::execute_b()
@@ -373,61 +360,6 @@ namespace kernel
 		std::shared_ptr<Module> Module::getptr()
 		{
 			return shared_from_this();
-		}
-	}
-
-	Base_Layer::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
-	{
-		update_id();
-		if (!sub_graph_bit())
-			add_module(this);
-		bck_shader = nullptr;
-		bck_codeSize = 0;
-		initVulkanThing(forward_buffers);
-	}
-
-	void Base_Layer::computeGroupCount()
-	{
-	}
-
-	void Base_Layer::set_group(int x, int y, int z)
-	{
-		m_group_x = x;
-		m_group_y = y;
-		m_group_z = z;
-	}
-
-	void Base_Layer::run()
-	{
-		runCommandBuffer();
-	}
-
-	namespace layers
-	{
-		unary_operator::unary_operator(bool in_place) : Base_Layer(2, in_place)
-		{
-		}
-
-		void unary_operator::computeGroupCount()
-		{
-			m_group_x = static_cast<int>(alignSize(m_param.total, LOCAL_SZ_X)) / LOCAL_SZ_X;
-			if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-				m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-			m_group_y = 1;
-			m_group_z = 1;
-		}
-
-		binary_operator::binary_operator(bool in_place) : Base_Layer(3, in_place)
-		{
-		}
-
-		void binary_operator::computeGroupCount()
-		{
-			m_group_x = static_cast<int>(alignSize(m_param.total, LOCAL_SZ_X)) / LOCAL_SZ_X;
-			if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-				m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-			m_group_y = 1;
-			m_group_z = 1;
 		}
 	}
 }
