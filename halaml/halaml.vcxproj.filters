@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{4971906f-e5f6-4ee2-bb7c-138dd328791e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\forward">
+      <UniqueIdentifier>{8605109e-2683-448e-b905-33539c300df9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\backward">
+      <UniqueIdentifier>{f0e5a78e-b278-431c-ab87-47647c2e278d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\halaml\activation.h">
@@ -101,5 +110,259 @@
     <ClCompile Include="rnn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\forward_pass\gemm.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\celu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\elu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\gelu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\hardshrink.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\hardtanh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\leakyrelu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\logsigmoid.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\prelu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\relu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\relu6.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\selu.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\sigmoid.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\softplus.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\softshrink.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\softsign.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\activation\tanhshrink.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\add.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\div.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\equal.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\greater_eq.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\greater_than.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\less_eq.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\less_than.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\max.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\min.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\mod.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\mul.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\nequal.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\pow.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\sub.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\binary_operators\xor.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\loss\MSE.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\rnn\gruCell.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\rnn\lstmCell.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\rnn\rnnCell.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\transforms\col2vol.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\transforms\transpose.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\transforms\vol2col.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\abs.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\ceil.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\clip.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\exp.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\floor.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\ln.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\round.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\sqrt.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\acos.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\acosh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\asin.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\asinh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\atan.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\atanh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\cos.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\cosh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\sin.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\sinh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\tan.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\forward_pass\unary_operators\trig\tanh.comp">
+      <Filter>Shader Files\forward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\activation\d_celu.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\activation\d_elu.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\activation\d_relu.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\activation\d_relu6.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\activation\d_sigmoid.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\binary_operators\binary_operator.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\loss\d_MSE.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\d_abs.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\d_exp.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\d_ln.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\d_sqrt.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\unary_operator.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_acos.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_acosh.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_asin.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_asinh.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_atan.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_atanh.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_cos.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_cosh.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_sin.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_sinh.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_tan.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\unary_operators\trig\d_tanh.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
+    <None Include="shaders\backward_pass\gradient.comp">
+      <Filter>Shader Files\backward</Filter>
+    </None>
   </ItemGroup>
 </Project>

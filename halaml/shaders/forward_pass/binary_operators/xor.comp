@@ -9,7 +9,7 @@ layout(binding = 0) readonly buffer buf1{
 };
 
 layout(binding = 1) readonly buffer buf2{
-	bool B[];	
+	bool B[];
 };
 
 layout(binding = 2) writeonly buffer buf3{

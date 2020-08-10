@@ -48,6 +48,6 @@ void main() {
                 acc += A[k*M + globalRow] * B[globalCol*K + k];
             C[globalCol*M + globalRow] = acc;
         }
-    }     
+    }
 
 }

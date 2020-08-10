@@ -56,7 +56,7 @@ void gemm_1(){
         for (uint k=0u; k < p.hidden_size; ++k)
             acc += W[k*p.hidden_size + globalRow] * B[p.weight_offset + k];
     	D[p.weight_offset + globalRow] = tanh(acc);
-    }     
+    }
 }
 
 void gemm_2(){
@@ -65,7 +65,7 @@ void gemm_2(){
         for (uint k=0u; k < p.hidden_size; ++k)
             acc += V[k*p.output_size + globalRow] * D[p.weight_offset + k];
         C[p.output_offset + globalRow] = 1.0/(1.0 + exp(-acc)); //sigmoid
-    }         
+    }
 }
 
 void main(){

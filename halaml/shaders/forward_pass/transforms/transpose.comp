@@ -19,8 +19,6 @@ layout(binding = 2) readonly buffer Input2{
     int stride[];
 };
 
-
-
 void main(){
     for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.total; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x)
     {
@@ -33,7 +31,7 @@ void main(){
             old_pos += (new_pos / stride[p.num_axes + j]) * stride[p.num_axes*2 + order];
             new_pos %= stride[p.num_axes + j];
         }
-        
+
         B[globalRow] = A[uint(abs(old_pos))];
     }
 }

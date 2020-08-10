@@ -62,20 +62,20 @@ void gemm_1(){
         float f = bias[globalRow*4 + 1];
         float g = bias[globalRow*4 + 2];
         float o = bias[globalRow*4 + 3];
-        
+
         for (uint k=0u; k < p.vocab_size; ++k){
             i += U[k*p.hidden_size*4 + globalRow*4 + 0] * A[p.input_offset + k];
             f += U[k*p.hidden_size*4 + globalRow*4 + 1] * A[p.input_offset + k];
             g += U[k*p.hidden_size*4 + globalRow*4 + 2] * A[p.input_offset + k];
-            o += U[k*p.hidden_size*4 + globalRow*4 + 3] * A[p.input_offset + k];            
+            o += U[k*p.hidden_size*4 + globalRow*4 + 3] * A[p.input_offset + k];
         }
 
         for (uint k=0u; k < p.hidden_size; ++k){
             i += W[k*p.hidden_size*4 + globalRow*4 + 0] * B[p.weight_offset + k];
             f += W[k*p.hidden_size*4 + globalRow*4 + 1] * B[p.weight_offset + k];
             g += W[k*p.hidden_size*4 + globalRow*4 + 2] * B[p.weight_offset + k];
-            o += W[k*p.hidden_size*4 + globalRow*4 + 3] * B[p.weight_offset + k];            
-        } 
+            o += W[k*p.hidden_size*4 + globalRow*4 + 3] * B[p.weight_offset + k];
+        }
 
         i = 1/(1+exp(-i));
         f = 1/(1+exp(-f));
@@ -85,7 +85,7 @@ void gemm_1(){
         float ct = f * C[p.weight_offset + globalRow] + i * g;
         G[p.weight_offset + globalRow] = ct;
         E[p.weight_offset + globalRow] = o * tanh(ct);
-    }     
+    }
 }
 
 void gemm_2(){
@@ -94,7 +94,7 @@ void gemm_2(){
         for (uint k=0u; k < p.hidden_size; ++k)
             acc += V[k*p.output_size + globalRow] * E[p.weight_offset + k];
         D[p.output_offset + globalRow] = 1.0/(1.0 + exp(-acc)); //sigmoid
-    }         
+    }
 }
 
 void main(){

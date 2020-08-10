@@ -46,6 +46,7 @@ void PrintMatrix(float* data, std::vector<int> shape)
 
 //#define TEST_TRANS
 #define TEST_MATH
+
 //#define TEST_NN
 //#define TEST_CNN
 //#define TEST_RNN
@@ -60,7 +61,7 @@ void test_fn()
 		char* dat = kernel::init::normal_distribution_init(shape_x, 20, 2);
 		auto t1 = std::make_shared < kernel::tensor>(kernel::tensor(dat, shape_x));
 		auto k1 = kernel::layers::transpose(std::vector<int>{ 1, 2, 0});
-		auto t2 = k1.hook(t1);
+		auto t2 = k1.operator()(t1);
 
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 		k1.execute();
@@ -73,16 +74,16 @@ void test_fn()
 #ifdef TEST_MATH
 	std::cout << "testing add_op" << std::endl;
 	{
-		const std::vector<int> shape_x{2000};
+		const std::vector<int> shape_x{ 2000 };
 		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(-6.0, shape_x));
 		auto t2 = std::make_shared<kernel::tensor>(kernel::tensor(-1.0, shape_x));
 		auto k1 = kernel::layers::math::add();
 		auto k2 = kernel::layers::math::abs();
 		auto k3 = kernel::layers::math::abs();
 
-		auto t4 = k2.hook(t2);
-		auto t5 = k3.hook(t1);
-		auto t3 = k1.hook(t4, t5);
+		auto t4 = k2(t2);
+		auto t5 = k3(t1);
+		auto t3 = k1(t4, t5);
 	}
 #endif
 
@@ -96,8 +97,8 @@ void test_fn()
 		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, shape_x));
 		auto layer = new kernel::layers::nn::dense(N, false);
 		auto layer2 = new kernel::layers::nn::dense(N, false);
-		auto t3 = layer->hook(t1);
-		auto t4 = layer2->hook(t3);
+		auto t3 = layer->operator()(t1);
+		auto t4 = layer2->operator()(t3);
 
 		layer->execute();
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), M * N);
@@ -116,8 +117,8 @@ void test_fn()
 		auto cnn_layer_1 = kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 		auto cnn_layer_2 = kernel::layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 
-		auto t3 = cnn_layer_1.hook(t1);
-		auto t4 = cnn_layer_2.hook(t3);
+		auto t3 = cnn_layer_1.operator()(t1);
+		auto t4 = cnn_layer_2.operator()(t3);
 
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
@@ -136,7 +137,7 @@ void test_fn()
 		std::vector<int> shape_x{ length, vocab };
 		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
 		auto rnn_layer_1 = kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
-		auto tup = rnn_layer_1.hook(t1);
+		auto tup = rnn_layer_1.operator()(t1);
 
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
@@ -159,7 +160,7 @@ void test_fn()
 		std::vector<int> shape_x{ length, vocab };
 		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
 		auto rnn_layer_1 = kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
-		auto tup = rnn_layer_1.hook(t1);
+		auto tup = rnn_layer_1.operator()(t1);
 
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
@@ -185,7 +186,7 @@ void test_fn()
 		std::vector<int> shape_x{ length, vocab };
 		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
 		auto rnn_layer_1 = kernel::layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
-		auto tup = rnn_layer_1.hook(t1);
+		auto tup = rnn_layer_1.operator()(t1);
 
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
@@ -211,13 +212,13 @@ void test_fn()
 		auto l7 = kernel::layers::math::add();
 
 		auto t0 = std::make_shared<kernel::tensor>(kernel::tensor(-0.5, std::vector<int>{1, 784}));
-		auto t1 = l1.hook(t0);
-		auto t2 = l2.hook(t1);
-		auto t3 = l3.hook(t2);
-		auto t4 = l4.hook(t3);
-		auto tx = l7.hook(t2, t4);
-		auto t5 = l5.hook(tx);
-		auto t6 = l6.hook(t5);
+		auto t1 = l1.operator()(t0);
+		auto t2 = l2.operator()(t1);
+		auto t3 = l3.operator()(t2);
+		auto t4 = l4.operator()(t3);
+		auto tx = l7.operator()(t2, t4);
+		auto t5 = l5.operator()(tx);
+		auto t6 = l6.operator()(t5);
 		l6.execute();
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 	}

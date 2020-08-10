@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <future>
 #include <list>
 
 namespace kernel
@@ -62,8 +63,6 @@ namespace kernel
 			void execute();
 			void execute_b();
 
-			virtual void run() = 0;
-
 			std::vector<int> parents;
 			std::vector<size_t> children;
 			std::shared_ptr<Module> getptr();
@@ -109,6 +108,7 @@ namespace kernel
 			std::shared_ptr<tensor> x, y, w, b;
 
 		private:
+
 			//void BFS(std::vector<std::vector<int>> adj, int s = 0);
 		};
 	}
@@ -128,13 +128,14 @@ namespace kernel
 		void computeGroupCount() override;
 		void set_group(int x, int y, int z);
 		int set_backward() override;
-		void run() override;
+
 		std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
-		                                                 const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
-		                                                 std::vector<int> output_shape = {});
+			const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
+			std::vector<int> output_shape = {});
 		std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
-		                                                 const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
-		                                                 Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+			const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
+			Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+
 		//template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 	};
 }
@@ -142,7 +143,7 @@ namespace kernel
 namespace kernel
 {
 	template <typename T>
-	Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({0})
+	Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
 	{
 		update_id();
 		if (!sub_graph_bit())
@@ -201,19 +202,19 @@ namespace kernel
 
 	template <typename T>
 	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
-	                                                                const std::shared_ptr<tensor>& _x, Format fmt,
-	                                                                std::vector<int> output_shape)
+		const std::shared_ptr<tensor>& _x, Format fmt,
+		std::vector<int> output_shape)
 	{
 		x = _x;
 		inputs.push_back(x->getId());
-		/*if (m_in_place && output_shape.size() == 0)
-			y = x;*/
-		//else {
-		if (output_shape.size() != 0)
-			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
-		else
-			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
-		//}
+
+		if (!y)
+		{
+			if (output_shape.size() != 0)
+				y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
+			else
+				y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
+		}
 		outputs.push_back(y->getId());
 
 		if (m_pipeline == nullptr)
@@ -227,7 +228,6 @@ namespace kernel
 		bindTensor(x, 0);
 		bindTensor(y, 1);
 
-		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
 		parents.push_back(get_input_id(x->getId()));
 
 		if (train() && bck_codeSize)
@@ -237,28 +237,28 @@ namespace kernel
 			derivative->set_group(m_group_x, m_group_y, m_group_z);
 		}
 
+		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
+		runCommandBuffer();
+
 		return y;
 	}
 
 	template <typename T>
 	std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
-	                                                                const std::shared_ptr<tensor>& _x,
-	                                                                const std::shared_ptr<tensor>& _w, Format fmt,
-	                                                                std::vector<int> output_shape)
+		const std::shared_ptr<tensor>& _x,
+		const std::shared_ptr<tensor>& _w, Format fmt,
+		std::vector<int> output_shape)
 	{
 		x = _x;
 		w = _w;
 
-		inputs.push_back(x->getId());
-		inputs.push_back(w->getId());
-		/*if (m_in_place && output_shape.size() == 0)
-			y = x;*/
-		//else {
-		if (output_shape.size() != 0)
-			y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
-		else
-			y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
-		//}
+		if (!y)
+		{
+			if (output_shape.size() != 0)
+				y = std::make_shared<tensor>(tensor(0.0, output_shape, fmt));
+			else
+				y = std::make_shared<tensor>(tensor(0.0, x->getShape()));
+		}
 		outputs.push_back(y->getId());
 
 		if (m_pipeline == nullptr)
@@ -273,8 +273,6 @@ namespace kernel
 		bindTensor(w, 1);
 		bindTensor(y, 2);
 
-		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
-
 		parents.push_back(get_input_id(x->getId()));
 		parents.push_back(get_input_id(w->getId()));
 
@@ -284,13 +282,10 @@ namespace kernel
 			derivative->set_group(m_group_x, m_group_y, m_group_z);
 		}
 
-		return y;
-	}
-
-	template <typename T>
-	void Base_Layer<T>::run()
-	{
+		recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
 		runCommandBuffer();
+
+		return y;
 	}
 }
 

@@ -16,8 +16,6 @@ layout(binding = 2) writeonly buffer buf3{
     float LOSS[];
 };
 
-
-
 layout(local_size_x = LOCAL_SZ_X, local_size_y = 1, local_size_z = 1) in;
 
 void main()

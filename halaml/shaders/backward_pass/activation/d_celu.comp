@@ -31,6 +31,6 @@ void main()
             alpha[i] = 0.0;
         else
             alpha[i] = exp(X[i] / alpha[i]) * (1 - X[i] / alpha[i]) - 1;
-        
+
     }
 }

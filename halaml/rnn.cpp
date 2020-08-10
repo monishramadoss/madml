@@ -13,9 +13,9 @@ namespace kernel
 		namespace rnn
 		{
 			RNNCell::RNNCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
-				                                                                     0, vocab_size, hidden_size, output_size, 0,
-				                                                                     0
-			                                                                     })
+																					 0, vocab_size, hidden_size, output_size, 0,
+																					 0
+				})
 			{
 				if (output_size == 0)
 					m_param.output_size = vocab_size;
@@ -34,10 +34,10 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void RNNCell::hook(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& y,
-			                   std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
-			                   std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
-			                   std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
+			void RNNCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& y,
+				std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
+				std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
+				std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape(); //seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -80,9 +80,9 @@ namespace kernel
 			}
 
 			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
-				                                                                       0, vocab_size, hidden_size, output_size,
-				                                                                       0, 0
-			                                                                       })
+																					   0, vocab_size, hidden_size, output_size,
+																					   0, 0
+				})
 			{
 				if (output_size == 0)
 					m_param.output_size = vocab_size;
@@ -101,11 +101,11 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void LSTMCell::hook(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& c,
-			                    std::shared_ptr<tensor>& y, std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& cn,
-			                    std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
-			                    std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1, std::shared_ptr<tensor>& b2,
-			                    int input_offset, int weight_offset, int output_offset)
+			void LSTMCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& c,
+				std::shared_ptr<tensor>& y, std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& cn,
+				std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
+				std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1, std::shared_ptr<tensor>& b2,
+				int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape(); //seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -152,9 +152,9 @@ namespace kernel
 			}
 
 			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
-				                                                                     0, vocab_size, hidden_size, output_size, 0,
-				                                                                     0
-			                                                                     })
+																					 0, vocab_size, hidden_size, output_size, 0,
+																					 0
+				})
 			{
 				if (output_size == 0)
 					m_param.output_size = vocab_size;
@@ -173,10 +173,10 @@ namespace kernel
 				m_group_z = 1;
 			}
 
-			void GRUCell::hook(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& y,
-			                   std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
-			                   std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
-			                   std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
+			void GRUCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& y,
+				std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
+				std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
+				std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
 			{
 				const auto input_shape = x->getShape(); //seq_len, input_size
 				const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size

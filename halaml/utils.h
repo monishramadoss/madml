@@ -58,6 +58,7 @@ namespace kernel
 		if (shape.empty()) return 0;
 
 		int elems = 1;
+
 		//assert(start <= (int)shape.size() &&	end <= (int)shape.size() && start <= end);
 		for (int i = start; i < end; i++)
 			elems *= shape[i];

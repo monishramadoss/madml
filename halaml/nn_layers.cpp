@@ -18,27 +18,27 @@ namespace kernel
 				update_id();
 				add_module(this);
 				requires_sub_graph = true;
+				mm = new matmul();
+				if (USE_BIAS)
+					bias = new math::add();
 			}
 
-			std::shared_ptr<tensor>& dense::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& x)
 			{
 				this->x = x;
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
-				auto mm = new matmul();
-				sub_graph.push_back(mm);
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[1], m_size}));
 				weights.push_back(w->getId());
-				y = mm->hook(x, w);
+				y = mm->operator()(x, w);
 
 				if (USE_BIAS)
 				{
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
-					y = bias->hook(y, b);
+					y = bias->operator()(y, b);
 				}
 
 				outputs.push_back(y->getId());
@@ -52,14 +52,9 @@ namespace kernel
 				// dx = W.T * dy
 			}
 
-			std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& x)
-			{
-				return hook(x);
-			}
-
 			conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-			           bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-			                            m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+				m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 			{
 				m_type = "conv";
 				update_id();
@@ -67,32 +62,30 @@ namespace kernel
 				requires_sub_graph = true;
 			}
 
-			std::shared_ptr<tensor>& conv::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x_)
 			{
-				this->x = x;
+				x = x_;
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
-				auto kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
+				if (!kernel)
+					kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				sub_graph.push_back(kernel);
-				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{
-					                                    m_num_filters,
-					                                    input_shape[0] * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w
-				                                    }));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
+					input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
+				}));
 				weights.push_back(w->getId());
-				ir_vol2col = kernel->hook(x); //27 9
+				ir_vol2col = kernel->operator()(x); //27 9
 				temporaries.push_back(ir_vol2col->getId());
-				y = mm->hook(w, ir_vol2col);
+				y = mm->operator()(w, ir_vol2col);
 
 				if (USE_BIAS)
 				{
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-					auto bias = new math::add();
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
-					y = bias->hook(y, b);
+					y = bias->operator()(y, b);
 				}
 
 				outputs.push_back(y->getId());
@@ -104,49 +97,46 @@ namespace kernel
 				return y;
 			}
 
-			std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x)
-			{
-				return hook(x);
-			}
-
 			convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-			                             int padding_type,
-			                             bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
-			                                              m_stride(stride), m_padding(padding), m_dilation(dilation),
-			                                              USE_BIAS(use_bias)
+				int padding_type,
+				bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
+				m_stride(stride), m_padding(padding), m_dilation(dilation),
+				USE_BIAS(use_bias)
 			{
 				m_type = "convT";
 				update_id();
 				add_module(this);
 				requires_sub_graph = true;
+				mm = new matmul();
+				if (USE_BIAS)
+					bias = new math::add();
 			}
 
-			std::shared_ptr<tensor>& convTranspose::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& convTranspose::operator()(const std::shared_ptr<tensor>& x_)
 			{
-				this->x = x;
+				x = x_;
 				set_sub_graph();
 				inputs.push_back(x->getId());
 				auto input_shape = x->getShape();
-				auto kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
+				kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
 				sub_graph.push_back(kernel);
-				auto mm = new matmul();
 				sub_graph.push_back(mm);
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{
-					                                    m_num_filters,
-					                                    input_shape[0] * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w
-				                                    }));
+				if (!w)
+					w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
+						input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
+				}));
 				weights.push_back(w->getId());
-				ir_col2vol = kernel->hook(x);
+				ir_col2vol = kernel->operator()(x);
 				temporaries.push_back(ir_col2vol->getId());
-				y = mm->hook(w, ir_col2vol);
+				y = mm->operator()(w, ir_col2vol);
 
 				if (USE_BIAS)
 				{
-					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-					auto bias = new math::add();
+					if (!b)
+						b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
 					sub_graph.push_back(bias);
 					biases.push_back(b->getId());
-					y = bias->hook(y, b);
+					y = bias->operator()(y, b);
 				}
 
 				outputs.push_back(y->getId());
@@ -158,13 +148,10 @@ namespace kernel
 				return y;
 			}
 
-			std::shared_ptr<tensor>& convTranspose::operator()(const std::shared_ptr<tensor>& x)
-			{
-				return hook(x);
-			}
+			//TODO rnn needs dynamic graph
 
 			RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-			         float dropout, bool bias, std::string nonlinearity) :
+				float dropout, bool bias, std::string nonlinearity) :
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
 			{
@@ -215,13 +202,13 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::hook(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				return hook(x, h);
+				return operator()(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::hook(
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(
 				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				this->x = x;
@@ -267,7 +254,7 @@ namespace kernel
 							}
 							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
 								uint64_t>(m_seq_length) * l + i;
-							cells[cell_idx]->hook(
+							cells[cell_idx]->operator()(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
 								cache[2 + cache_idx],
@@ -278,7 +265,7 @@ namespace kernel
 								weights_biases[3 + weight_bias_idx],
 								weights_biases[4 + weight_bias_idx],
 								static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-							);
+								);
 						}
 					}
 				}
@@ -289,19 +276,8 @@ namespace kernel
 				return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(const std::shared_ptr<tensor>& x)
-			{
-				return hook(x);
-			}
-
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(
-				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
-			{
-				return hook(x, h);
-			}
-
 			LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-			           float dropout, bool bias, std::string nonlinearity) :
+				float dropout, bool bias, std::string nonlinearity) :
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 			{
@@ -354,15 +330,15 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
 				const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
 				c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				return hook(x, h, c);
+				return operator()(x, h, c);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::hook(
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
 				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
 			{
 				this->x = x;
@@ -413,7 +389,7 @@ namespace kernel
 							}
 							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
 								uint64_t>(m_seq_length) * l + i;
-							cells[cell_idx]->hook(
+							cells[cell_idx]->operator()(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
 								cache[2 + cache_idx],
@@ -426,7 +402,7 @@ namespace kernel
 								weights_biases[3 + weight_bias_idx],
 								weights_biases[4 + weight_bias_idx],
 								static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-							);
+								);
 						}
 					}
 				}
@@ -439,20 +415,8 @@ namespace kernel
 				return std::forward_as_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
-				const std::shared_ptr<tensor>& x)
-			{
-				return hook(x);
-			}
-
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
-				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
-			{
-				return hook(x, h, c);
-			}
-
 			GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-			         float dropout, bool bias, std::string nonlinearity) :
+				float dropout, bool bias, std::string nonlinearity) :
 				m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 				m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 			{
@@ -505,13 +469,13 @@ namespace kernel
 				}
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::hook(const std::shared_ptr<tensor>& x)
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(const std::shared_ptr<tensor>& x)
 			{
 				h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
-				return hook(x, h);
+				return operator()(x, h);
 			}
 
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::hook(
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(
 				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
 			{
 				this->x = x;
@@ -558,7 +522,7 @@ namespace kernel
 
 							const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
 								uint64_t>(m_seq_length) * l + i;
-							cells[cell_idx]->hook(
+							cells[cell_idx]->operator()(
 								cache[0 + cache_idx],
 								cache[1 + cache_idx],
 								cache[2 + cache_idx],
@@ -569,7 +533,7 @@ namespace kernel
 								weights_biases[3 + weight_bias_idx],
 								weights_biases[4 + weight_bias_idx],
 								static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-							);
+								);
 						}
 					}
 				}
@@ -578,17 +542,6 @@ namespace kernel
 				outputs.push_back(cache.back()->getId());
 				parents.push_back(get_input_id(x->getId()));
 				return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
-			}
-
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(const std::shared_ptr<tensor>& x)
-			{
-				return hook(x);
-			}
-
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(
-				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
-			{
-				return hook(x, h);
 			}
 		}
 	}

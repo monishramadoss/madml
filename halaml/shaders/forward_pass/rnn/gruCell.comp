@@ -63,16 +63,16 @@ void gemm_1(){
             r += W[k*p.hidden_size*3 + globalRow*3 + 0] * B[p.weight_offset + k];
             z += W[k*p.hidden_size*3 + globalRow*3 + 1] * B[p.weight_offset + k];
         }
-        
+
         for (uint k=0; k < p.hidden_size; ++k){
             n += r * W[k*p.hidden_size*3 + globalRow*3 + 2] * B[p.weight_offset + k];
         }
-        
+
         r = 1/(1+exp(-r));
         z = 1/(1+exp(-z));
         n = tanh(n);
         D[p.weight_offset + globalRow] = (1-z) * n + z * B[p.weight_offset + globalRow];
-    }     
+    }
 }
 
 void gemm_2(){
@@ -81,7 +81,7 @@ void gemm_2(){
         for (uint k=0u; k < p.hidden_size; ++k)
             acc += V[k*p.output_size + globalRow] * D[p.weight_offset + k];
         C[p.output_offset + globalRow] = 1.0/(1.0 + exp(-acc)); //sigmoid
-    }         
+    }
 }
 
 void main(){

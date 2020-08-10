@@ -22,7 +22,7 @@ namespace kernel
 			void computeGroupCount() override;
 		public:
 			matmul();
-			std::shared_ptr<tensor>& hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
+			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 		};
 	}
 }

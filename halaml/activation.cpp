@@ -18,7 +18,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& celu::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& celu::operator()(const std::shared_ptr<tensor>& x)
 			{
 				alpha = std::make_shared<tensor>(tensor(1.0, x->getShape(), Format::kFormatFp32));
 				return layer_construct_forward(shaders::celu_spv, sizeof(shaders::celu_spv), x, alpha);
@@ -33,7 +33,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_elu_spv);
 			}
 
-			std::shared_ptr<tensor>& elu::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& elu::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::elu_spv, sizeof(shaders::elu_spv), x);
 			}
@@ -46,7 +46,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& hardshrink::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& hardshrink::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x);
 			}
@@ -56,10 +56,10 @@ namespace kernel
 				m_type = "hardtanh";
 				bck_shader = shaders::d_celu_spv;
 				bck_codeSize = sizeof(shaders::d_celu_spv);
-				m_param = {0, min_val, max_val};
+				m_param = { 0, min_val, max_val };
 			}
 
-			std::shared_ptr<tensor>& hardtanh::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& hardtanh::operator()(const std::shared_ptr<tensor>& x)
 			{
 				m_param.total = x->count();
 				return layer_construct_forward(shaders::hardshrink_spv, sizeof(shaders::hardshrink_spv), x);
@@ -73,7 +73,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& leakyrelu::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& leakyrelu::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::leakyrelu_spv, sizeof(shaders::leakyrelu_spv), x);
 			}
@@ -86,7 +86,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& logsigmoid::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& logsigmoid::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::logsigmoid_spv, sizeof(shaders::logsigmoid_spv), x);
 			}
@@ -99,7 +99,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& prelu::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& prelu::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::prelu_spv, sizeof(shaders::prelu_spv), x);
 			}
@@ -112,7 +112,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_relu_spv);
 			}
 
-			std::shared_ptr<tensor>& relu::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& relu::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::relu_spv, sizeof(shaders::relu_spv), x);
 			}
@@ -125,7 +125,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_relu6_spv);
 			}
 
-			std::shared_ptr<tensor>& relu6::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& relu6::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::relu6_spv, sizeof(shaders::relu6_spv), x);
 			}
@@ -138,7 +138,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& selu::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& selu::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::selu_spv, sizeof(shaders::selu_spv), x);
 			}
@@ -151,7 +151,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_sigmoid_spv);
 			}
 
-			std::shared_ptr<tensor>& sigmoid::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& sigmoid::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::sigmoid_spv, sizeof(shaders::sigmoid_spv), x);
 			}
@@ -164,7 +164,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& softplus::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& softplus::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::softplus_spv, sizeof(shaders::softplus_spv), x);
 			}
@@ -177,7 +177,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& softshrink::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& softshrink::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::softshrink_spv, sizeof(shaders::softshrink_spv), x);
 			}
@@ -190,7 +190,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& softsign::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& softsign::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::softsign_spv, sizeof(shaders::softsign_spv), x);
 			}
@@ -203,7 +203,7 @@ namespace kernel
 				bck_codeSize = sizeof(shaders::d_celu_spv);
 			}
 
-			std::shared_ptr<tensor>& tanhshrink::hook(const std::shared_ptr<tensor>& x)
+			std::shared_ptr<tensor>& tanhshrink::operator()(const std::shared_ptr<tensor>& x)
 			{
 				return layer_construct_forward(shaders::tanhshrink_spv, sizeof(shaders::tanhshrink_spv), x);
 			}
