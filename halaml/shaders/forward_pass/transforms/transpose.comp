@@ -11,12 +11,12 @@ layout (binding = 0) readonly buffer ssbA {
   float A[];
 };
 
-layout (binding = 1) writeonly buffer ssbB {
-  float B[];
+layout(binding = 1) readonly buffer Input2{
+    int stride[];
 };
 
-layout(binding = 2) readonly buffer Input2{
-    int stride[];
+layout (binding = 2) writeonly buffer ssbB {
+  float B[];
 };
 
 void main(){

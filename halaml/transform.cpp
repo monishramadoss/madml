@@ -166,7 +166,6 @@ namespace kernel
 		{
 			m_type = "transpose";
 			m_param.num_axes = static_cast<int>(order.size());
-			new_shape.resize(order.size());
 			stride.resize(order.size() * 3);
 			for (size_t i = 0; i < m_param.num_axes; ++i)
 				stride[i] = order[i];
@@ -176,33 +175,16 @@ namespace kernel
 
 		std::shared_ptr<tensor>& transpose::operator()(const std::shared_ptr<tensor>& _x)
 		{
-			x = _x;
-			for (size_t i = 0; i < m_param.num_axes; ++i)
-				new_shape[i] = x->getShape()[stride[i]];
-			old_shape = x->getShape();
-			if (m_pipeline == nullptr)
+			if (!w || !new_shape.size())
 			{
-				m_param.total = x->count();
-				computeGroupCount();
-				createShaderModule(shaders::transpose_spv, sizeof(shaders::transpose_spv));
-				createPipeline(sizeof(transpose_param));
+				new_shape.resize(stride.size());
+				for (size_t i = 0; i < m_param.num_axes; ++i)
+					new_shape[i] = _x->getShape()[stride[i]];
+				old_shape = _x->getShape();
+				stride = prepareStrides(old_shape, new_shape, stride);
+				w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 			}
-
-			y = std::make_shared<tensor>(tensor(0.0, new_shape));
-			stride = prepareStrides(old_shape, new_shape, stride);
-			tensor_stride = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3},
-				Format::kFormatInt32));
-
-			bindTensor(x, 0);
-			bindTensor(y, 1);
-			bindTensor(tensor_stride, 2);
-			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(transpose_param));
-
-			inputs.push_back(x->getId());
-			outputs.push_back(y->getId());
-			parents.push_back(get_input_id(x->getId()));
-
-			return y;
+			return layer_construct_forward(shaders::transpose_spv, sizeof(shaders::transpose_spv), x, w, Format::kFormatFp32, new_shape);
 		}
 
 		void transpose::computeGroupCount()

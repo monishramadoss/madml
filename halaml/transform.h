@@ -85,8 +85,6 @@ namespace kernel
 			std::vector<int> old_shape;
 			std::vector<int> stride;
 			std::vector<int> d_stride;
-			std::shared_ptr<tensor> tensor_stride;
-			std::shared_ptr<tensor> d_tensor_stride;
 		public:
 			transpose(std::vector<int> order);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);

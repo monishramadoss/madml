@@ -1,9 +1,7 @@
 #include <cstdlib>
 
-namespace kernel
-{
-	namespace shaders
-	{
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gradient_spv[458];
 		extern const unsigned int d_celu_spv[686];
 		extern const unsigned int d_elu_spv[494];
