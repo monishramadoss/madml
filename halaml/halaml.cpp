@@ -84,6 +84,9 @@ void test_fn()
 		auto t4 = k2(t2);
 		auto t5 = k3(t1);
 		auto t3 = k1(t4, t5);
+		PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 	}
 #endif
 

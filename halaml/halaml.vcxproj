@@ -260,12 +260,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Library\Include;$(PythonHome)\Include;C:\VulkanSDK\1.2.131.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Library\Include;$(PythonHome)\Include;C:\VulkanSDK\1.2.148.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\libs;C:\VulkanSDK\1.2.131.2\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\libs;C:\VulkanSDK\1.2.148.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -295,7 +295,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>Multithreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)Include;C:\VulkanSDK\1.2.131.2\Include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)Include;C:\VulkanSDK\1.2.148.1\Include;$(ProjectDir)include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -304,7 +304,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <IgnoreSpecificDefaultLibraries>libucrt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <AdditionalDependencies>vulkan-1.lib; ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\libs;C:\VulkanSDK\1.2.131.2\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\ProgramData\Anaconda3\libs;C:\VulkanSDK\1.2.148.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

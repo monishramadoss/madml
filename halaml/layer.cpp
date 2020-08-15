@@ -270,11 +270,6 @@ namespace layers
 
 	void Module::execute_b()
 	{
-		auto& M = get_module();
-		for (auto i = execution_order.rbegin(); i != execution_order.rend(); ++i)
-		{
-			std::cout << M[*i]->m_type << std::endl;
-		}
 	}
 
 	std::vector<Module*>& Module::get_module()
@@ -329,24 +324,23 @@ namespace layers
 		auto& M = get_module();
 		for (auto m : M)
 		{
-			/*
-			if (m->x && m->x->getId() == i)
+			//if (m->x && m->x->getId() == i)
+			//	return m;
+			//if (m->w && m->w->getId() == i)
+			//	return m;
+			//if (m->b && m->b->getId() == i)
+			//	return m;
+
+			if (m->y && m->y->getId() == i)
 				return m;
-			if (m->w && m->w->getId() == i)
-				return m;
-			if (m->b && m->b->getId() == i)
-				return m;
-			*/
-			/*if (m->y && m->y->getId() == i)
-				return m;*/
 		}
 		return nullptr;
 	}
 
-	std::vector<std::future<int>>& Module::get_futures()
-	{
-		return m_futures;
-	}
+	//std::vector<std::future<int>>& Module::get_futures()
+	//{
+	//	return m_futures;
+	//}
 
 	int Module::get_id() const
 	{

@@ -68,7 +68,7 @@ namespace layers
 		std::shared_ptr<Module> getptr();
 		std::shared_ptr<tensor> dx, dy, dw, db;
 
-		std::vector<std::future<int>>& get_futures();
+		//std::vector<std::future<int>>& get_futures();
 		int get_id() const;
 
 	protected:
@@ -96,9 +96,8 @@ namespace layers
 		static int& get_object_id();
 		void update_id();
 		virtual int set_backward() { return -1; }
-		std::vector<std::future<int>> m_futures;
 
-		std::vector<size_t> execution_order;
+		//		std::vector<std::future<int>> m_futures;
 
 		std::shared_ptr<tensor> x, y, w, b;
 
@@ -163,7 +162,7 @@ void Base_Layer<T>::set_group(int x, int y, int z)
 template <typename T>
 int Base_Layer<T>::set_backward()
 {
-	if (train() && bck_codeSize && !parents.size())
+	if (train() && bck_codeSize && parents.size() > 0)
 	{
 		auto M = get_module();
 		if (!dy)
@@ -183,13 +182,10 @@ int Base_Layer<T>::set_backward()
 			dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
 		}
 
-		if (parents.size() > 0)
-		{
-			int i = parents[0];
+		int i = parents[0];
 
-			if (i >= 0)
-				M[i]->dy = dx;
-		}
+		if (i >= 0)
+			M[i]->dy = dx;
 
 		return dy->getId();
 	}
@@ -221,8 +217,8 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	bindTensor(x, 0);
 	bindTensor(y, 1);
 
-	auto m = get_input_id(x->getId());
-	parents.push_back(!m ? m->get_id() : -1);
+	Module* m = get_input_id(x->getId());
+	parents.push_back(m ? m->get_id() : -1);
 
 	if (train() && bck_codeSize && !derivative)
 	{
@@ -230,14 +226,6 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 		derivative->m_param = m_param;
 		derivative->set_group(m_group_x, m_group_y, m_group_z);
 		set_backward();
-	}
-
-	if (!m)
-	{
-		if (!m->get_futures().size())
-		{
-			m->get_futures().back().get();
-		}
 	}
 
 	recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
@@ -278,10 +266,10 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	Module* m1 = get_input_id(x->getId());
 	Module* m2 = get_input_id(w->getId());
 
-	parents.push_back(!m1 ? m1->get_id() : -1);
-	parents.push_back(!m2 ? m2->get_id() : -1);
+	parents.push_back(m1 ? m1->get_id() : -1);
+	parents.push_back(m2 ? m2->get_id() : -1);
 
-	if (train() && bck_codeSize)
+	if (train() && bck_codeSize && !derivative)
 	{
 		derivative = new Base_Layer<T>(3, false);
 		derivative->m_param = m_param;
