@@ -22,24 +22,15 @@
     <Filter Include="Shader Files\backward">
       <UniqueIdentifier>{f0e5a78e-b278-431c-ab87-47647c2e278d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\backend">
+      <UniqueIdentifier>{ee3c5252-3050-4c4b-8363-8f3baa6213eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\backend">
+      <UniqueIdentifier>{d4ecbd7b-55f5-4f56-aeb3-1c325e116fe2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\halaml\activation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\buffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\context.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\layer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\madml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\halaml\matmul.h">
@@ -48,42 +39,39 @@
     <ClInclude Include="..\halaml\nn_layers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\halaml\spv_shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\tensor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\halaml\transform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\halaml\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="math.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="halmal.h">
+    <ClInclude Include="rnn.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rnn.h">
+    <ClInclude Include="utils.h">
+      <Filter>Header Files\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="spv_shader.h">
+      <Filter>Header Files\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="layer.h">
+      <Filter>Header Files\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="context.h">
+      <Filter>Header Files\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="buffer.h">
+      <Filter>Header Files\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="tensor.h">
+      <Filter>Header Files\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="halaml.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="activation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="buffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="context.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="halaml.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="layer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="matmul.cpp">
@@ -92,16 +80,7 @@
     <ClCompile Include="nn_layers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="spv_shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tensor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="math.cpp">
@@ -109,6 +88,27 @@
     </ClCompile>
     <ClCompile Include="rnn.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="activation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="tensor.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="spv_shader.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="layer.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="context.cpp">
+      <Filter>Source Files\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="buffer.cpp">
+      <Filter>Source Files\backend</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

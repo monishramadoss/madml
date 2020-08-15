@@ -4,7 +4,7 @@ VisualStudioVersion = 16.0.29509.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "madml", "madml\madml.pyproj", "{18DDE651-13EF-4633-BDE8-C6AA2F1F5EB3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "halaml", "halaml\halaml.vcxproj", "{6B0875F4-A651-4318-AABA-E48BF5505EF9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backend", "halaml\halaml.vcxproj", "{6B0875F4-A651-4318-AABA-E48BF5505EF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

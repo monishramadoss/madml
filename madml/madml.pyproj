@@ -28,7 +28,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\halaml\halaml.vcxproj">
-      <Name>halaml</Name>
+      <Name>backend</Name>
       <Project>{6b0875f4-a651-4318-aaba-e48bf5505ef9}</Project>
       <Private>True</Private>
     </ProjectReference>

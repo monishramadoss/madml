@@ -1,16 +1,13 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 
-namespace kernel
+class context
 {
-	class context
-	{
-	public:
-		context();
-		~context();
-	};
+public:
+	context();
+	~context();
+};
 
-	void createContext();
-}
+void createContext();
 
 #endif

@@ -5,7 +5,7 @@
 #include <chrono>
 #include <future>
 
-#include "halmal.h"
+#include "halaml.h"
 
 using namespace std::chrono;
 
@@ -58,9 +58,9 @@ void test_fn()
 	std::cout << "testing trans_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2, 3, 4 };
-		char* dat = kernel::init::normal_distribution_init(shape_x, 20, 2);
-		auto t1 = std::make_shared < kernel::tensor>(kernel::tensor(dat, shape_x));
-		auto k1 = kernel::layers::transpose(std::vector<int>{ 1, 2, 0});
+		char* dat = init::normal_distribution_init(shape_x, 20, 2);
+		auto t1 = std::make_shared < tensor>(tensor(dat, shape_x));
+		auto k1 = layers::transpose(std::vector<int>{ 1, 2, 0});
 		auto t2 = k1.operator()(t1);
 
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
@@ -75,11 +75,11 @@ void test_fn()
 	std::cout << "testing add_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2000 };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(-6.0, shape_x));
-		auto t2 = std::make_shared<kernel::tensor>(kernel::tensor(-1.0, shape_x));
-		auto k1 = kernel::layers::math::add();
-		auto k2 = kernel::layers::math::abs();
-		auto k3 = kernel::layers::math::abs();
+		auto t1 = std::make_shared<tensor>(tensor(-6.0, shape_x));
+		auto t2 = std::make_shared<tensor>(tensor(-1.0, shape_x));
+		auto k1 = layers::math::add();
+		auto k2 = layers::math::abs();
+		auto k3 = layers::math::abs();
 
 		auto t4 = k2(t2);
 		auto t5 = k3(t1);
@@ -94,9 +94,9 @@ void test_fn()
 		const int K = 240;
 		const int N = 240;
 		const std::vector<int> shape_x{ M, K };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, shape_x));
-		auto layer = new kernel::layers::nn::dense(N, false);
-		auto layer2 = new kernel::layers::nn::dense(N, false);
+		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
+		auto layer = new layers::nn::dense(N, false);
+		auto layer2 = new layers::nn::dense(N, false);
 		auto t3 = layer->operator()(t1);
 		auto t4 = layer2->operator()(t3);
 
@@ -113,9 +113,9 @@ void test_fn()
 	{
 		//cdhw
 		std::vector<int> shape_x{ 3, 1, 128, 128 };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1.0, shape_x));
-		auto cnn_layer_1 = kernel::layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
-		auto cnn_layer_2 = kernel::layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
+		auto cnn_layer_1 = layers::nn::conv(8, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
+		auto cnn_layer_2 = layers::nn::convTranspose(3, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 
 		auto t3 = cnn_layer_1.operator()(t1);
 		auto t4 = cnn_layer_2.operator()(t3);
@@ -135,8 +135,8 @@ void test_fn()
 		int num_layers = 4;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
-		auto rnn_layer_1 = kernel::layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
+		auto t1 = std::make_shared<tensor>(tensor(1, shape_x));
+		auto rnn_layer_1 = layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1.operator()(t1);
 
 		auto t3 = std::get<0>(tup);
@@ -158,8 +158,8 @@ void test_fn()
 		int num_layers = 2;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
-		auto rnn_layer_1 = kernel::layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
+		auto t1 = std::make_shared<tensor>(tensor(1, shape_x));
+		auto rnn_layer_1 = layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
 		auto tup = rnn_layer_1.operator()(t1);
 
 		auto t3 = std::get<0>(tup);
@@ -184,8 +184,8 @@ void test_fn()
 		int num_layers = 2;
 		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
-		auto t1 = std::make_shared<kernel::tensor>(kernel::tensor(1, shape_x));
-		auto rnn_layer_1 = kernel::layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
+		auto t1 = std::make_shared<tensor>(tensor(1, shape_x));
+		auto rnn_layer_1 = layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
 		auto tup = rnn_layer_1.operator()(t1);
 
 		auto t3 = std::get<0>(tup);
@@ -203,15 +203,15 @@ void test_fn()
 #ifdef TEST_MNIST
 	std::cout << "testing mnist" << std::endl;
 	{
-		auto l1 = kernel::layers::nn::dense(64, true);
-		auto l2 = kernel::layers::activation::relu();
-		auto l3 = kernel::layers::nn::dense(64, true);
-		auto l4 = kernel::layers::activation::relu();
-		auto l5 = kernel::layers::nn::dense(10, true);
-		auto l6 = kernel::layers::activation::relu();
-		auto l7 = kernel::layers::math::add();
+		auto l1 = layers::nn::dense(64, true);
+		auto l2 = layers::activation::relu();
+		auto l3 = layers::nn::dense(64, true);
+		auto l4 = layers::activation::relu();
+		auto l5 = layers::nn::dense(10, true);
+		auto l6 = layers::activation::relu();
+		auto l7 = layers::math::add();
 
-		auto t0 = std::make_shared<kernel::tensor>(kernel::tensor(-0.5, std::vector<int>{1, 784}));
+		auto t0 = std::make_shared<tensor>(tensor(-0.5, std::vector<int>{1, 784}));
 		auto t1 = l1.operator()(t0);
 		auto t2 = l2.operator()(t1);
 		auto t3 = l3.operator()(t2);

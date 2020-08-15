@@ -29,7 +29,7 @@ for root, dirs, files in os.walk("./"):
         if file.endswith(".comp"):
              lst.append(os.path.join(root, file))
 
-outfile_str = ["#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n"]
+outfile_str = ['#include "pch.h"\n#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n']
 bin_code = list()
 
 for i in range(0, len(lst)):

@@ -17,24 +17,20 @@
 #include "spv_shader.h"
 #endif
 
-#include "madml.h"
+extern VkPhysicalDevice kPhysicalDevice;
+extern VkDevice kDevice;
+extern VkQueue kQueue;
+extern VkCommandPool kCmdPool;
+extern std::mutex kContextMtx;
 
-namespace kernel
+/*enum ShapeIdx
 {
-	extern VkPhysicalDevice kPhysicalDevice;
-	extern VkDevice kDevice;
-	extern VkQueue kQueue;
-	extern VkCommandPool kCmdPool;
-	extern std::mutex kContextMtx;
-
-	/*enum ShapeIdx
-	{
-		kShapeIdxBatch = 0,
-		kShapeIdxChannel,
-		kShapeIdxDepth,
-		kShapeIdxHeight,
-		kShapeIdxWidth,
-	};*/
+	kShapeIdxBatch = 0,
+	kShapeIdxChannel,
+	kShapeIdxDepth,
+	kShapeIdxHeight,
+	kShapeIdxWidth,
+};*/
 
 #define VK_CHECK_RESULT(f) \
 { \
@@ -43,5 +39,5 @@ namespace kernel
 			std::cout << "VULKAN KERNEL ERROR: " << f; \
 		} \
 }
-}
+
 #endif

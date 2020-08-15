@@ -20,20 +20,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\halaml\activation.h" />
-    <ClInclude Include="..\halaml\buffer.h" />
-    <ClInclude Include="..\halaml\common.h" />
-    <ClInclude Include="..\halaml\context.h" />
-    <ClInclude Include="..\halaml\layer.h" />
-    <ClInclude Include="..\halaml\madml.h" />
     <ClInclude Include="..\halaml\matmul.h" />
     <ClInclude Include="..\halaml\nn_layers.h" />
-    <ClInclude Include="..\halaml\spv_shader.h" />
-    <ClInclude Include="..\halaml\tensor.h" />
     <ClInclude Include="..\halaml\transform.h" />
-    <ClInclude Include="..\halaml\utils.h" />
-    <ClInclude Include="halmal.h" />
+    <ClInclude Include="buffer.h" />
+    <ClInclude Include="context.h" />
+    <ClInclude Include="halaml.h" />
+    <ClInclude Include="layer.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="rnn.h" />
+    <ClInclude Include="spv_shader.h" />
+    <ClInclude Include="tensor.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="activation.cpp" />
@@ -141,7 +139,7 @@
     <RootNamespace>halaml</RootNamespace>
     <PythonVersion>3.7</PythonVersion>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>halaml</ProjectName>
+    <ProjectName>backend</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -261,7 +259,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultithreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(PythonHome)\Library\Include;$(PythonHome)\Include;C:\VulkanSDK\1.2.131.2\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
     </ClCompile>

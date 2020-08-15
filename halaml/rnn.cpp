@@ -6,8 +6,6 @@
 #define LOCAL_SZ_Y 64
 #define MAX_COMPUTE_WORK_GROUP_COUNT 65535
 
-namespace kernel
-{
 	namespace layers
 	{
 		namespace rnn
@@ -49,7 +47,7 @@ namespace kernel
 				if (m_pipeline == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::rnnCell_spv, sizeof(shaders::rnnCell_spv));
+					createShaderModule(kernel::shaders::rnnCell_spv, sizeof(kernel::shaders::rnnCell_spv));
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
@@ -64,19 +62,10 @@ namespace kernel
 				bindTensor(hn, 8);
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
+				runCommandBuffer();
 
-				inputs.push_back(x->getId());
-				inputs.push_back(h->getId());
-				inputs.push_back(U->getId());
-				inputs.push_back(W->getId());
-				inputs.push_back(V->getId());
-				inputs.push_back(b1->getId());
-				inputs.push_back(b2->getId());
-				outputs.push_back(y->getId());
-				outputs.push_back(hn->getId());
-
-				parents.push_back(get_input_id(x->getId()));
-				parents.push_back(get_input_id(h->getId()));
+				auto m1 = get_input_id(x->getId());
+				auto m2 = get_input_id(h->getId());
 			}
 
 			LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
@@ -118,7 +107,7 @@ namespace kernel
 				if (m_pipeline == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::lstmCell_spv, sizeof(shaders::lstmCell_spv));
+					createShaderModule(kernel::shaders::lstmCell_spv, sizeof(kernel::shaders::lstmCell_spv));
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
@@ -135,20 +124,11 @@ namespace kernel
 				bindTensor(cn, 10);
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
+				runCommandBuffer();
 
-				inputs.push_back(x->getId());
-				inputs.push_back(h->getId());
-				inputs.push_back(c->getId());
-				inputs.push_back(U->getId());
-				inputs.push_back(W->getId());
-				inputs.push_back(V->getId());
-				inputs.push_back(b1->getId());
-				inputs.push_back(b2->getId());
-				outputs.push_back(y->getId());
-				outputs.push_back(hn->getId());
-				outputs.push_back(cn->getId());
-				parents.push_back(get_input_id(x->getId()));
-				parents.push_back(get_input_id(h->getId()));
+				auto m1 = get_input_id(x->getId());
+				auto m2 = get_input_id(h->getId());
+				auto m3 = get_input_id(c->getId());
 			}
 
 			GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
@@ -188,7 +168,7 @@ namespace kernel
 				if (m_pipeline == nullptr)
 				{
 					computeGroupCount();
-					createShaderModule(shaders::gruCell_spv, sizeof(shaders::gruCell_spv));
+					createShaderModule(kernel::shaders::gruCell_spv, sizeof(kernel::shaders::gruCell_spv));
 					createPipeline(sizeof(RNN_cell_param));
 				}
 
@@ -203,18 +183,10 @@ namespace kernel
 				bindTensor(hn, 8);
 
 				recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
+				runCommandBuffer();
 
-				inputs.push_back(x->getId());
-				inputs.push_back(h->getId());
-				inputs.push_back(U->getId());
-				inputs.push_back(W->getId());
-				inputs.push_back(V->getId());
-				inputs.push_back(b1->getId());
-				inputs.push_back(b2->getId());
-				outputs.push_back(y->getId());
-				parents.push_back(get_input_id(x->getId()));
-				parents.push_back(get_input_id(h->getId()));
+				auto m1 = get_input_id(x->getId());
+				auto m2 = get_input_id(h->getId());
 			}
 		}
 	}
-}
