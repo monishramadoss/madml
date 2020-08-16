@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\halaml\activation.h" />
-    <ClInclude Include="..\halaml\matmul.h" />
-    <ClInclude Include="..\halaml\nn_layers.h" />
-    <ClInclude Include="..\halaml\transform.h" />
+    <ClInclude Include="activation.h" />
+    <ClInclude Include="matmul.h" />
+    <ClInclude Include="nn_layers.h" />
+    <ClInclude Include="transform.h" />
     <ClInclude Include="buffer.h" />
     <ClInclude Include="context.h" />
     <ClInclude Include="halaml.h" />
@@ -136,7 +136,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6B0875F4-A651-4318-AABA-E48BF5505EF9}</ProjectGuid>
-    <RootNamespace>halaml</RootNamespace>
+    <RootNamespace>backend</RootNamespace>
     <PythonVersion>3.7</PythonVersion>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>backend</ProjectName>
@@ -211,34 +211,34 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <TargetName>halaml$(PythonDebugSuffix)</TargetName>
+    <TargetName>backend$(PythonDebugSuffix)</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonDExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import halaml'); import halaml"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import backend'); import backend"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <TargetName>halaml</TargetName>
+    <TargetName>backend</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import halaml'); import halaml"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import backend'); import backend"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>halaml$(PythonDebugSuffix)</TargetName>
+    <TargetName>backend$(PythonDebugSuffix)</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonDExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import halaml'); import halaml"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import backend'); import backend"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>halaml</TargetName>
+    <TargetName>backend</TargetName>
     <TargetExt>.pyd</TargetExt>
     <LocalDebuggerCommand>$(PythonExe)</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import halaml'); import halaml"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-i -c "print('&gt;&gt;&gt; import backend'); import backend"</LocalDebuggerCommandArguments>
     <LocalDebuggerEnvironment>PYTHONPATH=$(OutDir)</LocalDebuggerEnvironment>
     <DebuggerFlavor>$(DefaultDebuggerFlavor)</DebuggerFlavor>
   </PropertyGroup>

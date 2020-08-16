@@ -30,16 +30,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\halaml\activation.h">
+    <ClInclude Include="activation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\halaml\matmul.h">
+    <ClInclude Include="matmul.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\halaml\nn_layers.h">
+    <ClInclude Include="nn_layers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\halaml\transform.h">
+    <ClInclude Include="transform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="math.h">
@@ -66,12 +66,12 @@
     <ClInclude Include="tensor.h">
       <Filter>Header Files\backend</Filter>
     </ClInclude>
-    <ClInclude Include="halaml.h">
+    <ClInclude Include="backend.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="halaml.cpp">
+    <ClCompile Include="backend.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="matmul.cpp">
