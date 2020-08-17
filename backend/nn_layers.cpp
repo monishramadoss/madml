@@ -26,18 +26,21 @@ namespace layers
 			this->x = x;
 			set_sub_graph();
 			auto input_shape = x->getShape();
-			w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[1], m_size}));
+			if (!w)
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[2], m_size}));
 			y = mm->operator()(x, w);
 
 			if (USE_BIAS)
 			{
-				b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-				sub_graph.push_back(bias);
+				if (!b)
+				{
+					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+				}
 				y = bias->operator()(y, b);
 			}
 
 			unset_sub_graph();
-			auto m = get_input_id(x->getId());
+			m1 = get_input_id(x->getId());
 			return y;
 
 			// MxK KxN = MxN
@@ -61,27 +64,31 @@ namespace layers
 			x = x_;
 			set_sub_graph();
 			auto input_shape = x->getShape();
+
+			int channels = input_shape[1];
+			batch_size = input_shape[0];
 			if (!kernel)
-				kernel = new vol2col(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
-			sub_graph.push_back(kernel);
-			sub_graph.push_back(mm);
-			w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
-				input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
-			}));
-			ir_vol2col = kernel->operator()(x); //27 9
-			y = mm->operator()(w, ir_vol2col);
+				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
+			if (!w)
+			{
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
+					channels* m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
+				}));
+			}
+
+			t1 = kernel->operator()(x); //27 9
+			y = mm->operator()(w, t1);
 
 			if (USE_BIAS)
 			{
 				if (!b)
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-				sub_graph.push_back(bias);
 				y = bias->operator()(y, b);
 			}
 
 			auto out = kernel->output_shape();
-			y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
-			auto m = get_input_id(x->getId());
+			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
+			m1 = get_input_id(x->getId());
 			unset_sub_graph();
 			return y;
 		}
@@ -106,28 +113,29 @@ namespace layers
 			x = x_;
 			set_sub_graph();
 			auto input_shape = x->getShape();
-			kernel = new col2vol(input_shape[0], m_kernel_size, m_padding, m_stride, m_dilation);
-			sub_graph.push_back(kernel);
-			sub_graph.push_back(mm);
+			int channels = input_shape[1];
+			kernel = new col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation);
 			if (!w)
+			{
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
-					input_shape[0] * m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
-			}));
-			ir_col2vol = kernel->operator()(x);
-			y = mm->operator()(w, ir_col2vol);
+					channels* m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
+				}));
+			}
+
+			t1 = kernel->operator()(x);
+			y = mm->operator()(w, t1);
 
 			if (USE_BIAS)
 			{
 				if (!b)
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-				sub_graph.push_back(bias);
 				y = bias->operator()(y, b);
 			}
 
 			auto out = kernel->output_shape();
-			y->reshape(std::vector<int>{m_num_filters, out[0], out[1], out[2]}); //8,9
+			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
 			unset_sub_graph();
-			auto m = get_input_id(x->getId());
+			m1 = get_input_id(x->getId());
 			return y;
 		}
 
@@ -170,7 +178,6 @@ namespace layers
 					set_sub_graph();
 					for (int i = 0; i < seq_length; ++i)
 						cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
-					sub_graph.insert(sub_graph.end(), cells.begin(), cells.end());
 					unset_sub_graph();
 				}
 			}
@@ -282,7 +289,6 @@ namespace layers
 					set_sub_graph();
 					for (int i = 0; i < seq_length; ++i)
 						cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
-					sub_graph.insert(sub_graph.end(), cells.begin(), cells.end());
 					unset_sub_graph();
 				}
 			}
@@ -401,7 +407,6 @@ namespace layers
 					set_sub_graph();
 					for (int i = 0; i < seq_length; ++i)
 						cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
-					sub_graph.insert(sub_graph.end(), cells.begin(), cells.end());
 					unset_sub_graph();
 				}
 			}

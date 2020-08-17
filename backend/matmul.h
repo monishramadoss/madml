@@ -1,7 +1,7 @@
 #ifndef MATMUL_H
 #define MATMUL_H
 
-#include "halaml.h"
+#include "backend.h"
 #include "layer.h"
 
 namespace layers
@@ -9,6 +9,7 @@ namespace layers
 	struct matmul_param
 	{
 		int total;
+		int batchsize;
 		int m;
 		int n;
 		int k;

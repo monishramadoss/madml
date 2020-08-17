@@ -43,7 +43,7 @@ namespace layers
 			const int depth = x->getShape()[x->getShape().size() - 3];
 			const int height = x->getShape()[x->getShape().size() - 2];
 			const int width = x->getShape()[x->getShape().size() - 1];
-			m_param.batchsize = 1;
+			m_param.batchsize = x->getShape()[0];
 			m_param.depth_vol = depth;
 			m_param.height_vol = height;
 			m_param.width_vol = width;

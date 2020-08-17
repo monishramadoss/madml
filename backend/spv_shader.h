@@ -1,7 +1,9 @@
 #include <cstdlib>
 
-namespace kernel { 
-	namespace shaders {
+namespace kernel
+{
+	namespace shaders
+	{
 		extern const unsigned int gradient_spv[458];
 		extern const unsigned int d_celu_spv[686];
 		extern const unsigned int d_elu_spv[494];
@@ -27,7 +29,7 @@ namespace kernel {
 		extern const unsigned int d_sinh_spv[404];
 		extern const unsigned int d_tan_spv[424];
 		extern const unsigned int d_tanh_spv[438];
-		extern const unsigned int gemm_spv[865];
+		extern const unsigned int gemm_spv[1050];
 		extern const unsigned int celu_spv[579];
 		extern const unsigned int elu_spv[513];
 		extern const unsigned int gelu_spv[516];
@@ -59,7 +61,6 @@ namespace kernel {
 		extern const unsigned int pow_spv[468];
 		extern const unsigned int sub_spv[466];
 		extern const unsigned int xor_spv[479];
-		extern const unsigned int MSE_spv[552];
 		extern const unsigned int gruCell_spv[2310];
 		extern const unsigned int lstmCell_spv[2659];
 		extern const unsigned int rnnCell_spv[1578];
@@ -86,5 +87,6 @@ namespace kernel {
 		extern const unsigned int sinh_spv[404];
 		extern const unsigned int tan_spv[404];
 		extern const unsigned int tanh_spv[404];
+		extern const unsigned int MSE_spv[606];
 	}
 }

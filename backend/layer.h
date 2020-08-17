@@ -1,6 +1,6 @@
 #ifndef LAYER_H
 #define LAYER_H
-#include "halaml.h"
+#include "backend.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -98,8 +98,9 @@ namespace layers
 		virtual int set_backward() { return -1; }
 
 		//		std::vector<std::future<int>> m_futures;
-
-		std::shared_ptr<tensor> x, y, w, b;
+		Module* m1;
+		Module* m2;
+		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3;
 
 	private:
 
@@ -217,8 +218,8 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	bindTensor(x, 0);
 	bindTensor(y, 1);
 
-	Module* m = get_input_id(x->getId());
-	parents.push_back(m ? m->get_id() : -1);
+	m1 = get_input_id(x->getId());
+	parents.push_back(m1 ? m1->get_id() : -1);
 
 	if (train() && bck_codeSize && !derivative)
 	{
@@ -263,8 +264,8 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	bindTensor(w, 1);
 	bindTensor(y, 2);
 
-	Module* m1 = get_input_id(x->getId());
-	Module* m2 = get_input_id(w->getId());
+	m1 = get_input_id(x->getId());
+	m2 = get_input_id(w->getId());
 
 	parents.push_back(m1 ? m1->get_id() : -1);
 	parents.push_back(m2 ? m2->get_id() : -1);

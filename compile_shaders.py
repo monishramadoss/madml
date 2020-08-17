@@ -12,17 +12,17 @@ null_out = ''
 if sys.platform.find('win32') != -1:
     cmd_remove = 'del'
     null_out = ' >>nul 2>nul'
-    dir = os.path.join('\\'.join(__file__.split('\\')[:-1]), 'halaml', 'shaders')
+    dir = os.path.join('\\'.join(__file__.split('\\')[:-1]), 'backend', 'shaders')
     print(dir)
 
 elif sys.platform.find('linux') != -1:
     cmd_remove = 'rm'
     null_out = ' > /dev/null 2>&1'
-    dir = os.path.join('/'.join(__file__.split('/')[:-1]), 'halaml', 'shaders')
+    dir = os.path.join('/'.join(__file__.split('/')[:-1]), 'backend', 'shaders')
     print(dir)
 
-headfile = open('./halaml/spv_shader.h', 'w+')
-cpp_file = open('./halaml/spv_shader.cpp', 'w+')
+headfile = open('./backend/spv_shader.h', 'w+')
+cpp_file = open('./backend/spv_shader.cpp', 'w+')
 lst = list()
 for root, dirs, files in os.walk("./"):
     for file in files:

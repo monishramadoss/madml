@@ -8,7 +8,7 @@ namespace layers
 {
 	namespace activation
 	{
-		celu::celu(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		celu::celu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "celu";
 			m_param.alpha = alpha;
@@ -22,7 +22,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::celu_spv, sizeof(kernel::shaders::celu_spv), x, alpha);
 		}
 
-		elu::elu(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		elu::elu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "elu";
 			m_param.alpha = alpha;
@@ -36,7 +36,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::elu_spv, sizeof(kernel::shaders::elu_spv), x);
 		}
 
-		hardshrink::hardshrink(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		hardshrink::hardshrink(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "hardshrink";
 			m_param.alpha = alpha;
@@ -63,7 +63,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::hardshrink_spv, sizeof(kernel::shaders::hardshrink_spv), x);
 		}
 
-		leakyrelu::leakyrelu(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		leakyrelu::leakyrelu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "leakyrelu";
 			m_param.alpha = alpha;
@@ -76,7 +76,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::leakyrelu_spv, sizeof(kernel::shaders::leakyrelu_spv), x);
 		}
 
-		logsigmoid::logsigmoid(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		logsigmoid::logsigmoid(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "logsigmoid";
 			m_param.alpha = alpha;
@@ -89,7 +89,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::logsigmoid_spv, sizeof(kernel::shaders::logsigmoid_spv), x);
 		}
 
-		prelu::prelu(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		prelu::prelu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "prelu";
 			m_param.alpha = alpha;
@@ -102,7 +102,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::prelu_spv, sizeof(kernel::shaders::prelu_spv), x);
 		}
 
-		relu::relu(bool in_place) : Base_Layer<activation_param>(in_place)
+		relu::relu(bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "relu";
 			m_param.alpha = 0;
@@ -115,7 +115,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::relu_spv, sizeof(kernel::shaders::relu_spv), x);
 		}
 
-		relu6::relu6(bool in_place) : Base_Layer<activation_param>(in_place)
+		relu6::relu6(bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "relu6";
 			m_param.alpha = 0;
@@ -128,7 +128,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::relu6_spv, sizeof(kernel::shaders::relu6_spv), x);
 		}
 
-		selu::selu(bool in_place) : Base_Layer<activation_param>(in_place)
+		selu::selu(bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "selu";
 			m_param.alpha = 0;
@@ -141,7 +141,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::selu_spv, sizeof(kernel::shaders::selu_spv), x);
 		}
 
-		sigmoid::sigmoid(bool in_place) : Base_Layer<activation_param>(in_place)
+		sigmoid::sigmoid(bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "sigmoid";
 			m_param.alpha = 0;
@@ -154,7 +154,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::sigmoid_spv, sizeof(kernel::shaders::sigmoid_spv), x);
 		}
 
-		softplus::softplus(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		softplus::softplus(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "softplus";
 			m_param.alpha = alpha;
@@ -167,7 +167,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::softplus_spv, sizeof(kernel::shaders::softplus_spv), x);
 		}
 
-		softshrink::softshrink(float alpha, bool in_place) : Base_Layer<activation_param>(in_place)
+		softshrink::softshrink(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "softshrink";
 			m_param.alpha = alpha;
@@ -180,7 +180,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::softshrink_spv, sizeof(kernel::shaders::softshrink_spv), x);
 		}
 
-		softsign::softsign(bool in_place) : Base_Layer<activation_param>(in_place)
+		softsign::softsign(bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "softsign";
 			m_param.alpha = 0;
@@ -193,7 +193,7 @@ namespace layers
 			return layer_construct_forward(kernel::shaders::softsign_spv, sizeof(kernel::shaders::softsign_spv), x);
 		}
 
-		tanhshrink::tanhshrink(bool in_place) : Base_Layer<activation_param>(in_place)
+		tanhshrink::tanhshrink(bool in_place) : Base_Layer<activation_param>(2, in_place)
 		{
 			m_type = "tanhshrink";
 			m_param.alpha = 0;

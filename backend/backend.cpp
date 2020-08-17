@@ -5,10 +5,17 @@
 #include <chrono>
 #include <future>
 
-#include "halaml.h"
+#include "backend.h"
 
 using namespace std::chrono;
 
+//#define TEST_TRANS
+//#define TEST_MATH
+
+//#define TEST_NN
+//#define TEST_CNN
+//#define TEST_RNN
+#define TEST_MNIST
 void PrintDiffer(float* data, int size)
 {
 	std::map<float, int> diff_freq;
@@ -43,15 +50,6 @@ void PrintMatrix(float* data, std::vector<int> shape)
 		std::cout << "]" << std::endl;
 	}
 }
-
-//#define TEST_TRANS
-#define TEST_MATH
-
-//#define TEST_NN
-//#define TEST_CNN
-//#define TEST_RNN
-//#define TEST_MNIST
-
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -214,14 +212,14 @@ void test_fn()
 		auto l6 = layers::activation::relu();
 		auto l7 = layers::math::add();
 
-		auto t0 = std::make_shared<tensor>(tensor(-0.5, std::vector<int>{1, 784}));
-		auto t1 = l1.operator()(t0);
-		auto t2 = l2.operator()(t1);
-		auto t3 = l3.operator()(t2);
-		auto t4 = l4.operator()(t3);
-		auto tx = l7.operator()(t2, t4);
-		auto t5 = l5.operator()(tx);
-		auto t6 = l6.operator()(t5);
+		auto t0 = std::make_shared<tensor>(tensor(-0.5, std::vector<int>{3, 1, 784}));
+		auto t1 = l1(t0);
+		auto t2 = l2(t1);
+		auto t3 = l3(t2);
+		auto t4 = l4(t3);
+		auto tx = l7(t2, t4);
+		auto t5 = l5(tx);
+		auto t6 = l6(t5);
 		l6.execute();
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 	}
@@ -229,7 +227,7 @@ void test_fn()
 #endif
 }
 
-PYBIND11_MODULE(halaml, m)
+PYBIND11_MODULE(backend, m)
 {
 	m.doc() = "pybind11 testing pipeline"; // optional module docstring
 	m.def("test", &test_fn, "A function which tests ml pipeline");

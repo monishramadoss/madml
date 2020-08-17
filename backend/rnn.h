@@ -1,7 +1,7 @@
 #ifndef RNN_H
 #define RNN_H
 #include <vector>
-#include "halaml.h"
+#include "backend.h"
 #include "layer.h"
 
 namespace layers
