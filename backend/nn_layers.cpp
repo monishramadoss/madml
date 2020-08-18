@@ -57,16 +57,21 @@ namespace layers
 			update_id();
 			add_module(this);
 			requires_sub_graph = true;
+			mm = new matmul();
+			if (use_bias)
+				bias = new math::add();
 		}
 
 		std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x_)
 		{
+			int channels;
 			x = x_;
 			set_sub_graph();
 			auto input_shape = x->getShape();
 
-			int channels = input_shape[1];
+			channels = input_shape[1];
 			batch_size = input_shape[0];
+
 			if (!kernel)
 				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
 			if (!w)

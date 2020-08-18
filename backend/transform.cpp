@@ -55,7 +55,7 @@ namespace layers
 				stride_w + 1;
 		}
 		const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
-		const int output_length = m_param.depth_col * m_param.height_col * m_param.width_col;
+		const int output_length = m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col;
 		y = layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
 		y->reshape(std::vector<int>{n_out_plane, output_length});
 		return y;
