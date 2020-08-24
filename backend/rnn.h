@@ -4,6 +4,9 @@
 #include "backend.h"
 #include "layer.h"
 
+constexpr int local_sz_x_rnn = 32;
+constexpr int local_sz_y_rnn = 32;
+
 namespace layers
 {
 	namespace rnn

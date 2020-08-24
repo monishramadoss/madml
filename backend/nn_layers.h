@@ -14,10 +14,8 @@ namespace layers
 		public:
 			dense(int size, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
-
-			void update_weight() override
-			{
-			};
+			int set_backward() override;
+			void update_weight() override;
 
 		private:
 			int m_size;
@@ -38,7 +36,6 @@ namespace layers
 			};
 
 		private:
-			std::shared_ptr<tensor> ir_vol2col;
 			int m_num_filters;
 			dhw m_kernel_size, m_stride, m_padding, m_dilation;
 			bool USE_BIAS;
@@ -46,13 +43,13 @@ namespace layers
 			matmul* mm;
 			vol2col* kernel;
 			math::add* bias;
+			transpose* trans;
 		};
 
 		class convTranspose : public Module
 		{
 		public:
-			convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-				bool use_bias);
+			convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
 
 			void update_weight() override
@@ -60,7 +57,6 @@ namespace layers
 			};
 
 		private:
-			std::shared_ptr<tensor> ir_col2vol;
 			int m_num_filters;
 			dhw m_kernel_size, m_stride, m_padding, m_dilation;
 			bool USE_BIAS;
@@ -68,6 +64,7 @@ namespace layers
 			matmul* mm;
 			col2vol* kernel;
 			math::add* bias;
+			transpose* trans;
 		};
 
 		//TODO RNN needs a dynamc seq

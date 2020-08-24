@@ -1,8 +1,6 @@
 #include "common.h"
 #include "utils.h"
 #include "activation.h"
-#define LOCAL_SZ_X 1024
-#define MAX_COMPUTE_WORK_GROUP_COUNT 65535
 
 namespace layers
 {

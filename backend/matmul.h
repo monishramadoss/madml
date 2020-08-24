@@ -22,6 +22,7 @@ namespace layers
 	public:
 		matmul();
 		std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
+		int set_backward() override;
 	};
 }
 

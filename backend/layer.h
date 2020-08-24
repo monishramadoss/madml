@@ -5,8 +5,12 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <cstdarg>
 #include <future>
 #include <list>
+
+constexpr int local_sz_x = 1024;
+constexpr int max_compute_work_group_count = 1024;
 
 namespace layers
 {
@@ -60,17 +64,13 @@ namespace layers
 	{
 	public:
 		virtual void update_weight();
-		void execute();
-		void execute_b();
 
-		std::vector<int> parents;
-		std::vector<size_t> children;
 		std::shared_ptr<Module> getptr();
 		std::shared_ptr<tensor> dx, dy, dw, db;
+		virtual int set_backward() { return -1; }
 
 		//std::vector<std::future<int>>& get_futures();
 		int get_id() const;
-
 	protected:
 		std::string m_type;
 		bool requires_sub_graph = false;
@@ -89,13 +89,9 @@ namespace layers
 
 		Module* get_input_id(size_t i);
 
-		int batch_size = 0;
-		float lr = 0.0001f;
-
 		int id = 0;
 		static int& get_object_id();
 		void update_id();
-		virtual int set_backward() { return -1; }
 
 		//		std::vector<std::future<int>> m_futures;
 		Module* m1;
@@ -113,6 +109,7 @@ class Base_Layer : public layer, public layers::Module
 {
 public:
 	Base_Layer(int forward_buffers, bool in_place = false);
+	int set_backward() override;
 
 protected:
 	const uint32_t* bck_shader;
@@ -122,8 +119,8 @@ protected:
 	bool m_in_place;
 	T m_param;
 	void computeGroupCount() override;
+	bool group_set = false;
 	void set_group(int x, int y, int z);
-	int set_backward() override;
 
 	std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
 		const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
@@ -150,6 +147,16 @@ Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_pl
 template <typename T>
 void Base_Layer<T>::computeGroupCount()
 {
+	if (!group_set)
+	{
+		size_t sz = m_param.total;
+		int n = local_sz_x;
+		m_group_x = ((sz + n - 1) & -n) / n;
+		if (m_group_x > max_compute_work_group_count)
+			m_group_x = max_compute_work_group_count;
+	}
+	m_group_y = 1;
+	m_group_z = 1;
 }
 
 template <typename T>
@@ -158,39 +165,26 @@ void Base_Layer<T>::set_group(int x, int y, int z)
 	m_group_x = x;
 	m_group_y = y;
 	m_group_z = z;
+	group_set = true;
 }
 
 template <typename T>
 int Base_Layer<T>::set_backward()
 {
-	if (train() && bck_codeSize && parents.size() > 0)
+	if (!dy)
+		dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
+	if (!dw && w)
+		dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
+
+	if (train() && bck_codeSize && m2)
 	{
-		auto M = get_module();
-		if (!dy)
-			dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
-
-		if (parents.size() > 1)
-		{
-			int j = parents[1];
-			if (!dw)
-				dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
-			if (j > 0)
-				M[j]->dy = dw;
-			dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
-		}
-		else
-		{
-			dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
-		}
-
-		int i = parents[0];
-
-		if (i >= 0)
-			M[i]->dy = dx;
-
-		return dy->getId();
+		dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
+		m2->dy = dw;
 	}
-	return -2;
+	else
+		dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
+	m1->dy = dx;
+	return dy->getId();
 }
 
 template <typename T>
@@ -219,14 +213,12 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	bindTensor(y, 1);
 
 	m1 = get_input_id(x->getId());
-	parents.push_back(m1 ? m1->get_id() : -1);
 
-	if (train() && bck_codeSize && !derivative)
+	if (train() && bck_codeSize && !derivative && sub_graph_bit())
 	{
 		derivative = new Base_Layer<T>(2, false);
 		derivative->m_param = m_param;
 		derivative->set_group(m_group_x, m_group_y, m_group_z);
-		set_backward();
 	}
 
 	recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));
@@ -267,15 +259,11 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	m1 = get_input_id(x->getId());
 	m2 = get_input_id(w->getId());
 
-	parents.push_back(m1 ? m1->get_id() : -1);
-	parents.push_back(m2 ? m2->get_id() : -1);
-
-	if (train() && bck_codeSize && !derivative)
+	if (train() && bck_codeSize && !derivative && sub_graph_bit())
 	{
 		derivative = new Base_Layer<T>(3, false);
 		derivative->m_param = m_param;
 		derivative->set_group(m_group_x, m_group_y, m_group_z);
-		set_backward();
 	}
 
 	recordCommandBuffer(static_cast<void*>(&m_param), sizeof(T));

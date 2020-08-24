@@ -29,7 +29,7 @@ for root, dirs, files in os.walk("./"):
         if file.endswith(".comp"):
              lst.append(os.path.join(root, file))
 
-outfile_str = ['#include "pch.h"\n#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n']
+outfile_str = ['#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n']
 bin_code = list()
 
 for i in range(0, len(lst)):
@@ -37,13 +37,13 @@ for i in range(0, len(lst)):
     path = lst[i]
 
     bin_file = prefix + '.tmp'
-    cmd = ' glslangValidator -V ' + path + ' -S comp -o ' + bin_file
+    cmd = ' glslangValidator --target-env spirv1.5 -V ' + path + ' -S comp -o ' + bin_file
     if os.system(cmd) != 0:
         continue
 
     size = os.path.getsize(bin_file)
     spv_txt_file = prefix + '.spv'
-    cmd = 'glslangValidator -V ' + path + ' -S comp -o ' + spv_txt_file + ' -x' + null_out 
+    cmd = 'glslangValidator --target-env spirv1.5 -V ' + path + ' -S comp -o ' + spv_txt_file + ' -x' + null_out 
     os.system(cmd)
     infile_name = spv_txt_file
 

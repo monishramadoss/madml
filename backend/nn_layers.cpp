@@ -2,9 +2,6 @@
 #include "utils.h"
 #include "nn_layers.h"
 #include <numeric>
-#define MAX_COMPUTE_WORK_GROUP_COUNT 1024
-#define LOCAL_SZ_X 32
-#define LOCAL_SZ_Y 32
 
 namespace layers
 {
@@ -21,32 +18,51 @@ namespace layers
 				bias = new math::add();
 		}
 
-		std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& x)
+		std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& _x)
 		{
-			this->x = x;
+			this->x = _x;
 			set_sub_graph();
 			auto input_shape = x->getShape();
 			if (!w)
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[2], m_size}));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[input_shape.size() - 1], m_size}));
 			y = mm->operator()(x, w);
 
 			if (USE_BIAS)
 			{
 				if (!b)
-				{
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-				}
 				y = bias->operator()(y, b);
 			}
 
 			unset_sub_graph();
-			m1 = get_input_id(x->getId());
+			if (!m1)
+				m1 = get_input_id(x->getId());
 			return y;
 
 			// MxK KxN = MxN
 			// dw =  dy * x.T
 			// db = mean(dy)
 			// dx = W.T * dy
+		}
+
+		int dense::set_backward()
+		{
+			mm->set_backward();
+			/*
+			if (!dw)
+				dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
+			if (USE_BIAS || !db)
+				db = std::make_shared<tensor>(tensor(0.0, b->getShape()));
+			if (!dx)
+				dx = std::make_shared<tensor>(tensor(0.0, std::vector<int>{w->getShape()[1], dy->getShape()[1]}));
+			m1->dy = dx;
+			return 1;
+			*/
+			return -1;
+		}
+
+		void dense::update_weight()
+		{
 		}
 
 		conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
@@ -57,45 +73,45 @@ namespace layers
 			update_id();
 			add_module(this);
 			requires_sub_graph = true;
-			mm = new matmul();
-			if (use_bias)
-				bias = new math::add();
+			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
 		}
 
 		std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x_)
 		{
-			int channels;
 			x = x_;
 			set_sub_graph();
 			auto input_shape = x->getShape();
 
-			channels = input_shape[1];
-			batch_size = input_shape[0];
+			int channels = input_shape[1];
+			int batch_size = input_shape[0];
 
 			if (!kernel)
 				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
 			if (!w)
-			{
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
 					channels* m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
-				}));
-			}
+			}));
 
 			t1 = kernel->operator()(x); //27 9
 			y = mm->operator()(w, t1);
+			auto out = kernel->output_shape();
 
 			if (USE_BIAS)
 			{
 				if (!b)
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-				y = bias->operator()(y, b);
+				t2 = bias->operator()(y, b);
+				t2->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
 			}
-
-			auto out = kernel->output_shape();
-			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
-			m1 = get_input_id(x->getId());
+			else
+			{
+				y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
+			}
+			t3 = trans->operator()(!t2 ? y : t2);
+			if (!m1)
+				m1 = get_input_id(x->getId());
 			unset_sub_graph();
-			return y;
+			return t3;
 		}
 
 		convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
@@ -111,6 +127,7 @@ namespace layers
 			mm = new matmul();
 			if (USE_BIAS)
 				bias = new math::add();
+			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
 		}
 
 		std::shared_ptr<tensor>& convTranspose::operator()(const std::shared_ptr<tensor>& x_)
@@ -118,8 +135,12 @@ namespace layers
 			x = x_;
 			set_sub_graph();
 			auto input_shape = x->getShape();
+
 			int channels = input_shape[1];
-			kernel = new col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation);
+			int batch_size = input_shape[0];
+
+			if (!kernel)
+				kernel = new col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation);
 			if (!w)
 			{
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
@@ -129,19 +150,24 @@ namespace layers
 
 			t1 = kernel->operator()(x);
 			y = mm->operator()(w, t1);
+			auto out = kernel->output_shape();
 
 			if (USE_BIAS)
 			{
 				if (!b)
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
-				y = bias->operator()(y, b);
+				t2 = bias->operator()(y, b);
+				t2->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
 			}
-
-			auto out = kernel->output_shape();
-			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
+			else
+			{
+				y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
+			}
+			t3 = trans->operator()(!t2 ? y : t2);
+			if (!m1)
+				m1 = get_input_id(x->getId());
 			unset_sub_graph();
-			m1 = get_input_id(x->getId());
-			return y;
+			return t3;
 		}
 
 		//TODO rnn needs dynamic graph

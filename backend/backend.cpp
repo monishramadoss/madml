@@ -12,11 +12,12 @@ using namespace std::chrono;
 //#define TEST_TRANS
 //#define TEST_MATH
 
-//#define TEST_NN
-#define TEST_CNN
+#define TEST_NN
 
+//#define TEST_CNN
 //#define TEST_RNN
 //#define TEST_MNIST
+
 void PrintDiffer(float* data, int size)
 {
 	std::map<float, int> diff_freq;
@@ -92,22 +93,22 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 240;
-		const int K = 240;
-		const int N = 240;
+		const int M = 64;
+		const int K = 64;
+		const int N = 64;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
-		auto layer = new layers::nn::dense(N, false);
-		auto layer2 = new layers::nn::dense(N, false);
-		auto t3 = layer->operator()(t1);
-		auto t4 = layer2->operator()(t3);
+		auto layer = layers::nn::dense(N, false);
+		auto layer2 = layers::nn::dense(N, false);
+		auto loss = loss::MSE();
 
-		layer->execute();
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), M * N);
-		for (int i = 0; i < 100; ++i)
-		{
-			layer->execute();
-		}
+		auto t3 = layer(t1);
+		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		auto t4 = layer2(t3);
+		auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
+		loss(y_true, t4);
+		loss.backward();
+		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 	}
 #endif
 #ifdef TEST_CNN
@@ -211,6 +212,7 @@ void test_fn()
 		auto l7 = layers::math::add();
 
 		auto t0 = std::make_shared<tensor>(tensor(-0.5, std::vector<int>{3, 1, 784}));
+		auto y_true = std::make_shared<tensor>(tensor(1, std::vector<int>{3, 1, 10}));
 		auto t1 = l1(t0);
 		auto t2 = l2(t1);
 		auto t3 = l3(t2);
@@ -218,8 +220,8 @@ void test_fn()
 		auto tx = l7(t2, t4);
 		auto t5 = l5(tx);
 		auto t6 = l6(t5);
-		l6.execute();
-		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+
+		PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
 	}
 
 #endif

@@ -4,12 +4,13 @@
 #define TSK 16                      // The tile-size in dvolension K
 #define WPTM 8                      // The amount of work-per-thread in dvolension M
 #define WPTN 8                      // The amount of work-per-thread in dvolension N
-#define LPTA ((TSK*WPTM*WPTN)/(TSN)) // The amount of loads-per-thread for A
-#define LPTB ((TSK*WPTM*WPTN)/(TSM)) // The amount of loads-per-thread for B
-#define RTSM 16    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
-#define RTSN 16    // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
-#define MOD2(x,y) ((x) % (y))
-#define DIV2(x,y) ((x) / (y))
+#define LPTA ((TSK*TSM)/(RTSM*RTSN)) // Loads-per-thread for A
+#define LPTB ((TSK*TSN)/(RTSM*RTSN)) // Loads-per-thread for B
+#define RTSM (TSM/WPTM)    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
+#define RTSN (TSN/WPTN)   // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
+
+#define global_x(M) (M/WPTM)
+#define global_y(N) (N/WPTN)
 
 layout(push_constant) uniform pushBlock {
       int total;
@@ -33,15 +34,15 @@ layout (binding = 2) writeonly buffer ssbC {
   float C[];
 };
 
-shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
-shared float Bsub[TSN][TSK+2];
 
-void main() {
+
+void gemm_1(){
+//naive implementation
     int M = p.M;
     int N = p.N;
     int K = p.K;
 
-   	// Compute a single element (loop over K)
+    // Compute a single element (loop over K)
     for(uint globalDepth = gl_GlobalInvocationID.z; globalDepth < p.batchsize; globalDepth += gl_NumWorkGroups.z * gl_WorkGroupSize.z){
         for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
             for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
@@ -52,5 +53,71 @@ void main() {
             }
       }
     }
+}
 
+shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
+shared float Bsub[TSN][TSK+2];
+
+void gemm_2(){
+    // https://cnugteren.github.io/tutorial/pages/page8.html
+    int M = p.M;
+    int N = p.N;
+    int K = p.K;
+
+    uint tidm = gl_LocalInvocationID.x;
+    uint tidn = gl_LocalInvocationID.y;
+    uint offsetM = uint(TSM * gl_WorkGroupID.x);
+    uint offsetN = uint(TSN * gl_WorkGroupID.y);
+
+    float Areg;
+    float Breg[WPTM];
+    float acc[WPTM][WPTN];
+
+    for(int i = 0; i < WPTM; ++i){
+        for(int j = 0; j < WPTN; ++j){
+            acc[i][j] = 0;
+        }
+    }
+
+    for(int t = 0; t < K / TSK; ++t){
+        for(int la  = 0; la < LPTA; ++la){
+            uint id = la*RTSN*RTSM + tidn*RTSM + tidm;
+            uint row = id % TSM;
+            uint col = id / TSM;
+            uint tileidx = TSK*t + col;
+            Asub[col][row] = A[tileidx*M + offsetM + row];
+            Bsub[row][col] = B[tileidx*N + offsetN + row];
+        }
+
+        barrier();
+
+        for(int k = 0; k < TSK; k++){
+            for (int wn=0; wn < WPTN; wn++) {
+                uint col = tidn + wn*RTSN;
+                Breg[wn] = Bsub[col][k];
+            }
+
+            for (uint wm=0; wm < WPTM; wm++) {
+                uint row = tidm + wm*RTSM;
+                Areg = Asub[k][row];
+                for (uint wn=0; wn < WPTN; wn++) 
+                    acc[wm][wn] += Areg * Breg[wn];                
+            }
+        }    
+        barrier();
+    }
+
+
+    for (int wm=0; wm < WPTM; wm++) {
+        uint globalRow = offsetM + tidm + wm*RTSM;
+        for (int wn=0; wn < WPTN; wn++) {
+            uint globalCol = offsetN + tidn + wn*RTSN;
+            C[globalCol*M + globalRow] = acc[wm][wn];
+        }
+    }
+
+}
+
+void main() {
+    gemm_1();
 }

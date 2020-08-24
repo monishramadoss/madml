@@ -39,5 +39,6 @@ bool isAvailable();
 #include "transform.h"
 #include "rnn.h"
 #include "nn_layers.h"
+#include "loss.h"
 
 #endif

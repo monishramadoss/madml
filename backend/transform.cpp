@@ -2,9 +2,8 @@
 #include "utils.h"
 #include "transform.h"
 
-#define LOCAL_SZ_X 16
-#define LOCAL_SZ_Y 64
-#define MAX_COMPUTE_WORK_GROUP_COUNT 65535
+constexpr int local_sz_x_conv = 16;
+constexpr int local_sz_y_conv = 64;
 
 namespace layers
 {
@@ -27,23 +26,24 @@ namespace layers
 		tmp *= m_param.kernel_w;
 		tmp *= m_param.kernel_d;
 
-		m_group_x = static_cast<int>(alignSize(tmp, LOCAL_SZ_X)) / LOCAL_SZ_X;
-		if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-			m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-		m_group_y = static_cast<int>(alignSize(m_param.batchsize, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-		if (m_group_y > MAX_COMPUTE_WORK_GROUP_COUNT)
-			m_group_y = MAX_COMPUTE_WORK_GROUP_COUNT;
+		m_group_x = static_cast<int>(alignSize(tmp, local_sz_x_conv)) / local_sz_x_conv;
+		if (m_group_x > max_compute_work_group_count)
+			m_group_x = max_compute_work_group_count;
+		m_group_y = static_cast<int>(alignSize(m_param.batchsize, local_sz_y_conv)) / local_sz_y_conv;
+		if (m_group_y > max_compute_work_group_count)
+			m_group_y = max_compute_work_group_count;
 		m_group_z = 1;
 	}
 
-	std::shared_ptr<tensor>& vol2col::operator()(const std::shared_ptr<tensor>& x)
+	std::shared_ptr<tensor>& vol2col::operator()(const std::shared_ptr<tensor>& x_)
 	{
 		if (m_pipeline == nullptr)
 		{
-			const int depth = x->getShape()[x->getShape().size() - 3];
-			const int height = x->getShape()[x->getShape().size() - 2];
-			const int width = x->getShape()[x->getShape().size() - 1];
-			m_param.batchsize = x->getShape()[0];
+			const int depth = x_->getShape()[x_->getShape().size() - 3];
+			const int height = x_->getShape()[x_->getShape().size() - 2];
+			const int width = x_->getShape()[x_->getShape().size() - 1];
+			m_param.batchsize = x_->getShape()[0];
+			m_param.channels = x_->getShape()[1];
 			m_param.depth_vol = depth;
 			m_param.height_vol = height;
 			m_param.width_vol = width;
@@ -56,9 +56,7 @@ namespace layers
 		}
 		const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 		const int output_length = m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col;
-		y = layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x, Format::kFormatFp32, std::vector<int>{output_length* n_out_plane});
-		y->reshape(std::vector<int>{n_out_plane, output_length});
-		return y;
+		return layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32, std::vector<int>{n_out_plane, output_length});
 	}
 
 	std::vector<int> vol2col::output_shape() const
@@ -84,23 +82,24 @@ namespace layers
 		tmp *= m_param.kernel_w;
 		tmp *= m_param.kernel_d;
 
-		m_group_x = static_cast<int>(alignSize(tmp, LOCAL_SZ_X)) / LOCAL_SZ_X;
-		if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-			m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
-		m_group_y = static_cast<int>(alignSize(m_param.batchsize, LOCAL_SZ_Y)) / LOCAL_SZ_Y;
-		if (m_group_y > MAX_COMPUTE_WORK_GROUP_COUNT)
-			m_group_y = MAX_COMPUTE_WORK_GROUP_COUNT;
+		m_group_x = static_cast<int>(alignSize(tmp, local_sz_x_conv)) / local_sz_x_conv;
+		if (m_group_x > max_compute_work_group_count)
+			m_group_x = max_compute_work_group_count;
+		m_group_y = static_cast<int>(alignSize(m_param.batchsize, local_sz_y_conv)) / local_sz_y_conv;
+		if (m_group_y > max_compute_work_group_count)
+			m_group_y = max_compute_work_group_count;
 		m_group_z = 1;
 	}
 
-	std::shared_ptr<tensor>& col2vol::operator()(const std::shared_ptr<tensor>& x)
+	std::shared_ptr<tensor>& col2vol::operator()(const std::shared_ptr<tensor>& x_)
 	{
 		if (m_pipeline == nullptr)
 		{
-			const int depth = x->getShape()[x->getShape().size() - 3];
-			const int height = x->getShape()[x->getShape().size() - 2];
-			const int width = x->getShape()[x->getShape().size() - 1];
-			m_param.batchsize = 1;
+			const int depth = x_->getShape()[x_->getShape().size() - 3];
+			const int height = x_->getShape()[x_->getShape().size() - 2];
+			const int width = x_->getShape()[x_->getShape().size() - 1];
+			m_param.batchsize = x_->getShape()[0];
+
 			m_param.depth_col = depth;
 			m_param.height_col = height;
 			m_param.width_col = width;
@@ -111,15 +110,11 @@ namespace layers
 			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1)
 				+ m_param.pad_w + 1;
 		}
-		const int n_out_plane = x->getShape()[0] * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
-		const int output_length = m_param.depth_vol * m_param.height_vol * m_param.width_vol;
+		const int n_out_plane = m_param.channels * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
+		const int output_length = m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.width_vol;
 
-		y = layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x, Format::kFormatFp32,
-			std::vector<int>{
-			n_out_plane* (m_param.depth_vol* m_param.height_vol* m_param.width_vol)
-		});
-		y->reshape(std::vector<int>{n_out_plane, output_length});
-		return y;
+		return layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
+			std::vector<int>{n_out_plane, output_length	});
 	}
 
 	std::vector<int> col2vol::output_shape() const
@@ -139,9 +134,9 @@ namespace layers
 
 	void copy::computeGroupCount()
 	{
-		m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
-		if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-			m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
+		m_group_x = static_cast<int>(alignSize(m_param.total, local_sz_x)) / local_sz_x;
+		if (m_group_x > max_compute_work_group_count)
+			m_group_x = max_compute_work_group_count;
 		m_group_y = 1;
 		m_group_z = 1;
 	}
@@ -175,21 +170,21 @@ namespace layers
 	{
 		if (!w || !new_shape.size())
 		{
-			new_shape.resize(stride.size());
+			new_shape.resize(stride.size() / 3);
 			for (size_t i = 0; i < m_param.num_axes; ++i)
 				new_shape[i] = _x->getShape()[stride[i]];
-			old_shape = _x->getShape();
+			old_shape = _x->getShape();;
 			stride = prepareStrides(old_shape, new_shape, stride);
 			w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 		}
-		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), x, w, Format::kFormatFp32, new_shape);
+		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w, Format::kFormatFp32, new_shape);
 	}
 
 	void transpose::computeGroupCount()
 	{
-		m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
-		if (m_group_x > MAX_COMPUTE_WORK_GROUP_COUNT)
-			m_group_x = MAX_COMPUTE_WORK_GROUP_COUNT;
+		m_group_x = static_cast<int>(alignSize(m_param.total, local_sz_x)) / local_sz_x;
+		if (m_group_x > max_compute_work_group_count)
+			m_group_x = max_compute_work_group_count;
 		m_group_y = 1;
 		m_group_z = 1;
 	}

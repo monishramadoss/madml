@@ -2,9 +2,6 @@
 #include "utils.h"
 #include "layer.h"
 
-#define LOCAL_SZ_X 1024
-#define MAX_COMPUTE_WORK_GROUP_COUNT 65535
-
 layer::layer()
 {
 	createContext();
@@ -216,62 +213,6 @@ namespace layers
 		}
 	}
 
-	void Module::execute()
-	{
-		/*	auto& M = get_module();
-
-			/// <summary>
-			///  input = -1;
-			///  weight = -2;
-			///  bias = -3;
-			///  temp = -4;
-			/// </summary>
-			if (execution_order.size() == 0)
-			{
-				adj_mat.resize(M.size(), std::vector<int>(M.size(), 0));
-				visted.resize(M.size(), false);
-
-				for (auto m : M)
-				{
-					for (auto p : m->parents)
-					{
-						adj_mat[m->id][p] = -1;
-					}
-				}
-
-				for (size_t i = 0; i < M.size(); ++i)
-				{
-					for (size_t j = 0; j < M.size(); ++j)
-					{
-						if (adj_mat[i][j] == -1)
-							M[j]->children.push_back(i);
-					}
-				}
-
-				for (auto m : M)
-				{
-					for (auto c : m->children)
-					{
-						adj_mat[m->id][c] = 1;
-					}
-				}
-			}
-
-			for (auto l : adj_mat)
-			{
-				for (auto i : l)
-				{
-					std::cout << i << " ";
-				}
-				std::cout << std::endl;
-			}
-		*/
-	}
-
-	void Module::execute_b()
-	{
-	}
-
 	std::vector<Module*>& Module::get_module()
 	{
 		static std::vector<Module*> M;
@@ -324,13 +265,6 @@ namespace layers
 		auto& M = get_module();
 		for (auto m : M)
 		{
-			//if (m->x && m->x->getId() == i)
-			//	return m;
-			//if (m->w && m->w->getId() == i)
-			//	return m;
-			//if (m->b && m->b->getId() == i)
-			//	return m;
-
 			if (m->y && m->y->getId() == i)
 				return m;
 		}

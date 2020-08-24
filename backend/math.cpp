@@ -3,11 +3,6 @@
 #include "math.h"
 #include <future>
 
-#define LOCAL_SZ_X 1024
-#define MAX_COMPUTE_WORK_GROUP_COUNT 65535
-
-// https://stats.stackexchange.com/questions/268820/gradient-backpropagation-through-resnet-skip-connections
-
 namespace layers
 {
 	namespace math
