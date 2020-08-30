@@ -65,7 +65,7 @@ void vol2col(){
                     uint data_col_idx = uint(floor(data_col + ((c_col * depth_col + d_col) * height_col + h_col) * width_col + w_col));
                     uint data_vol_idx = uint(floor(data_vol + ((c_vol * depth_vol + d_vol) * height_vol + h_vol) * width_vol + w_vol));
 	                B[data_col_idx] = A[data_vol_idx];
-	            } 
+	            }
 	        }
 		}
     }

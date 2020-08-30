@@ -94,8 +94,8 @@ namespace layers
 		void update_id();
 
 		//		std::vector<std::future<int>> m_futures;
-		Module* m1;
-		Module* m2;
+		Module* m1 = nullptr;
+		Module* m2 = nullptr;
 		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3;
 
 	private:

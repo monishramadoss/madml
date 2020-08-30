@@ -14,9 +14,10 @@ using namespace std::chrono;
 
 //#define TEST_NN
 
-#define TEST_CNN
+//#define TEST_CNN
 
-//#define TEST_RNN
+#define TEST_RNN
+
 //#define TEST_MNIST
 
 void PrintDiffer(float* data, int size)
@@ -155,24 +156,21 @@ void test_fn()
 	}
 #endif
 #ifdef TEST_RNN
+	int length = 4;
+	int vocab = 16;
+	int num_layers = 4;
+	int hidden_size = 128;
+
 	std::cout << "testing rnn" << std::endl;
 	{
-		int length = 4;
-		int vocab = 16;
-		int num_layers = 4;
-		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
 		auto t1 = std::make_shared<tensor>(tensor(1, shape_x));
 		auto rnn_layer_1 = layers::nn::RNN(vocab, hidden_size, num_layers, length, false);
-		auto tup = rnn_layer_1.operator()(t1);
+		auto tup = rnn_layer_1(t1);
 
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
 
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		rnn_layer_1.execute();
-		std::cout << std::endl;
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
@@ -180,14 +178,10 @@ void test_fn()
 
 	std::cout << "testing lstm" << std::endl;
 	{
-		int length = 4;
-		int vocab = 16;
-		int num_layers = 2;
-		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
 		auto t1 = std::make_shared<tensor>(tensor(1, shape_x));
 		auto rnn_layer_1 = layers::nn::LSTM(vocab, hidden_size, num_layers, length, false);
-		auto tup = rnn_layer_1.operator()(t1);
+		auto tup = rnn_layer_1(t1);
 
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
@@ -196,32 +190,19 @@ void test_fn()
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
-		rnn_layer_1.execute();
-		std::cout << std::endl;
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		std::cout << std::endl;
 	}
 
 	std::cout << "testing gru" << std::endl;
 	{
-		int length = 4;
-		int vocab = 16;
-		int num_layers = 2;
-		int hidden_size = 128;
 		std::vector<int> shape_x{ length, vocab };
 		auto t1 = std::make_shared<tensor>(tensor(1, shape_x));
 		auto rnn_layer_1 = layers::nn::GRU(vocab, hidden_size, num_layers, length, true);
-		auto tup = rnn_layer_1.operator()(t1);
+		auto tup = rnn_layer_1(t1);
 
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
 
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		rnn_layer_1.execute();
-		std::cout << std::endl;
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;

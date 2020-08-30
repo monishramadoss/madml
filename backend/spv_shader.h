@@ -10,7 +10,6 @@ namespace kernel {
 		extern const unsigned int d_relu6_spv[467];
 		extern const unsigned int d_sigmoid_spv[430];
 		extern const unsigned int binary_operator_spv[478];
-		extern const unsigned int d_MSE_spv[498];
 		extern const unsigned int d_abs_spv[426];
 		extern const unsigned int d_exp_spv[407];
 		extern const unsigned int d_ln_spv[410];
@@ -86,6 +85,7 @@ namespace kernel {
 		extern const unsigned int sinh_spv[407];
 		extern const unsigned int tan_spv[407];
 		extern const unsigned int tanh_spv[407];
+		extern const unsigned int d_MSE_spv[498];
 		extern const unsigned int MSE_spv[611];
 	}
 }

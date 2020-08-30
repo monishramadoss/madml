@@ -46,7 +46,7 @@ void col2vol(){
 
     uint data_vol = elt * channels * height_col * width_col * depth_col;
     uint data_col = elt * n_output_plane * height_vol * width_vol * depth_vol;
-    
+
     uint c_col = gl_GlobalInvocationID.x;
     if(c_col >= channels_col)
         return;

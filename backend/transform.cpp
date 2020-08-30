@@ -20,9 +20,9 @@ namespace layers
 	void vol2col::computeGroupCount()
 	{
 		size_t tmp = m_param.channels;
-		tmp *= m_param.kernel_h;
-		tmp *= m_param.kernel_w;
-		tmp *= m_param.kernel_d;
+		tmp *= static_cast<size_t>(m_param.kernel_h);
+		tmp *= static_cast<size_t>(m_param.kernel_w);
+		tmp *= static_cast<size_t>(m_param.kernel_d);
 
 		m_group_x = static_cast<int>(alignSize(tmp, local_sz_x_conv)) / local_sz_x_conv;
 		if (m_group_x > max_compute_work_group_count)
@@ -37,9 +37,9 @@ namespace layers
 	{
 		if (m_pipeline == nullptr)
 		{
-			const int depth = x_->getShape()[x_->getShape().size() - 3];
-			const int height = x_->getShape()[x_->getShape().size() - 2];
-			const int width = x_->getShape()[x_->getShape().size() - 1];
+			const float depth = static_cast<float>(x_->getShape()[x_->getShape().size() - 3]);
+			const float height = static_cast<float>(x_->getShape()[x_->getShape().size() - 2]);
+			const float width = static_cast<float>(x_->getShape()[x_->getShape().size() - 1]);
 			m_param.batchsize = x_->getShape()[0];
 			m_param.channels = x_->getShape()[1];
 			m_param.depth_vol = depth;
@@ -52,17 +52,17 @@ namespace layers
 			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.
 				stride_w + 1;
 		}
-		const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
-		const int output_length = m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col;
+		const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
+		const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col);
 		layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32, std::vector<int>{n_out_plane, output_length});
 		return y;
 	}
 
 	std::vector<int> vol2col::output_shape() const
 	{
-		int d = m_param.depth_col;
-		int h = m_param.height_col;
-		int w = m_param.width_col;
+		int d = static_cast<int>(m_param.depth_col);
+		int h = static_cast<int>(m_param.height_col);
+		int w = static_cast<int>(m_param.width_col);
 		return std::vector<int>{d, h, w};
 	}
 
@@ -78,9 +78,9 @@ namespace layers
 	void col2vol::computeGroupCount()
 	{
 		size_t tmp = m_param.channels;
-		tmp *= m_param.kernel_h;
-		tmp *= m_param.kernel_w;
-		tmp *= m_param.kernel_d;
+		tmp *= static_cast<size_t>(m_param.kernel_h);
+		tmp *= static_cast<size_t>(m_param.kernel_w);
+		tmp *= static_cast<size_t>(m_param.kernel_d);
 
 		m_group_x = static_cast<int>(alignSize(tmp, local_sz_x_conv)) / local_sz_x_conv;
 		if (m_group_x > max_compute_work_group_count)
@@ -95,9 +95,9 @@ namespace layers
 	{
 		if (m_pipeline == nullptr)
 		{
-			const int depth = x_->getShape()[x_->getShape().size() - 3];
-			const int height = x_->getShape()[x_->getShape().size() - 2];
-			const int width = x_->getShape()[x_->getShape().size() - 1];
+			const float depth = static_cast<float>(x_->getShape()[x_->getShape().size() - 3]);
+			const float height = static_cast<float>(x_->getShape()[x_->getShape().size() - 2]);
+			const float width = static_cast<float>(x_->getShape()[x_->getShape().size() - 1]);
 			m_param.batchsize = x_->getShape()[0];
 
 			m_param.depth_col = depth;
@@ -110,8 +110,8 @@ namespace layers
 			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1)
 				+ m_param.pad_w + 1;
 		}
-		const int n_out_plane = m_param.channels * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
-		const int output_length = m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.width_vol;
+		const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
+		const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.width_vol);
 		layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
 			std::vector<int>{n_out_plane, output_length	});
 
@@ -132,9 +132,9 @@ namespace layers
 
 	std::vector<int> col2vol::output_shape() const
 	{
-		int d = m_param.depth_vol;
-		int h = m_param.height_vol;
-		int w = m_param.width_vol;
+		int d = static_cast<int>(m_param.depth_vol);
+		int h = static_cast<int>(m_param.height_vol);
+		int w = static_cast<int>(m_param.width_vol);
 		return std::vector<int>{d, h, w};
 	}
 

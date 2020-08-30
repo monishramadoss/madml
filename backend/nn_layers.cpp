@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "nn_layers.h"
 #include <numeric>
+#include <cmath>
 
 namespace layers
 {
@@ -13,9 +14,11 @@ namespace layers
 			update_id();
 			add_module(this);
 			requires_sub_graph = true;
+			set_sub_graph();
 			mm = new matmul();
 			if (USE_BIAS)
 				bias = new math::add();
+			unset_sub_graph();
 		}
 
 		std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& _x)
@@ -48,6 +51,7 @@ namespace layers
 		int dense::set_backward()
 		{
 			mm->set_backward();
+			bias->set_backward();
 			/*
 			if (!dw)
 				dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
@@ -73,10 +77,12 @@ namespace layers
 			update_id();
 			add_module(this);
 			requires_sub_graph = true;
+			set_sub_graph();
 			mm = new matmul();
 			if (USE_BIAS)
 				bias = new math::add();
 			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
+			unset_sub_graph();
 		}
 
 		std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x_)
@@ -92,7 +98,7 @@ namespace layers
 				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
 			if (!w)
 			{
-				int c = channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w;
+				int c = static_cast<int>(channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w);
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters, c }));
 			}
 
@@ -129,10 +135,12 @@ namespace layers
 			update_id();
 			add_module(this);
 			requires_sub_graph = true;
+			set_sub_graph();
 			mm = new matmul();
 			if (USE_BIAS)
 				bias = new math::add();
 			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
+			unset_sub_graph();
 		}
 
 		std::shared_ptr<tensor>& convTranspose::operator()(const std::shared_ptr<tensor>& x_)
@@ -156,7 +164,7 @@ namespace layers
 			}
 			if (!w)
 			{
-				int c = channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w;
+				int c = static_cast<int>(channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w);
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters, c }));
 			}
 
@@ -219,8 +227,7 @@ namespace layers
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 					}
 					set_sub_graph();
-					for (int i = 0; i < seq_length; ++i)
-						cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
+					cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
 					unset_sub_graph();
 				}
 			}
@@ -252,9 +259,9 @@ namespace layers
 
 			for (int dir = 0; dir < m_directions; ++dir)
 			{
-				for (int l = 0; l < m_num_layers; ++l)
+				for (int i = 0; i < input_shape[0]; ++i)
 				{
-					for (int i = 0; i < input_shape[0]; ++i)
+					for (int l = 0; l < m_num_layers; ++l)
 					{
 						const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
 							uint64_t>(l) * 5;
@@ -272,8 +279,7 @@ namespace layers
 							weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
 							output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
 						}
-						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
-							uint64_t>(m_seq_length) * l + i;
+						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
 						cells[cell_idx]->operator()(
 							cache[0 + cache_idx],
 							cache[1 + cache_idx],
@@ -330,8 +336,7 @@ namespace layers
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 					}
 					set_sub_graph();
-					for (int i = 0; i < seq_length; ++i)
-						cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
+					cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
 					unset_sub_graph();
 				}
 			}
@@ -368,9 +373,9 @@ namespace layers
 
 			for (int dir = 0; dir < m_directions; ++dir)
 			{
-				for (int l = 0; l < m_num_layers; ++l)
+				for (int i = 0; i < input_shape[0]; ++i)
 				{
-					for (int i = 0; i < input_shape[0]; ++i)
+					for (int l = 0; l < m_num_layers; ++l)
 					{
 						const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
 							uint64_t>(l) * 5;
@@ -448,8 +453,7 @@ namespace layers
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 					}
 					set_sub_graph();
-					for (int i = 0; i < seq_length; ++i)
-						cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
+					cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
 					unset_sub_graph();
 				}
 			}
@@ -481,9 +485,9 @@ namespace layers
 
 			for (int dir = 0; dir < m_directions; ++dir)
 			{
-				for (int l = 0; l < m_num_layers; ++l)
+				for (int i = 0; i < input_shape[0]; ++i)
 				{
-					for (int i = 0; i < input_shape[0]; ++i)
+					for (int l = 0; l < m_num_layers; ++l)
 					{
 						const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
 							uint64_t>(l) * 5;

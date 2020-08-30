@@ -34,8 +34,6 @@ layout (binding = 2) writeonly buffer ssbC {
   float C[];
 };
 
-
-
 void gemm_1(){
 //naive implementation
     int M = p.M;
@@ -100,13 +98,12 @@ void gemm_2(){
             for (uint wm=0; wm < WPTM; wm++) {
                 uint row = tidm + wm*RTSM;
                 Areg = Asub[k][row];
-                for (uint wn=0; wn < WPTN; wn++) 
-                    acc[wm][wn] += Areg * Breg[wn];                
+                for (uint wn=0; wn < WPTN; wn++)
+                    acc[wm][wn] += Areg * Breg[wn];
             }
-        }    
+        }
         barrier();
     }
-
 
     for (int wm=0; wm < WPTM; wm++) {
         uint globalRow = offsetM + tidm + wm*RTSM;
