@@ -15,8 +15,6 @@ namespace layers
 			0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
 			dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
 		};
-		bck_shader = kernel::shaders::col2vol_spv;
-		bck_codeSize = sizeof(kernel::shaders::col2vol_spv);
 	}
 
 	void vol2col::computeGroupCount()
@@ -56,12 +54,16 @@ namespace layers
 		}
 		const int n_out_plane = m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w;
 		const int output_length = m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col;
-		return layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32, std::vector<int>{n_out_plane, output_length});
+		layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32, std::vector<int>{n_out_plane, output_length});
+		return y;
 	}
 
 	std::vector<int> vol2col::output_shape() const
 	{
-		return std::vector<int>{m_param.depth_col, m_param.height_col, m_param.width_col};
+		int d = m_param.depth_col;
+		int h = m_param.height_col;
+		int w = m_param.width_col;
+		return std::vector<int>{d, h, w};
 	}
 
 	col2vol::col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) : Base_Layer<vol2col_param>(2)
@@ -71,8 +73,6 @@ namespace layers
 			0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
 			dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
 		};
-		bck_shader = kernel::shaders::vol2col_spv;
-		bck_codeSize = sizeof(kernel::shaders::vol2col_spv);
 	}
 
 	void col2vol::computeGroupCount()
@@ -112,14 +112,30 @@ namespace layers
 		}
 		const int n_out_plane = m_param.channels * (m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 		const int output_length = m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.width_vol;
-
-		return layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
+		layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
 			std::vector<int>{n_out_plane, output_length	});
+
+		float* t = (float*)y->toHost();
+		std::cout << std::endl;
+		for (int i = 0; i < n_out_plane; ++i)
+		{
+			std::cout << "[ ";
+			for (int j = 0; j < output_length; ++j)
+			{
+				std::cout << t[i * output_length + j] << ", ";
+			}
+			std::cout << "]" << std::endl;
+		}
+
+		return y;
 	}
 
 	std::vector<int> col2vol::output_shape() const
 	{
-		return std::vector<int>{m_param.depth_vol, m_param.height_vol, m_param.width_vol};
+		int d = m_param.depth_vol;
+		int h = m_param.height_vol;
+		int w = m_param.width_vol;
+		return std::vector<int>{d, h, w};
 	}
 
 	copy::copy() : Base_Layer<>(2)
@@ -175,9 +191,9 @@ namespace layers
 				new_shape[i] = _x->getShape()[stride[i]];
 			old_shape = _x->getShape();;
 			stride = prepareStrides(old_shape, new_shape, stride);
-			w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 		}
-		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w, Format::kFormatFp32, new_shape);
+		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x,
+			std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32)), Format::kFormatFp32, new_shape);
 	}
 
 	void transpose::computeGroupCount()

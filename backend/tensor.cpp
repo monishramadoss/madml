@@ -156,6 +156,17 @@ void tensor::update_id()
 
 namespace init
 {
+	char* fill_memory_iter(std::vector<int> shape)
+	{
+		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
+		auto ret = new float[_shape];
+		for (int i = 0; i < _shape; ++i)
+		{
+			ret[i] = float(i);
+		}
+		return reinterpret_cast<char*>(ret);
+	}
+
 	char* normal_distribution_init(std::vector<int> shape, float mean, float std)
 	{
 		std::default_random_engine generator;

@@ -73,6 +73,9 @@ namespace layers
 			update_id();
 			add_module(this);
 			requires_sub_graph = true;
+			mm = new matmul();
+			if (USE_BIAS)
+				bias = new math::add();
 			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
 		}
 
@@ -88,9 +91,10 @@ namespace layers
 			if (!kernel)
 				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
 			if (!w)
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
-					channels* m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
-			}));
+			{
+				int c = channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w;
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters, c }));
+			}
 
 			t1 = kernel->operator()(x); //27 9
 			y = mm->operator()(w, t1);
@@ -107,6 +111,7 @@ namespace layers
 			{
 				y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
 			}
+
 			t3 = trans->operator()(!t2 ? y : t2);
 			if (!m1)
 				m1 = get_input_id(x->getId());
@@ -140,12 +145,19 @@ namespace layers
 			int batch_size = input_shape[0];
 
 			if (!kernel)
-				kernel = new col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation);
+			{
+				m_padding.d = (m_kernel_size.d - 1) * m_dilation.d - m_padding.d;
+				m_padding.h = (m_kernel_size.h - 1) * m_dilation.h - m_padding.h;
+				m_padding.w = (m_kernel_size.w - 1) * m_dilation.w - m_padding.w;
+				m_stride.d = m_stride.d != 0 && m_stride.d > 1 ? 1 / m_stride.d : 1;
+				m_stride.h = m_stride.h != 0 && m_stride.h > 1 ? 1 / m_stride.h : 1;
+				m_stride.w = m_stride.w != 0 && m_stride.w > 1 ? 1 / m_stride.w : 1;
+				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
+			}
 			if (!w)
 			{
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters,
-					channels* m_kernel_size.d* m_kernel_size.h* m_kernel_size.w
-				}));
+				int c = channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w;
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters, c }));
 			}
 
 			t1 = kernel->operator()(x);

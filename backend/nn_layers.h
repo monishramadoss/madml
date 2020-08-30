@@ -62,7 +62,7 @@ namespace layers
 			bool USE_BIAS;
 
 			matmul* mm;
-			col2vol* kernel;
+			vol2col* kernel;
 			math::add* bias;
 			transpose* trans;
 		};

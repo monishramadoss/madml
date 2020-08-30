@@ -8,7 +8,7 @@ layout(push_constant) uniform pushBlock {
 layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
-  float A[];
+    float A[];
 };
 
 layout(binding = 1) readonly buffer Input2{
@@ -16,7 +16,7 @@ layout(binding = 1) readonly buffer Input2{
 };
 
 layout (binding = 2) writeonly buffer ssbB {
-  float B[];
+    float B[];
 };
 
 void main(){

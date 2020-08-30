@@ -193,6 +193,7 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	std::vector<int> output_shape)
 {
 	x = _x;
+	float* t = (float*)x->toHost();
 	if (!y)
 	{
 		if (output_shape.size() != 0)

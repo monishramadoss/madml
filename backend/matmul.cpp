@@ -31,7 +31,9 @@ namespace layers
 		m_group_y = static_cast<int>(alignSize(m_param.n, RTSN)) / RTSN;
 		if (m_group_y > max_compute_work_group_count)
 			m_group_y = max_compute_work_group_count;
-		m_group_z = 1;
+		m_group_z = static_cast<int>(alignSize(m_param.batchsize, 1)) / 1;
+		if (m_group_z > max_compute_work_group_count)
+			m_group_z = max_compute_work_group_count;
 	}
 
 	std::shared_ptr<tensor>& matmul::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -45,7 +47,7 @@ namespace layers
 			m_param.k = x->getShape()[2];
 			m_param.n = w->getShape()[1];
 			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
-				std::vector<int>{x->getShape()[0], x->getShape()[1], w->getShape()[1]});
+				std::vector<int>{m_param.batchsize, m_param.m, m_param.n});
 		}
 		else
 		{
@@ -59,7 +61,7 @@ namespace layers
 			m_param.k = x->getShape()[1];
 			m_param.n = w->getShape()[1];
 			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
-				std::vector<int>{x->getShape()[0], w->getShape()[1]});
+				std::vector<int>{m_param.m, m_param.n});
 		}
 	}
 

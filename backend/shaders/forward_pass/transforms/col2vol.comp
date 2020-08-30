@@ -37,16 +37,16 @@ layout(binding = 1) buffer buf2 {
 layout (local_size_x = 16, local_size_y = 64, local_size_z = 1) in;
 
 void col2vol(){
-    uint n_output_plane = channels / (kernel_h * kernel_w * kernel_d);
+    uint n_output_plane = channels *kernel_h * kernel_w * kernel_d;
     uint channels_col = channels * kernel_h * kernel_w * kernel_d;
 
     uint elt = gl_GlobalInvocationID.y;
     if(elt >= batchsize)
         return;
 
-    uint data_col = elt * n_output_plane * height_vol * width_vol * depth_vol;
     uint data_vol = elt * channels * height_col * width_col * depth_col;
-
+    uint data_col = elt * n_output_plane * height_vol * width_vol * depth_vol;
+    
     uint c_col = gl_GlobalInvocationID.x;
     if(c_col >= channels_col)
         return;
@@ -65,7 +65,7 @@ void col2vol(){
 
                 if (0 <= h_vol && h_vol < height_vol && 0 <= w_vol && w_vol < width_vol && 0 <= d_vol && d_vol < depth_vol){
                     B[data_vol + ((c_vol * depth_vol + d_vol) * height_vol + h_vol) * width_vol + w_vol] +=
-                    A[data_col + ((c_col * depth_col + d_col) * height_col + h_col) * width_col + w_col];
+                        A[data_col + ((c_col * depth_col + d_col) * height_col + h_col) * width_col + w_col];
                 }
             }
         }

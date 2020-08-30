@@ -14,6 +14,7 @@ public:
 	tensor(Format fmt = Format::kFormatFp32);
 	tensor(char* data, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
 	tensor(float c, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
+
 	void* map() const;
 	void unMap() const;
 	Shape getShape() const;
@@ -54,8 +55,6 @@ private:
 
 namespace init
 {
-	char* normal_distribution_init(std::vector<int> shape, float mean, float std);
-
 	template <typename dType = float>
 	char* fill_memory_shape(std::vector<int> shape, dType c)
 	{
@@ -65,6 +64,12 @@ namespace init
 			ret[i] = reinterpret_cast<dType&>(c);
 		return reinterpret_cast<char*>(ret);
 	}
+
+	char* fill_memory_iter(std::vector<int> shape);
+	char* normal_distribution_init(std::vector<int> shape, float mean, float std);
+	char* uniform_distribution_init(std::vector<int> shape, float min, float max);
+	char* xavier_uniform_init(std::vector<int> shape, float gain, float fan_in, float fan_out);
+	char* xavier_normal_init(std::vector<int> shape, float gain, float fan_in, float fan_out);
 }
 
 #endif
