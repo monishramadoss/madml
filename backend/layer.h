@@ -71,6 +71,9 @@ namespace layers
 
 		//std::vector<std::future<int>>& get_futures();
 		int get_id() const;
+		Module* m1 = nullptr;
+		Module* m2 = nullptr;
+
 	protected:
 		std::string m_type;
 		bool requires_sub_graph = false;
@@ -94,8 +97,7 @@ namespace layers
 		void update_id();
 
 		//		std::vector<std::future<int>> m_futures;
-		Module* m1 = nullptr;
-		Module* m2 = nullptr;
+
 		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3;
 
 	private:
@@ -110,7 +112,7 @@ class Base_Layer : public layer, public layers::Module
 public:
 	Base_Layer(int forward_buffers, bool in_place = false);
 	int set_backward() override;
-
+	bool is_bias = false;
 protected:
 	const uint32_t* bck_shader;
 	size_t bck_codeSize;
@@ -122,14 +124,13 @@ protected:
 	bool group_set = false;
 	void set_group(int x, int y, int z);
 
+public:
 	std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
 		const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
 		std::vector<int> output_shape = {});
 	std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
 		const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
 		Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
-
-	//template <typename T = operator_param> void layer_construct_backward(const uint32_t* shader, size_t codeSize, T m_param);
 };
 
 template <typename T>
@@ -175,16 +176,28 @@ int Base_Layer<T>::set_backward()
 		dy = std::make_shared<tensor>(tensor(0.0, y->getShape()));
 	if (!dw && w)
 		dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
+	if (!db && b)
+		db = std::make_shared<tensor>(tensor(0.0, b->getShape()));
 
-	if (train() && bck_codeSize && m2)
+	if (is_bias)
 	{
-		dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
-		m2->dy = dw;
+		return dy->getId();
 	}
 	else
-		dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
-	m1->dy = dx;
-	return dy->getId();
+	{
+		if (bck_codeSize)
+		{
+			if (train() && m2)
+			{
+				dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
+				m2->dy = dw;
+			}
+			else
+				dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
+			m1->dy = dx;
+		}
+		return dy->getId();
+	}
 }
 
 template <typename T>
@@ -215,7 +228,7 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 
 	m1 = get_input_id(x->getId());
 
-	if (train() && bck_codeSize && !derivative && sub_graph_bit())
+	if (train() && bck_codeSize && !derivative)
 	{
 		derivative = new Base_Layer<T>(2, false);
 		derivative->m_param = m_param;
@@ -260,7 +273,7 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	m1 = get_input_id(x->getId());
 	m2 = get_input_id(w->getId());
 
-	if (train() && bck_codeSize && !derivative && sub_graph_bit())
+	if (train() && bck_codeSize && !derivative)
 	{
 		derivative = new Base_Layer<T>(3, false);
 		derivative->m_param = m_param;

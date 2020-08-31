@@ -12,11 +12,11 @@ using namespace std::chrono;
 //#define TEST_TRANS
 //#define TEST_MATH
 
-//#define TEST_NN
+#define TEST_NN
 
 //#define TEST_CNN
 
-#define TEST_RNN
+//#define TEST_RNN
 
 //#define TEST_MNIST
 
@@ -116,8 +116,7 @@ void test_fn()
 		auto t4 = layer2(t3);
 		auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
 		loss(y_true, t4);
-
-		//loss.backward();
+		loss.backward();
 		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 	}
 #endif

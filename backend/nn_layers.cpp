@@ -50,19 +50,27 @@ namespace layers
 
 		int dense::set_backward()
 		{
-			mm->set_backward();
-			bias->set_backward();
-			/*
-			if (!dw)
-				dw = std::make_shared<tensor>(tensor(0.0, w->getShape()));
-			if (USE_BIAS || !db)
-				db = std::make_shared<tensor>(tensor(0.0, b->getShape()));
-			if (!dx)
-				dx = std::make_shared<tensor>(tensor(0.0, std::vector<int>{w->getShape()[1], dy->getShape()[1]}));
-			m1->dy = dx;
+			if (USE_BIAS)
+			{
+				bias->dy = dy;
+				bias->is_bias = true;
+				bias->set_backward();
+				db = bias->dw;
+
+				mm->dy = bias->dx;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+			else
+			{
+				mm->dy = dy;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+
 			return 1;
-			*/
-			return -1;
 		}
 
 		void dense::update_weight()
@@ -123,6 +131,35 @@ namespace layers
 				m1 = get_input_id(x->getId());
 			unset_sub_graph();
 			return t3;
+		}
+
+		int conv::set_backward()
+		{
+			if (USE_BIAS)
+			{
+				bias->dy = dy;
+				bias->is_bias = true;
+				bias->set_backward();
+				db = bias->dw;
+
+				mm->dy = bias->dx;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+			else
+			{
+				mm->dy = dy;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+
+			return 1;
+		}
+
+		void conv::update_weight()
+		{
 		}
 
 		convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
@@ -188,6 +225,37 @@ namespace layers
 				m1 = get_input_id(x->getId());
 			unset_sub_graph();
 			return t3;
+		}
+
+		int convTranspose::set_backward()
+		{
+			if (USE_BIAS)
+			{
+				bias->dy = dy;
+				bias->is_bias = true;
+				bias->set_backward();
+				db = bias->dw;
+
+				mm->dy = bias->dx;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+
+				//col2im
+			}
+			else
+			{
+				mm->dy = dy;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+
+			return 1;
+		}
+
+		void convTranspose::update_weight()
+		{
 		}
 
 		//TODO rnn needs dynamic graph
@@ -298,6 +366,22 @@ namespace layers
 
 			auto m = get_input_id(x->getId());
 			return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+		}
+
+		int RNN::set_backward()
+		{
+			if (USE_BIAS)
+			{
+			}
+			else
+			{
+			}
+
+			return 1;
+		}
+
+		void RNN::update_weight()
+		{
 		}
 
 		LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
@@ -417,6 +501,22 @@ namespace layers
 			return std::forward_as_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
 		}
 
+		int LSTM::set_backward()
+		{
+			if (USE_BIAS)
+			{
+			}
+			else
+			{
+			}
+
+			return 1;
+		}
+
+		void LSTM::update_weight()
+		{
+		}
+
 		GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
 			float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
@@ -525,6 +625,22 @@ namespace layers
 			}
 			auto m = get_input_id(x->getId());
 			return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+		}
+
+		int GRU::set_backward()
+		{
+			if (USE_BIAS)
+			{
+			}
+			else
+			{
+			}
+
+			return 1;
+		}
+
+		void GRU::update_weight()
+		{
 		}
 	}
 }

@@ -86,6 +86,7 @@ namespace layers
 	public:
 		transpose(std::vector<int> order);
 		std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
+		int set_backward() override;
 	};
 }
 

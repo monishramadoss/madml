@@ -30,10 +30,8 @@ namespace layers
 		public:
 			conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
-
-			void update_weight() override
-			{
-			};
+			int set_backward() override;
+			void update_weight() override;
 
 		private:
 			int m_num_filters;
@@ -51,10 +49,8 @@ namespace layers
 		public:
 			convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
-
-			void update_weight() override
-			{
-			};
+			int set_backward() override;
+			void update_weight() override;
 
 		private:
 			int m_num_filters;
@@ -77,10 +73,8 @@ namespace layers
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
 				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
-
-			void update_weight() override
-			{
-			};
+			int set_backward() override;
+			void update_weight() override;
 
 		private:
 			std::shared_ptr<tensor> x, h;
@@ -101,10 +95,8 @@ namespace layers
 				const std::shared_ptr<tensor>& x);
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
 				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c);
-
-			void update_weight() override
-			{
-			};
+			int set_backward() override;
+			void update_weight() override;
 
 		private:
 			std::shared_ptr<tensor> x, h, c;
@@ -124,10 +116,9 @@ namespace layers
 				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
+			int set_backward() override;
+			void update_weight() override;
 
-			void update_weight() override
-			{
-			};
 		protected:
 
 		private:

@@ -76,7 +76,8 @@ namespace layers
 			dw = std::make_shared<tensor>(tensor(0., w->getShape()));
 		if (!dy)
 			dy = std::make_shared<tensor>(tensor(0., y->getShape()));
-		if (m_pipeline == nullptr)
+
+		if (derivative->m_pipeline == nullptr)
 		{
 			m_param.total = x->count();
 			derivative->createShaderModule(kernel::shaders::d_gemm_spv, sizeof(kernel::shaders::d_gemm_spv));

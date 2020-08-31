@@ -103,12 +103,9 @@ namespace layers
 			m_param.depth_col = depth;
 			m_param.height_col = height;
 			m_param.width_col = width;
-			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1)
-				+ m_param.pad_d + 1;
-			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h -
-				1) + m_param.pad_h + 1;
-			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1)
-				+ m_param.pad_w + 1;
+			m_param.depth_vol = (depth - 1) * m_param.stride_d - 2 * m_param.pad_d + m_param.dilation_d * (m_param.kernel_d - 1) + m_param.pad_d + 1;
+			m_param.height_vol = (height - 1) * m_param.stride_h - 2 * m_param.pad_h + m_param.dilation_h * (m_param.kernel_h - 1) + m_param.pad_h + 1;
+			m_param.width_vol = (width - 1) * m_param.stride_w - 2 * m_param.pad_w + m_param.dilation_w * (m_param.kernel_w - 1) + m_param.pad_w + 1;
 		}
 		const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
 		const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.width_vol);
@@ -171,13 +168,16 @@ namespace layers
 		return stride;
 	}
 
-	transpose::transpose(const std::vector<int> order) : Base_Layer<transpose_param>(4)
+	transpose::transpose(const std::vector<int> order) : Base_Layer<transpose_param>(2)
 	{
 		m_type = "transpose";
 		m_param.num_axes = static_cast<int>(order.size());
 		stride.resize(order.size() * 3);
+		d_stride.resize(order.size() * 3);
 		for (size_t i = 0; i < m_param.num_axes; ++i)
 			stride[i] = order[i];
+		for (size_t i = 0; i < m_param.num_axes; ++i)
+			d_stride[i] = order[i];
 		bck_shader = kernel::shaders::transpose_spv;
 		bck_codeSize = sizeof(kernel::shaders::transpose_spv);
 	}
@@ -191,9 +191,20 @@ namespace layers
 				new_shape[i] = _x->getShape()[stride[i]];
 			old_shape = _x->getShape();;
 			stride = prepareStrides(old_shape, new_shape, stride);
+			w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
 		}
-		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x,
-			std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32)), Format::kFormatFp32, new_shape);
+		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w, Format::kFormatFp32, new_shape);
+	}
+
+	int transpose::set_backward()
+	{
+		if (!dw)
+		{
+			d_stride = prepareStrides(new_shape, old_shape, d_stride);
+			dw = std::make_shared<tensor>(tensor((char*)d_stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32));
+		}
+		dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, old_shape);
+		return dy->getId();
 	}
 
 	void transpose::computeGroupCount()

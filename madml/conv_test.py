@@ -146,15 +146,14 @@ if __name__ == "__main__":
     # ot = np.matmul(W, ic).reshape(-1, 2, 5, 5)
     # print(ot)
     # print(ot.shape, '\n')
-
-
-    x = np.arange(0, 25, dtype=np.float32).reshape(1, 1, 5, 5)
+    x = np.arange(0, 25, dtype=np.float32).reshape(1,1,5,5)
+    y = np.transpose(x, (0,1,3,2))
+    x2 = np.transpose(y, (0,1,3,2))
+    print(x == x2)
+    # x = np.arange(0, 25, dtype=np.float32).reshape(1, 1, 5, 5)
     
-    W = np.array([[[[7., 2.],  # (1, 1, 2, 2)
-                    [1., 9.]]]]).astype(np.float32)
+    # W = np.array([[[[7., 2.],  # (1, 1, 2, 2)
+    #                 [1., 9.]]]]).astype(np.float32)
 
-    W = W.reshape(1, -1)    
-    ic = im2col_2(x, kernel=(3,3), pad=(1,1), stride=(2,2), dilation=(1,1))
-#    ot = np.matmul(W, ic).reshape(-1, 1, 5, 5)
-#    print(ot)
-#    print(ot.shape)
+    # W = W.reshape(1, -1)    
+    # ic = im2col_2(x, kernel=(3,3), pad=(1,1), stride=(2,2), dilation=(1,1))

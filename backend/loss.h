@@ -11,7 +11,7 @@ namespace loss
 		int total;
 	};
 
-	class Loss : Base_Layer<loss_param>
+	class Loss : public Base_Layer<loss_param>
 	{
 	public:
 		Loss();
