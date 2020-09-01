@@ -20,21 +20,51 @@ namespace test
 		for (int i = 0; i < shape.size(); ++i)
 			std::cout << shape[i] << ((shape.size() - 1) == i ? "" : ", ");
 		std::cout << std::endl;
-		int m_offset = shape[0] * shape[1];
-		for (int offset = 0; offset < m_offset; ++offset)
+
+		int shape_offset = 1;
+		std::vector<int> buckets;
+		for (int i = 0; i < shape.size() - 2; ++i)
 		{
-			std::cout << offset << std::endl;
-			for (int i = 0; i < shape[shape.size() - 2]; ++i)
+			shape_offset *= shape[i];
+			buckets.push_back(0);
+		}
+
+		int m = shape.size() < 2 ? 1 : shape[shape.size() - 2];
+		int n = shape[shape.size() - 1];
+		int counter = static_cast<int>(shape.size()) - 3;
+		int stage_counter = shape[counter];
+		if (shape.size() > 2)
+			buckets.back() = -1;
+
+		for (int offset = 0; offset < shape_offset; ++offset)
+		{
+			if (shape.size() > 2)
+			{
+				buckets[shape.size() - 3]++;
+				if (offset >= stage_counter)
+				{
+					if (counter > 0)
+						counter--;
+					for (int c = counter; c < buckets.size(); ++c)
+						buckets[c] = 0;
+					buckets[counter]++;
+					stage_counter *= shape[counter];
+				}
+
+				for (size_t b = 0; b < buckets.size(); ++b)
+					std::cout << buckets[b] << ((b + 1) == buckets.size() ? "\n" : ":");
+			}
+
+			for (int i = 0; i < m; ++i)
 			{
 				std::cout << "[ ";
-				for (int j = 0; j < shape[shape.size() - 1]; ++j)
+				for (int j = 0; j < n; ++j)
 				{
-					std::cout << " " << data[offset * shape[shape.size() - 2] * shape[shape.size() - 1] + i * shape[shape.size() - 1] + j] << ",";
+					std::cout << " " << data[offset * m * n + i * n + j] << ((j + 1) == n ? " ]\n" : ", ");
 				}
-				std::cout << "]" << std::endl;
 			}
+			std::cout << std::endl;
 		}
 	}
 }
-
 #endif

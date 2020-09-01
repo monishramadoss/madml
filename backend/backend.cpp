@@ -6,7 +6,7 @@
 #include <future>
 
 #include "backend.h"
-
+#include "test.h"
 using namespace std::chrono;
 
 //#define TEST_TRANS
@@ -95,7 +95,7 @@ void test_fn()
 		auto cnn_layer_1_1 = layers::nn::conv(1, { 1,3,3 }, { 1,2,2 }, { 0,1,1 }, { 1,1,1 }, 0, false);
 		auto cnn_layer_2 = layers::nn::convTranspose(2, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 
-		auto t3 = cnn_layer_1(t1);
+		/*auto t3 = cnn_layer_1(t1);
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t1->toHost()), t1->getShape());
 		std::cout << "output" << std::endl;
@@ -104,10 +104,11 @@ void test_fn()
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t11->toHost()), t11->getShape());
 		std::cout << "output" << std::endl;
-		test::PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());
+		test::PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());*/
 		auto t4 = cnn_layer_2(t2);
-		std::cout << "input" << std::endl;
-		test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
+
+		//std::cout << "input" << std::endl;
+		//test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << "output" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
 	}

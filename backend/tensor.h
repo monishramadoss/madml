@@ -3,6 +3,7 @@
 #include <memory>
 #include <numeric>
 #include <random>
+#include <iostream>
 #include <vulkan/vulkan.h>
 #include "backend.h"
 
@@ -32,6 +33,7 @@ public:
 	bool isEmpty() const { return size_in_byte == 0; }
 	void copyTo(tensor dst) const;
 	std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
+	friend std::ostream& operator<<(std::ostream& os, const tensor& dt);
 
 	// init
 

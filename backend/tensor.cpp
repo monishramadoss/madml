@@ -154,6 +154,23 @@ void tensor::update_id()
 	id = objId++;
 }
 
+std::ostream& operator<<(std::ostream& os, const tensor& t)
+{
+	auto shape = t.getShape();
+	auto fmt = t.getFormat();
+	if (fmt == Format::kFormatFp32)
+	{
+		float* data = reinterpret_cast<float*>(t.toHost());
+	}
+
+	if (fmt == Format::kFormatInt32 || fmt == Format::kFormatBool)
+	{
+		int* data = reinterpret_cast<int*>(t.toHost());
+	}
+
+	return os;
+}
+
 namespace init
 {
 	char* fill_memory_iter(std::vector<int> shape)
