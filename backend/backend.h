@@ -41,4 +41,5 @@ bool isAvailable();
 #include "nn_layers.h"
 #include "loss.h"
 
+#include "test.h"
 #endif

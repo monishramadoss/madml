@@ -23,6 +23,7 @@
     <ClInclude Include="loss.h" />
     <ClInclude Include="matmul.h" />
     <ClInclude Include="nn_layers.h" />
+    <ClInclude Include="test.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="buffer.h" />
     <ClInclude Include="context.h" />

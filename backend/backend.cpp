@@ -20,49 +20,6 @@ using namespace std::chrono;
 
 //#define TEST_MNIST
 
-void PrintDiffer(float* data, int size)
-{
-	std::map<float, int> diff_freq;
-	for (int i = 0; i < size; ++i)
-		diff_freq[data[i]] += 1;
-	std::cout << "{";
-	for (const auto df : diff_freq)
-		std::cout << df.first << ": " << df.second << ", ";
-	std::cout << "}" << std::endl;
-}
-
-void PrintDiffer(int* data, int size)
-{
-	std::map<int, int> diff_freq;
-	for (int i = 0; i < size; ++i)
-		diff_freq[static_cast<int>(data[i])] += 1;
-	std::cout << "{";
-	for (const auto df : diff_freq)
-		std::cout << df.first << ": " << df.second << ", ";
-	std::cout << "}" << std::endl;
-}
-
-void PrintMatrix(float* data, std::vector<int> shape)
-{
-	for (int i = 0; i < shape.size(); ++i)
-		std::cout << shape[i] << ((shape.size() - 1) == i ? "" : ", ");
-	std::cout << std::endl;
-	int m_offset = shape[0] * shape[1];
-
-	for (int offset = 0; offset < m_offset; ++offset)
-	{
-		std::cout << offset << std::endl;
-		for (int i = 0; i < shape[shape.size() - 2]; ++i)
-		{
-			std::cout << "[ ";
-			for (int j = 0; j < shape[shape.size() - 1]; ++j)
-			{
-				std::cout << " " << data[offset * shape[shape.size() - 2] * shape[shape.size() - 1] + i * shape[shape.size() - 1] + j] << ",";
-			}
-			std::cout << "]" << std::endl;
-		}
-	}
-}
 void test_fn()
 {
 #ifdef TEST_TRANS
@@ -74,9 +31,9 @@ void test_fn()
 		auto k1 = layers::transpose(std::vector<int>{ 1, 2, 0});
 		auto t2 = k1.operator()(t1);
 
-		PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
 		std::cout << "\n\n\n";
-		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 	}
 #endif
 
@@ -93,9 +50,9 @@ void test_fn()
 		auto t4 = k2(t2);
 		auto t5 = k3(t1);
 		auto t3 = k1(t4, t5);
-		PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 	}
 #endif
 
@@ -112,12 +69,13 @@ void test_fn()
 		auto loss = loss::MSE();
 
 		auto t3 = layer(t1);
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		auto t4 = layer2(t3);
 		auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
 		loss(y_true, t4);
 		loss.backward();
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+
+		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 	}
 #endif
 #ifdef TEST_CNN
@@ -139,20 +97,20 @@ void test_fn()
 
 		auto t3 = cnn_layer_1(t1);
 		std::cout << "input" << std::endl;
-		PrintMatrix(reinterpret_cast<float*>(t1->toHost()), t1->getShape());
+		test::PrintMatrix(reinterpret_cast<float*>(t1->toHost()), t1->getShape());
 		std::cout << "output" << std::endl;
-		PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
+		test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
 		auto t31 = cnn_layer_1_1(t11);
 		std::cout << "input" << std::endl;
-		PrintMatrix(reinterpret_cast<float*>(t11->toHost()), t11->getShape());
+		test::PrintMatrix(reinterpret_cast<float*>(t11->toHost()), t11->getShape());
 		std::cout << "output" << std::endl;
-		PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());
+		test::PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());
 		auto t4 = cnn_layer_2(t2);
 		std::cout << "input" << std::endl;
-		PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
+		test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << "output" << std::endl;
-		PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
-	}
+		test::PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
+}
 #endif
 #ifdef TEST_RNN
 	int length = 4;
@@ -186,9 +144,9 @@ void test_fn()
 		auto t4 = std::get<1>(tup);
 		auto t5 = std::get<2>(tup);
 
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		std::cout << std::endl;
 	}
 
@@ -202,8 +160,8 @@ void test_fn()
 		auto t3 = std::get<0>(tup);
 		auto t4 = std::get<1>(tup);
 
-		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cout << std::endl;
 	}
 #endif
@@ -217,6 +175,7 @@ void test_fn()
 		auto l5 = layers::nn::dense(10, true);
 		auto l6 = layers::activation::relu();
 		auto l7 = layers::math::add();
+		auto loss_fn = loss::MSE();
 
 		auto t0 = std::make_shared<tensor>(tensor(-0.5, std::vector<int>{3, 1, 784}));
 		auto y_true = std::make_shared<tensor>(tensor(1, std::vector<int>{3, 1, 10}));
@@ -228,7 +187,8 @@ void test_fn()
 		auto t5 = l5(tx);
 		auto t6 = l6(t5);
 
-		PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
+		loss_fn(t6, y_true);
+		test::PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
 	}
 
 #endif
