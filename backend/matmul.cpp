@@ -17,7 +17,7 @@ namespace layers
 	matmul::matmul() : Base_Layer<matmul_param>(3)
 	{
 		m_type = "matmul";
-		m_param = { 0, 0, 0 };
+		m_param = {0, 0, 0};
 		bck_codeSize = sizeof(kernel::shaders::d_gemm_spv);
 		bck_shader = kernel::shaders::d_gemm_spv;
 		bck_shader = kernel::shaders::d_gemm_spv;
@@ -46,23 +46,21 @@ namespace layers
 			m_param.m = x->getShape()[1];
 			m_param.k = x->getShape()[2];
 			m_param.n = w->getShape()[1];
-			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
-				std::vector<int>{m_param.batchsize, m_param.m, m_param.n});
+			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w,
+			                               Format::kFormatFp32,
+			                               std::vector<int>{m_param.batchsize, m_param.m, m_param.n});
 		}
-		else
-		{
-			if (x->getShape().size() != w->getShape().size())
-				std::cerr << "Mat mul dim ERROR" << std::endl;
-			if (x->getShape()[x->getShape().size() - 1] != w->getShape()[0])
-				std::cerr << "Mat mul dim ERROR" << std::endl;
-			m_param.total = 0;
-			m_param.batchsize = 1;
-			m_param.m = x->getShape()[0];
-			m_param.k = x->getShape()[1];
-			m_param.n = w->getShape()[1];
-			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
-				std::vector<int>{m_param.m, m_param.n});
-		}
+		if (x->getShape().size() != w->getShape().size())
+			std::cerr << "Mat mul dim ERROR" << std::endl;
+		if (x->getShape()[x->getShape().size() - 1] != w->getShape()[0])
+			std::cerr << "Mat mul dim ERROR" << std::endl;
+		m_param.total = 0;
+		m_param.batchsize = 1;
+		m_param.m = x->getShape()[0];
+		m_param.k = x->getShape()[1];
+		m_param.n = w->getShape()[1];
+		return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
+		                               std::vector<int>{m_param.m, m_param.n});
 	}
 
 	int matmul::set_backward()

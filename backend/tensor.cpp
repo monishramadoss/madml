@@ -162,7 +162,7 @@ namespace init
 		auto ret = new float[_shape];
 		for (int i = 0; i < _shape; ++i)
 		{
-			ret[i] = float(i);
+			ret[i] = static_cast<float>(i);
 		}
 		return reinterpret_cast<char*>(ret);
 	}

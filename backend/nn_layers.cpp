@@ -78,8 +78,8 @@ namespace layers
 		}
 
 		conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-			m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+		           bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+		                            m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 		{
 			m_type = "conv";
 			update_id();
@@ -107,7 +107,7 @@ namespace layers
 			if (!w)
 			{
 				int c = static_cast<int>(channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w);
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters, c }));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, c}));
 			}
 
 			t1 = kernel->operator()(x); //27 9
@@ -163,10 +163,10 @@ namespace layers
 		}
 
 		convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-			int padding_type,
-			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
-			m_stride(stride), m_padding(padding), m_dilation(dilation),
-			USE_BIAS(use_bias)
+		                             int padding_type,
+		                             bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
+		                                              m_stride(stride), m_padding(padding), m_dilation(dilation),
+		                                              USE_BIAS(use_bias)
 		{
 			m_type = "convT";
 			update_id();
@@ -202,7 +202,7 @@ namespace layers
 			if (!w)
 			{
 				int c = static_cast<int>(channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w);
-				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{ m_num_filters, c }));
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, c}));
 			}
 
 			t1 = kernel->operator()(x);
@@ -261,7 +261,7 @@ namespace layers
 		//TODO rnn needs dynamic graph
 
 		RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-			float dropout, bool bias, std::string nonlinearity) :
+		         float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
 		{
@@ -282,7 +282,8 @@ namespace layers
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
 					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input})));
-					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size})));
+					weights_biases.push_back(
+						std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size})));
 					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size})));
 					if (USE_BIAS)
 					{
@@ -322,7 +323,8 @@ namespace layers
 			{
 				const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 			}
 
 			for (int dir = 0; dir < m_directions; ++dir)
@@ -347,7 +349,8 @@ namespace layers
 							weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
 							output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
 						}
-						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<uint64_t>(m_seq_length) * l + i;
+						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+							uint64_t>(m_seq_length) * l + i;
 						cells[cell_idx]->operator()(
 							cache[0 + cache_idx],
 							cache[1 + cache_idx],
@@ -359,7 +362,7 @@ namespace layers
 							weights_biases[3 + weight_bias_idx],
 							weights_biases[4 + weight_bias_idx],
 							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-							);
+						);
 					}
 				}
 			}
@@ -385,7 +388,7 @@ namespace layers
 		}
 
 		LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-			float dropout, bool bias, std::string nonlinearity) :
+		           float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 		{
@@ -406,7 +409,8 @@ namespace layers
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
 					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 4})));
-					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4})));
+					weights_biases.push_back(
+						std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4})));
 					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 4})));
 
 					if (USE_BIAS)
@@ -451,8 +455,10 @@ namespace layers
 			{
 				const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 			}
 
 			for (int dir = 0; dir < m_directions; ++dir)
@@ -492,7 +498,7 @@ namespace layers
 							weights_biases[3 + weight_bias_idx],
 							weights_biases[4 + weight_bias_idx],
 							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-							);
+						);
 					}
 				}
 			}
@@ -518,7 +524,7 @@ namespace layers
 		}
 
 		GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-			float dropout, bool bias, std::string nonlinearity) :
+		         float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 		{
@@ -539,7 +545,8 @@ namespace layers
 					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 
 					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 3})));
-					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3})));
+					weights_biases.push_back(
+						std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3})));
 					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 3})));
 
 					if (USE_BIAS)
@@ -580,7 +587,8 @@ namespace layers
 			{
 				const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
 				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
-				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
 			}
 
 			for (int dir = 0; dir < m_directions; ++dir)
@@ -619,7 +627,7 @@ namespace layers
 							weights_biases[3 + weight_bias_idx],
 							weights_biases[4 + weight_bias_idx],
 							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-							);
+						);
 					}
 				}
 			}

@@ -62,7 +62,7 @@ void test_fn()
 		const int M = 64;
 		const int K = 64;
 		const int N = 64;
-		const std::vector<int> shape_x{ M, K };
+		const std::vector<int> shape_x{M, K};
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto layer = layers::nn::dense(N, false);
 		auto layer2 = layers::nn::dense(N, false);

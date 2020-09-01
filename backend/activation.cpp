@@ -52,7 +52,7 @@ namespace layers
 			m_type = "hardtanh";
 			bck_shader = kernel::shaders::d_celu_spv;
 			bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
-			m_param = { 0, min_val, max_val };
+			m_param = {0, min_val, max_val};
 		}
 
 		std::shared_ptr<tensor>& hardtanh::operator()(const std::shared_ptr<tensor>& x)

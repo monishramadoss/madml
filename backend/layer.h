@@ -126,15 +126,15 @@ protected:
 
 public:
 	std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
-		const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
-		std::vector<int> output_shape = {});
+	                                                 const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
+	                                                 std::vector<int> output_shape = {});
 	std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
-		const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
-		Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+	                                                 const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
+	                                                 Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 };
 
 template <typename T>
-Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
+Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({0})
 {
 	update_id();
 	if (!sub_graph_bit())
@@ -183,27 +183,24 @@ int Base_Layer<T>::set_backward()
 	{
 		return dy->getId();
 	}
-	else
+	if (bck_codeSize)
 	{
-		if (bck_codeSize)
+		if (train() && m2)
 		{
-			if (train() && m2)
-			{
-				dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
-				m2->dy = dw;
-			}
-			else
-				dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
-			m1->dy = dx;
+			dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, x->getShape());
+			m2->dy = dw;
 		}
-		return dy->getId();
+		else
+			dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, Format::kFormatFp32, x->getShape());
+		m1->dy = dx;
 	}
+	return dy->getId();
 }
 
 template <typename T>
 std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
-	const std::shared_ptr<tensor>& _x, Format fmt,
-	std::vector<int> output_shape)
+                                                                const std::shared_ptr<tensor>& _x, Format fmt,
+                                                                std::vector<int> output_shape)
 {
 	x = _x;
 	float* t = (float*)x->toHost();
@@ -243,9 +240,9 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 
 template <typename T>
 std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
-	const std::shared_ptr<tensor>& _x,
-	const std::shared_ptr<tensor>& _w, Format fmt,
-	std::vector<int> output_shape)
+                                                                const std::shared_ptr<tensor>& _x,
+                                                                const std::shared_ptr<tensor>& _w, Format fmt,
+                                                                std::vector<int> output_shape)
 {
 	x = _x;
 	w = _w;

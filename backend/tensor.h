@@ -24,7 +24,7 @@ public:
 	int count(int start_axis = 0, int end_axis = -1) const;
 	char* toHost() const;
 	tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false,
-		Format fmt = Format::kFormatInvalid);
+	               Format fmt = Format::kFormatInvalid);
 	tensor reshape(const std::vector<int>& shape);
 	void set_to(float val) const;
 	Format getFormat() const;

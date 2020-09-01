@@ -47,7 +47,8 @@ namespace layers
 		class convTranspose : public Module
 		{
 		public:
-			convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
+			convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
+			              bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
 			int set_backward() override;
 			void update_weight() override;
@@ -69,7 +70,7 @@ namespace layers
 		{
 		public:
 			RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
-				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+			    int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
 				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
@@ -90,7 +91,7 @@ namespace layers
 		{
 		public:
 			LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
-				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+			     int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
 				const std::shared_ptr<tensor>& x);
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
@@ -113,9 +114,10 @@ namespace layers
 		{
 		public:
 			GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
-				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+			    int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
 			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
-			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
 			int set_backward() override;
 			void update_weight() override;
 

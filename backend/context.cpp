@@ -41,7 +41,7 @@ static uint32_t getComputeQueueFamilyIndex()
 }
 
 bool checkExtensionAvailability(const char* extension_name,
-	const std::vector<VkExtensionProperties>& available_extensions)
+                                const std::vector<VkExtensionProperties>& available_extensions)
 {
 	for (const auto& available_extension : available_extensions)
 	{
@@ -52,9 +52,9 @@ bool checkExtensionAvailability(const char* extension_name,
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallbackFn(VkDebugReportFlagsEXT flags,
-	VkDebugReportObjectTypeEXT objectType, uint64_t object,
-	size_t location, int32_t messageCode, const char* pLayerPrefix,
-	const char* pMessage, void* pUserData)
+                                                     VkDebugReportObjectTypeEXT objectType, uint64_t object,
+                                                     size_t location, int32_t messageCode, const char* pLayerPrefix,
+                                                     const char* pMessage, void* pUserData)
 {
 	std::cout << "Debug Report: " << pLayerPrefix << ":" << pMessage << std::endl;
 	return VK_FALSE;
