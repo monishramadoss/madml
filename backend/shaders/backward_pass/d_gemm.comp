@@ -47,14 +47,9 @@ void d_gemm(){
         for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
             for (uint globalCol = gl_GlobalInvocationID.y; globalCol < p.N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
                 float acc = 0.0;
-                float dy = DY[globalDepth*p.M*p.N + globalRow*p.M + globalCol];
                 for (uint k=0u; k < p.K; k++){
-                    DW[globalCol*p.K + k] += (X[globalDepth*p.M*p.K + globalRow*p.K + k] * dy) / p.batchsize;
-                    acc += dy* W[k*p.N + globalCol];
+                
                 }
-
-                DX[globalDepth*p.M*p.N + globalCol*p.M + globalRow] = acc;
-
             }
         }
     }
