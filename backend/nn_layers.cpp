@@ -13,7 +13,7 @@ namespace layers
 			m_type = "dense";
 			update_id();
 			add_module(this);
-			requires_sub_graph = true;
+
 			set_sub_graph();
 			mm = new matmul();
 			if (USE_BIAS)
@@ -78,13 +78,12 @@ namespace layers
 		}
 
 		conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-		           bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-		                            m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+			m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 		{
 			m_type = "conv";
 			update_id();
 			add_module(this);
-			requires_sub_graph = true;
 			set_sub_graph();
 			mm = new matmul();
 			if (USE_BIAS)
@@ -163,15 +162,14 @@ namespace layers
 		}
 
 		convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-		                             int padding_type,
-		                             bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
-		                                              m_stride(stride), m_padding(padding), m_dilation(dilation),
-		                                              USE_BIAS(use_bias)
+			int padding_type,
+			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
+			m_stride(stride), m_padding(padding), m_dilation(dilation),
+			USE_BIAS(use_bias)
 		{
 			m_type = "convT";
 			update_id();
 			add_module(this);
-			requires_sub_graph = true;
 			set_sub_graph();
 			mm = new matmul();
 			if (USE_BIAS)
@@ -220,6 +218,7 @@ namespace layers
 			{
 				y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
 			}
+
 			t3 = trans->operator()(!t2 ? y : t2);
 			if (!m1)
 				m1 = get_input_id(x->getId());
@@ -261,14 +260,14 @@ namespace layers
 		//TODO rnn needs dynamic graph
 
 		RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-		         float dropout, bool bias, std::string nonlinearity) :
+			float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
 		{
 			m_type = "RNN";
 			update_id();
 			add_module(this);
-			requires_sub_graph = true;
+
 			if (bidirectional)
 				m_directions = 2;
 			if (output_size == 0)
@@ -362,7 +361,7 @@ namespace layers
 							weights_biases[3 + weight_bias_idx],
 							weights_biases[4 + weight_bias_idx],
 							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-						);
+							);
 					}
 				}
 			}
@@ -388,14 +387,14 @@ namespace layers
 		}
 
 		LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-		           float dropout, bool bias, std::string nonlinearity) :
+			float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 		{
 			m_type = "LSTM";
 			update_id();
 			add_module(this);
-			requires_sub_graph = true;
+
 			if (bidirectional)
 				m_directions = 2;
 			if (output_size == 0)
@@ -498,7 +497,7 @@ namespace layers
 							weights_biases[3 + weight_bias_idx],
 							weights_biases[4 + weight_bias_idx],
 							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-						);
+							);
 					}
 				}
 			}
@@ -524,14 +523,14 @@ namespace layers
 		}
 
 		GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-		         float dropout, bool bias, std::string nonlinearity) :
+			float dropout, bool bias, std::string nonlinearity) :
 			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 		{
 			m_type = "GRU";
 			update_id();
 			add_module(this);
-			requires_sub_graph = true;
+
 			if (bidirectional)
 				m_directions = 2;
 			if (output_size == 0)
@@ -627,7 +626,7 @@ namespace layers
 							weights_biases[3 + weight_bias_idx],
 							weights_biases[4 + weight_bias_idx],
 							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-						);
+							);
 					}
 				}
 			}

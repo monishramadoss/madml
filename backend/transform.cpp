@@ -45,18 +45,14 @@ namespace layers
 			m_param.depth_vol = depth;
 			m_param.height_vol = height;
 			m_param.width_vol = width;
-			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.
-				stride_d + 1;
-			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.
-				stride_h + 1;
-			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.
-				stride_w + 1;
+			m_param.depth_col = (depth + 2 * m_param.pad_d - (m_param.dilation_d * (m_param.kernel_d - 1) + 1)) / m_param.stride_d + 1;
+			m_param.height_col = (height + 2 * m_param.pad_h - (m_param.dilation_h * (m_param.kernel_h - 1) + 1)) / m_param.stride_h + 1;
+			m_param.width_col = (width + 2 * m_param.pad_w - (m_param.dilation_w * (m_param.kernel_w - 1) + 1)) / m_param.stride_w + 1;
 		}
 		const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
-		const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.
-			width_col);
+		const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col);
 		layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32,
-		                        std::vector<int>{n_out_plane, output_length});
+			std::vector<int>{n_out_plane, output_length});
 		return y;
 	}
 
@@ -116,7 +112,7 @@ namespace layers
 		const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.
 			width_vol);
 		layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
-		                        std::vector<int>{n_out_plane, output_length});
+			std::vector<int>{n_out_plane, output_length});
 
 		float* t = (float*)y->toHost();
 		std::cout << std::endl;
@@ -174,7 +170,7 @@ namespace layers
 		return stride;
 	}
 
-	transpose::transpose(const std::vector<int> order) : Base_Layer<transpose_param>(2)
+	transpose::transpose(const std::vector<int> order) : Base_Layer<transpose_param>(3)
 	{
 		m_type = "transpose";
 		m_param.num_axes = static_cast<int>(order.size());
@@ -198,10 +194,10 @@ namespace layers
 			old_shape = _x->getShape();
 			stride = prepareStrides(old_shape, new_shape, stride);
 			w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3},
-			                                    Format::kFormatInt32));
+				Format::kFormatInt32));
 		}
-		return layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w,
-		                               Format::kFormatFp32, new_shape);
+		layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w, Format::kFormatFp32, new_shape);
+		return y;
 	}
 
 	int transpose::set_backward()
@@ -210,7 +206,7 @@ namespace layers
 		{
 			d_stride = prepareStrides(new_shape, old_shape, d_stride);
 			dw = std::make_shared<tensor>(tensor((char*)d_stride.data(), std::vector<int>{m_param.num_axes * 3},
-			                                     Format::kFormatInt32));
+				Format::kFormatInt32));
 		}
 		dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, old_shape);
 		return dy->getId();

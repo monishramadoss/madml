@@ -12,9 +12,9 @@ using namespace std::chrono;
 //#define TEST_TRANS
 //#define TEST_MATH
 
-#define TEST_NN
+//#define TEST_NN
 
-//#define TEST_CNN
+#define TEST_CNN
 
 //#define TEST_RNN
 
@@ -62,7 +62,7 @@ void test_fn()
 		const int M = 64;
 		const int K = 64;
 		const int N = 64;
-		const std::vector<int> shape_x{M, K};
+		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto layer = layers::nn::dense(N, false);
 		auto layer2 = layers::nn::dense(N, false);
@@ -110,7 +110,7 @@ void test_fn()
 		test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << "output" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
-}
+	}
 #endif
 #ifdef TEST_RNN
 	int length = 4;

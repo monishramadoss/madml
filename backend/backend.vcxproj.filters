@@ -89,6 +89,12 @@
     <ClCompile Include="activation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="backend.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="loss.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="math.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -102,12 +108,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="backend.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="loss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

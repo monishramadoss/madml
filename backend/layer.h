@@ -76,8 +76,6 @@ namespace layers
 
 	protected:
 		std::string m_type;
-		bool requires_sub_graph = false;
-		std::vector<Module*> sub_graph;
 
 		static std::vector<Module*>& get_module();
 		static bool& sub_graph_bit();
