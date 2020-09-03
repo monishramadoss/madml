@@ -1,17 +1,19 @@
 #include <functional>
+#include <algorithm>
+
 #include "common.h"
 #include "utils.h"
 
 tensor::tensor(Format fmt) : size_in_byte(0), format(fmt)
 {
-	id = 0;
+	id = -1;
 	createContext();
 	if (!counted)
 	{
 		update_id();
 		counted = true;
 	}
-
+	is_onDevice = false;
 	m_device = kDevice;
 }
 
@@ -25,7 +27,8 @@ tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : size_in_
 	}
 
 	m_device = kDevice;
-	std::shared_ptr<char> m_data = std::shared_ptr<char>(data);
+	m_data = std::shared_ptr<char>(data);
+	is_onDevice = true;
 	reshape(data, shape);
 }
 
@@ -39,12 +42,13 @@ tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byt
 	}
 
 	m_device = kDevice;
-	std::shared_ptr<char> data;
+
 	if (fmt == Format::kFormatBool)
-		data = std::shared_ptr<char>(init::fill_memory_shape<int>(shape, static_cast<int>(c)));
+		m_data = std::shared_ptr<char>(init::fill_memory_shape<int>(shape, static_cast<int>(c)));
 	else
-		data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, c));
-	reshape(data.get(), shape);
+		m_data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, c));
+	is_onDevice = true;
+	reshape(m_data.get(), shape);
 }
 
 void* tensor::map() const
@@ -79,13 +83,9 @@ int tensor::dimNum() const { return static_cast<int>(m_shape.size()); }
 tensor tensor::reshape(const char* data, const std::vector<int>& shape, bool alloc, Format fmt)
 {
 	if (m_device == nullptr)
-	{
 		return *this;
-	}
-
 	if (m_shape != shape) m_shape = shape;
 	if (checkFormat(fmt) && fmt != format) format = fmt;
-
 	const size_t new_size = shapeCount(m_shape) * elementSize(format);
 	if (alloc || new_size > size_in_byte)
 		alloc = true;
@@ -98,30 +98,22 @@ tensor tensor::reshape(const char* data, const std::vector<int>& shape, bool all
 		memcpy(p, data, size_in_byte);
 		unMap();
 	}
-
 	return *this;
 }
 
 tensor tensor::reshape(const std::vector<int>& shape)
 {
-	const size_t cnt = count();
 	const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-	if (cnt != _shape)
+	if (count() != _shape)
 		std::cout << "SHAPE ERROR" << std::endl;
 	if (m_shape != shape) m_shape = shape;
 	return *this;
 }
 
-void tensor::set_to(float val) const
+void tensor::toDevice(const char* data)
 {
-	if (m_device == nullptr)
-		return;
-
-	auto p = static_cast<float*>(map());
-	const int cnt = count();
-	for (int i = 0; i < cnt; ++i)
-		*p++ = val;
-	unMap();
+	is_onDevice = true;
+	reshape(data, m_shape, true, format);
 }
 
 Format tensor::getFormat() const { return format; }
@@ -133,13 +125,15 @@ void tensor::copyTo(tensor dst) const
 	unMap();
 }
 
-char* tensor::toHost() const
+char* tensor::toHost()
 {
-	char* data = new char[size_in_byte];
-	void* p = map();
-	memcpy(data, p, size_in_byte);
+	char* p = (char*)map();
+	std::copy(p, p + size_in_byte, m_data.get());
 	unMap();
-	return data;
+
+	//m_buffer.reset();
+	is_onDevice = false;
+	return m_data.get();
 }
 
 int& tensor::get_object_id()
@@ -154,7 +148,7 @@ void tensor::update_id()
 	id = objId++;
 }
 
-std::ostream& operator<<(std::ostream& os, const tensor& t)
+std::ostream& operator<<(std::ostream& os, tensor& t)
 {
 	auto shape = t.getShape();
 	auto fmt = t.getFormat();
@@ -162,12 +156,10 @@ std::ostream& operator<<(std::ostream& os, const tensor& t)
 	{
 		float* data = reinterpret_cast<float*>(t.toHost());
 	}
-
 	if (fmt == Format::kFormatInt32 || fmt == Format::kFormatBool)
 	{
 		int* data = reinterpret_cast<int*>(t.toHost());
 	}
-
 	return os;
 }
 
@@ -178,9 +170,7 @@ namespace init
 		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 		auto ret = new float[_shape];
 		for (int i = 0; i < _shape; ++i)
-		{
 			ret[i] = static_cast<float>(i);
-		}
 		return reinterpret_cast<char*>(ret);
 	}
 

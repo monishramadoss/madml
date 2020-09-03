@@ -54,12 +54,13 @@ inline int shapeCount(const Shape& shape, int start = -1, int end = -1)
 	if (start == -1) start = 0;
 	if (end == -1) end = static_cast<int>(shape.size());
 	if (shape.empty()) return 0;
-
 	int elems = 1;
 
-	//assert(start <= (int)shape.size() &&	end <= (int)shape.size() && start <= end);
 	for (int i = start; i < end; i++)
-		elems *= shape[i];
+	{
+		if (elems * shape[i] <= INT32_MAX)
+			elems *= shape[i];
+	}
 
 	return elems;
 }

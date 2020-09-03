@@ -23,18 +23,25 @@ namespace test
 
 		int shape_offset = 1;
 		std::vector<int> buckets;
-		for (int i = 0; i < shape.size() - 2; ++i)
+		int counter;
+		int stage_counter;
+		
+		if (shape.size() > 2)
 		{
-			shape_offset *= shape[i];
-			buckets.push_back(0);
+			counter = static_cast<int>(shape.size()) - 3;
+			stage_counter = shape[counter];
+			for (int i = 0; i < shape.size() - 2; ++i)
+			{
+				shape_offset *= shape[i];
+				buckets.push_back(0);
+			}
+			buckets.back() = -1;
+
 		}
 
 		int m = shape.size() < 2 ? 1 : shape[shape.size() - 2];
 		int n = shape[shape.size() - 1];
-		int counter = static_cast<int>(shape.size()) - 3;
-		int stage_counter = shape[counter];
-		if (shape.size() > 2)
-			buckets.back() = -1;
+		
 
 		for (int offset = 0; offset < shape_offset; ++offset)
 		{

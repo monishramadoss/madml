@@ -23,19 +23,18 @@ public:
 	int dimNum() const;
 	int dimSize(int axis) const;
 	int count(int start_axis = 0, int end_axis = -1) const;
-	char* toHost() const;
+	char* toHost();
 	tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false,
 		Format fmt = Format::kFormatInvalid);
 	tensor reshape(const std::vector<int>& shape);
-	void set_to(float val) const;
+	void toDevice(const char* val);
 	Format getFormat() const;
 	size_t size() const { return size_in_byte; }
 	bool isEmpty() const { return size_in_byte == 0; }
+	bool onDevice() const { return is_onDevice; }
 	void copyTo(tensor dst) const;
 	std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
-	friend std::ostream& operator<<(std::ostream& os, const tensor& dt);
-
-	// init
+	friend std::ostream& operator<<(std::ostream& os, tensor& dt);
 
 private:
 
@@ -45,7 +44,9 @@ private:
 	std::vector<int> m_shape;
 	size_t size_in_byte;
 	std::shared_ptr<buffer> m_buffer;
+	std::shared_ptr<char> m_data;
 	Format format;
+	bool is_onDevice;
 	static int& get_object_id();
 	void update_id();
 };

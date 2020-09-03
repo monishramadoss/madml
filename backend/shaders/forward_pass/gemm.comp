@@ -1,16 +1,19 @@
-#version 450
-#define TSM 128                     // The tile-size in dvolension M
-#define TSN 128                     // The tile-size in dvolension N
-#define TSK 16                      // The tile-size in dvolension K
-#define WPTM 8                      // The amount of work-per-thread in dvolension M
-#define WPTN 8                      // The amount of work-per-thread in dvolension N
-#define LPTA ((TSK*TSM)/(RTSM*RTSN)) // Loads-per-thread for A
-#define LPTB ((TSK*TSN)/(RTSM*RTSN)) // Loads-per-thread for B
+#version 460
+#define TSM 128u                     // The tile-size in dvolension M
+#define TSN 128u                     // The tile-size in dvolension N
+#define TSK 16u                      // The tile-size in dvolension K
+#define WPTM 8u                      // The amount of work-per-thread in dvolension M
+#define WPTN 8u                     // The amount of work-per-thread in dvolension N
 #define RTSM (TSM/WPTM)    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
 #define RTSN (TSN/WPTN)   // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
+#define LPTA ((TSK*TSM)/(RTSM*RTSN)) // Loads-per-thread for A
+#define LPTB ((TSK*TSN)/(RTSM*RTSN)) // Loads-per-thread for B
+#define MOD2(x,y) ((x) % (y))
+#define DIV2(x,y) ((x) / (y))
 
-#define global_x(M) (M/WPTM)
-#define global_y(N) (N/WPTN)
+#define TS 32u
+#define WPT 8u
+#define RTS (TS/WPT)
 
 layout(push_constant) uniform pushBlock {
       int total;
@@ -34,8 +37,12 @@ layout (binding = 2) writeonly buffer ssbC {
   float C[];
 };
 
+
+
+shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
+shared float Bsub[TSN][TSK+2];
+
 void gemm_1(){
-//naive implementation
     int M = p.M;
     int N = p.N;
     int K = p.K;
@@ -49,39 +56,42 @@ void gemm_1(){
                     acc += A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; // MxN = MxK KxN
                 C[globalDepth*M*N + globalRow*N + globalCol] = acc;
             }
-      }
+        }
     }
 }
 
-shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
-shared float Bsub[TSN][TSK+2];
-
 void gemm_2(){
     // https://cnugteren.github.io/tutorial/pages/page8.html
-    int M = p.M;
-    int N = p.N;
-    int K = p.K;
+    uint M = p.M;
+    uint N = p.N;
+    uint K = p.K;
 
     uint tidm = gl_LocalInvocationID.x;
     uint tidn = gl_LocalInvocationID.y;
-    uint offsetM = uint(TSM * gl_WorkGroupID.x);
-    uint offsetN = uint(TSN * gl_WorkGroupID.y);
+    uint offsetM = TSM * gl_WorkGroupID.x;
+    uint offsetN = TSN * gl_WorkGroupID.y;
 
     float Areg;
-    float Breg[WPTM];
+    float Breg[WPTN];
     float acc[WPTM][WPTN];
 
-    for(int i = 0; i < WPTM; ++i){
-        for(int j = 0; j < WPTN; ++j){
-            acc[i][j] = 0;
+    for (uint wn=0; wn < WPTN; wn++) {
+        Breg[wn] = 0.0;
+        for (uint wm=0; wm < WPTM; wm++) {
+            acc[wm][wn] = 0.0;
         }
     }
 
-    for(int t = 0; t < K / TSK; ++t){
-        for(int la  = 0; la < LPTA; ++la){
-            uint id = la*RTSN*RTSM + tidn*RTSM + tidm;
-            uint row = id % TSM;
-            uint col = id / TSM;
+    uint tiles = uint(K/TSK);
+    if(tiles == 0)
+        tiles = 1;
+
+    for(uint t=0; t < tiles; ++t) {
+        for(uint la  = 0; la < LPTA; la++){
+            uint tid = tidn*RTSM + tidm;
+            uint id = la*RTSN*RTSM + tid;
+            uint row = MOD2(id,TSM);
+            uint col = DIV2(id,TSM);
             uint tileidx = TSK*t + col;
             Asub[col][row] = A[tileidx*M + offsetM + row];
             Bsub[row][col] = B[tileidx*N + offsetN + row];
@@ -89,8 +99,8 @@ void gemm_2(){
 
         barrier();
 
-        for(int k = 0; k < TSK; k++){
-            for (int wn=0; wn < WPTN; wn++) {
+        for(uint k=0; k < TSK; k++) {
+            for (uint wn=0; wn < WPTN; wn++) {
                 uint col = tidn + wn*RTSN;
                 Breg[wn] = Bsub[col][k];
             }
@@ -102,19 +112,25 @@ void gemm_2(){
                     acc[wm][wn] += Areg * Breg[wn];
             }
         }
-        barrier();
+
+        barrier();        
+
     }
 
     for (int wm=0; wm < WPTM; wm++) {
         uint globalRow = offsetM + tidm + wm*RTSM;
         for (int wn=0; wn < WPTN; wn++) {
             uint globalCol = offsetN + tidn + wn*RTSN;
-            C[globalCol*M + globalRow] = acc[wm][wn];
+            C[globalCol*M + globalRow] =  acc[wm][wn];
         }
     }
-
 }
 
+
+
 void main() {
-    gemm_1();
+    if(p.batchsize == 1 && p.M > 1024 && p.N > 1024)
+        gemm_2();
+    else
+        gemm_1();
 }

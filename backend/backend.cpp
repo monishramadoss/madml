@@ -4,13 +4,16 @@
 #include <map>
 #include <chrono>
 #include <future>
+#include <thread>
 
 #include "backend.h"
 #include "test.h"
+
 using namespace std::chrono;
 
 //#define TEST_TRANS
 //#define TEST_MATH
+//#define TEST_MEMORY
 
 //#define TEST_NN
 
@@ -22,12 +25,47 @@ using namespace std::chrono;
 
 void test_fn()
 {
+#ifdef TEST_MEMORY
+	std::cout << "testing memory" << std::endl;
+	{
+		const std::vector<int> shape_x{ 512,512,512,4 };
+		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
+		std::vector<double> toHost, toDevice;
+		for (int i = 0; i < 10; ++i)
+		{
+			std::cout << '\r' << i << " toHost ";
+			auto start = std::chrono::system_clock::now();
+			char* data = t1->toHost();
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> seconds = end - start;
+			toHost.push_back(seconds.count());
+			std::cout << seconds.count() << " toDevice ";
+			std::this_thread::sleep_for(5s);
+			start = std::chrono::system_clock::now();
+			t1->toDevice(data);
+			end = std::chrono::system_clock::now();
+			seconds = end - start;
+			toDevice.push_back(seconds.count());
+			std::cout << seconds.count();
+			std::this_thread::sleep_for(5s);
+		}
+		double avg1 = 0;
+		double avg2 = 0;
+		for (int i = 0; i < toHost.size(); ++i)
+		{
+			avg1 += toHost[i];
+			avg2 += toDevice[i];
+		}
+		std::cout << "\nAvg toHost: " << avg1 / toHost.size() << " Avg toDevice: " << avg2 / toDevice.size() << std::endl;
+	}
+#endif
+
 #ifdef TEST_TRANS
 	std::cout << "testing trans_op" << std::endl;
 	{
 		const std::vector<int> shape_x{ 2, 3, 4 };
 		char* dat = init::normal_distribution_init(shape_x, 20, 2);
-		auto t1 = std::make_shared < tensor>(tensor(dat, shape_x));
+		auto t1 = std::make_shared<tensor>(tensor(dat, shape_x));
 		auto k1 = layers::transpose(std::vector<int>{ 1, 2, 0});
 		auto t2 = k1.operator()(t1);
 
@@ -59,23 +97,39 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 64;
-		const int K = 64;
-		const int N = 64;
+		const int M = 2046;
+		const int K = 2046;
+		const int N = 2046;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto layer = layers::nn::dense(N, false);
 		auto layer2 = layers::nn::dense(N, false);
 		auto loss = loss::MSE();
+		std::vector<double> toHost;
 
-		auto t3 = layer(t1);
-		auto t4 = layer2(t3);
-		auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
-		loss(y_true, t4);
-		loss.backward();
+		for (int i = 0; i < 100; ++i)
+		{
+			auto start = std::chrono::system_clock::now();
+			auto t3 = layer(t1);
+			auto end = std::chrono::system_clock::now();
+			std::chrono::duration<double> seconds = end - start;
+			toHost.push_back(seconds.count());
+			std::cout << '\r' << i << " compute " << seconds.count();
 
-		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+			//test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		}
+
+		std::cout << std::endl << std::accumulate(toHost.begin(), toHost.end(), 0.0) / toHost.size();
+
+		//auto t4 = layer2(t3);
+		//auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
+
+		//loss(y_true, t4);
+
+		//loss.backward();
+
+		//test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		std::cin.get();
 	}
 #endif
 #ifdef TEST_CNN
@@ -95,7 +149,7 @@ void test_fn()
 		auto cnn_layer_1_1 = layers::nn::conv(1, { 1,3,3 }, { 1,2,2 }, { 0,1,1 }, { 1,1,1 }, 0, false);
 		auto cnn_layer_2 = layers::nn::convTranspose(2, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 
-		/*auto t3 = cnn_layer_1(t1);
+		auto t3 = cnn_layer_1(t1);
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t1->toHost()), t1->getShape());
 		std::cout << "output" << std::endl;
@@ -104,13 +158,14 @@ void test_fn()
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t11->toHost()), t11->getShape());
 		std::cout << "output" << std::endl;
-		test::PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());*/
+		test::PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());
 		auto t4 = cnn_layer_2(t2);
 
-		//std::cout << "input" << std::endl;
-		//test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
+		std::cout << "input" << std::endl;
+		test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << "output" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
+		std::cin.get();
 	}
 #endif
 #ifdef TEST_RNN
