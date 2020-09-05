@@ -13,7 +13,7 @@ namespace layers
 		int m;
 		int n;
 		int k;
-		int is_power_of_two;
+		int gemm_2;
 	};
 
 	class matmul : public Base_Layer<matmul_param>

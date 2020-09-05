@@ -15,9 +15,9 @@ using namespace std::chrono;
 //#define TEST_MATH
 //#define TEST_MEMORY
 
-#define TEST_NN
+//#define TEST_NN
 
-//#define TEST_CNN
+#define TEST_CNN
 
 //#define TEST_RNN
 
@@ -97,26 +97,32 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 1024;
+		const int M = 512;
 		const int K = 512;
-		const int N = 1024;
+		const int N = 512;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
-		auto layer = layers::nn::dense(N, false);
+		auto layer1 = layers::nn::dense(N, false);
 		auto layer2 = layers::nn::dense(N, false);
-		auto loss = loss::MSE();
+		auto layer3 = layers::nn::dense(N, false);
+		auto layer4 = layers::nn::dense(N, false);
+
 		std::vector<double> toHost;
 		auto start = std::chrono::system_clock::now();
-		auto t3 = layer(t1);
+		auto t3 = layer1(t1);
 		auto t4 = layer2(t3);
+		auto t5 = layer3(t4);
+		auto t6 = layer4(t5);
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> seconds = end - start;
 		double first_latency = seconds.count();
 		for (int i = 0; i < 1000; ++i)
 		{
 			start = std::chrono::system_clock::now();
-			t3 = layer(t1);
+			t3 = layer1(t1);
 			t4 = layer2(t3);
+			t5 = layer3(t4);
+			t6 = layer4(t5);
 			end = std::chrono::system_clock::now();
 			seconds = end - start;
 			toHost.push_back(seconds.count());
@@ -127,10 +133,12 @@ void test_fn()
 
 		//auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
 		//loss(y_true, t4);
-
 		//loss.backward();
-
+		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
+
 		std::cin.get();
 	}
 #endif

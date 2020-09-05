@@ -1,8 +1,17 @@
 #version 460
 
-#define TS 32u
-#define WPT 8u
-#define RTS (TS/WPT)
+#define TSM 128u                     // The tile-size in dvolension M
+#define TSN 128u                     // The tile-size in dvolension N
+#define TSK 16u                      // The tile-size in dvolension K
+#define WPTM 8u                     // The amount of work-per-thread in dvolension M
+#define WPTN 8u                     // The amount of work-per-thread in dvolension N
+#define RTSM (TSM/WPTM)     // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
+#define RTSN (TSN/WPTN)     // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
+#define LPTA uint(float(TSK*WPTM*WPTN)/float(TSN)) // Loads-per-thread for A
+#define LPTB uint(float(TSK*WPTM*WPTN)/float(TSM)) // Loads-per-thread for B
+#define MOD2(x,y) ((x) % (y))
+#define DIV2(x,y) ((x) / (y))
+
 
 layout(push_constant) uniform pushBlock {
       int total;
@@ -10,10 +19,10 @@ layout(push_constant) uniform pushBlock {
       int M;
       int N;
       int K;
-      int power_of_two;
+      int gemm_2;
 } p;
 
-layout (local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
+layout (local_size_x = RTSM, local_size_y = RTSN, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
   float A[];
@@ -46,18 +55,6 @@ void gemm_1(){
 }
 
 
-
-#define TSM 512u                     // The tile-size in dvolension M
-#define TSN 512u                     // The tile-size in dvolension N
-#define TSK 64u                      // The tile-size in dvolension K
-#define WPTM 8u                      // The amount of work-per-thread in dvolension M
-#define WPTN 8u                     // The amount of work-per-thread in dvolension N
-#define RTSM (TSM/WPTM)    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
-#define RTSN (TSN/WPTN)   // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
-#define LPTA uint(float(TSK*WPTM*WPTN)/float(TSN)) // Loads-per-thread for A
-#define LPTB uint(float(TSK*WPTM*WPTN)/float(TSM)) // Loads-per-thread for B
-#define MOD2(x,y) ((x) % (y))
-#define DIV2(x,y) ((x) / (y))
 
 
 shared float Asub[TSK][TSM];    // Local memory to fit a tile of A and B
@@ -250,7 +247,7 @@ void gemm_4() {
 */
 
 void main() {
-    if((p.M < 512 && p.N < 512) || p.power_of_two == 1)
+    if(p.gemm_2 == 1)
         gemm_2();    
     else 
         gemm_1();

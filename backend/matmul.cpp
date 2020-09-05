@@ -4,15 +4,8 @@
 
 #define GEMM_2
 #ifdef GEMM_2
-#define TSM 512                     // The tile-size in dvolension M
-#define TSN 512                     // The tile-size in dvolension N
-#define TSK 64                      // The tile-size in dvolension K
-#define WPTM 8                      // The amount of work-per-thread in dvolension M
-#define WPTN 8                     // The amount of work-per-thread in dvolension N
-#define RTSM (TSM/WPTM)    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
-#define RTSN (TSN/WPTN)   // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
-#define LPTA ((TSK*TSM)/(RTSM*RTSN)) // Loads-per-thread for A
-#define LPTB ((TSK*TSN)/(RTSM*RTSN)) // Loads-per-thread for B
+#define TSM 128                     // The tile-size in dvolension M
+#define TSN 128                     // The tile-size in dvolension N
 #endif
 #ifdef GEMM_3
 #define TS 32u
@@ -60,7 +53,8 @@ namespace layers
 			m_param.m = x->getShape()[1];
 			m_param.k = x->getShape()[2];
 			m_param.n = w->getShape()[1];
-			m_param.is_power_of_two = is_power_of_two(m_param.m) && is_power_of_two(m_param.n) && is_power_of_two(m_param.k);
+			m_param.gemm_2 = (is_power_of_two(m_param.m) && is_power_of_two(m_param.n) && is_power_of_two(m_param.k))
+				|| (m_param.m == m_param.n);
 			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w,
 				Format::kFormatFp32,
 				std::vector<int>{m_param.batchsize, m_param.m, m_param.n});
@@ -73,7 +67,8 @@ namespace layers
 		m_param.m = x->getShape()[0];
 		m_param.k = x->getShape()[1];
 		m_param.n = w->getShape()[1];
-		m_param.is_power_of_two = is_power_of_two(m_param.m) && is_power_of_two(m_param.n) && is_power_of_two(m_param.k);
+		m_param.gemm_2 = (is_power_of_two(m_param.m) && is_power_of_two(m_param.n) && is_power_of_two(m_param.k))
+			|| (m_param.m == m_param.n);
 		return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
 			std::vector<int>{m_param.m, m_param.n});
 	}
