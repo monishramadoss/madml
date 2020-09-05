@@ -97,39 +97,40 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 512;
+		const int M = 1024;
 		const int K = 512;
-		const int N = 512;
+		const int N = 1024;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto layer = layers::nn::dense(N, false);
-
-		//auto layer2 = layers::nn::dense(N, false);
+		auto layer2 = layers::nn::dense(N, false);
 		auto loss = loss::MSE();
 		std::vector<double> toHost;
-
-		for (int i = 0; i < 100; ++i)
+		auto start = std::chrono::system_clock::now();
+		auto t3 = layer(t1);
+		auto t4 = layer2(t3);
+		auto end = std::chrono::system_clock::now();
+		std::chrono::duration<double> seconds = end - start;
+		double first_latency = seconds.count();
+		for (int i = 0; i < 1000; ++i)
 		{
-			auto start = std::chrono::system_clock::now();
-			auto t3 = layer(t1);
-			auto end = std::chrono::system_clock::now();
-			std::chrono::duration<double> seconds = end - start;
+			start = std::chrono::system_clock::now();
+			t3 = layer(t1);
+			t4 = layer2(t3);
+			end = std::chrono::system_clock::now();
+			seconds = end - start;
 			toHost.push_back(seconds.count());
 			std::cout << '\r' << i << " compute " << seconds.count();
-
-			//test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		}
 
-		std::cout << std::endl << std::accumulate(toHost.begin(), toHost.end(), 0.0) / toHost.size();
+		std::cout << std::endl << "Fist Latency " << first_latency << " Avg " << std::accumulate(toHost.begin(), toHost.end(), 0.0) / toHost.size() << std::endl;
 
-		//auto t4 = layer2(t3);
 		//auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
-
 		//loss(y_true, t4);
 
 		//loss.backward();
 
-		//test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		std::cin.get();
 	}
 #endif

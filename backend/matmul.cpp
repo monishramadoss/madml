@@ -4,9 +4,9 @@
 
 #define GEMM_2
 #ifdef GEMM_2
-#define TSM 128                     // The tile-size in dvolension M
-#define TSN 128                     // The tile-size in dvolension N
-#define TSK 16                      // The tile-size in dvolension K
+#define TSM 512                     // The tile-size in dvolension M
+#define TSN 512                     // The tile-size in dvolension N
+#define TSK 64                      // The tile-size in dvolension K
 #define WPTM 8                      // The amount of work-per-thread in dvolension M
 #define WPTN 8                     // The amount of work-per-thread in dvolension N
 #define RTSM (TSM/WPTM)    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)

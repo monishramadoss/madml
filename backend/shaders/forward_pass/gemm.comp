@@ -47,9 +47,9 @@ void gemm_1(){
 
 
 
-#define TSM 128u                     // The tile-size in dvolension M
-#define TSN 128u                     // The tile-size in dvolension N
-#define TSK 16u                      // The tile-size in dvolension K
+#define TSM 512u                     // The tile-size in dvolension M
+#define TSN 512u                     // The tile-size in dvolension N
+#define TSK 64u                      // The tile-size in dvolension K
 #define WPTM 8u                      // The amount of work-per-thread in dvolension M
 #define WPTN 8u                     // The amount of work-per-thread in dvolension N
 #define RTSM (TSM/WPTM)    // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
@@ -131,99 +131,8 @@ void gemm_2(){
         }
     }
 }
+
 /*
-shared float cb0[128];
-shared float cb1[128];
-shared float cb2[128];
-shared float cb3[128];
-
-void gemm_3(){
-    int M = p.M;
-    int N = p.N;
-    int K = p.K;
-    int _B = p.batchsize;
-  
-    uint tx = gl_LocalInvocationID.x;
-    uint i = gl_WorkGroupID.x * 128 + tx;
-    uint j = gl_WorkGroupID.y * 4;
-   
-    uint offset_a = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
-    uint offset_b = gl_WorkGroupSize.y * gl_NumWorkGroups.y;
-    uint offset_c = gl_WorkGroupSize.x * gl_NumWorkGroups.x;
-
-    float sum0 = 0.0;
-    float sum1 = 0.0;
-    float sum2 = 0.0;
-    float sum3 = 0.0;
-
-
-
-    for(uint ks = 0; ks < K; ks += 128){
-        if(ks+tx < K && j < M)
-            cb0[tx] = A[ks+tx+offset_a*j];
-        else
-            cb0[tx] = 0.0;
-        if(ks+tx < K && j+1 < M)
-            cb1[tx] = A[ks+tx+offset_a*(j+1)];
-        else
-            cb1[tx] = 0.0;
-        if(ks+tx < K && j+2 < M)
-            cb2[tx] = A[ks+tx+offset_a*(j+2)];
-        else    
-            cb2[tx] = 0.0;
-        if(ks+tx < K && j+3 < M)
-            cb3[tx] = A[ks+tx+offset_a*(j+3)];
-        else    
-            cb3[tx] = 0.0;
-              
-        barrier();
-        if(i < N){
-            uint k, kk;
-            for( k=ks, kk=0; k+3 < ((ks+128 < M) ? ks+128 : M); k+=4, kk+=4) {
-                float rb = B[i+offset_b*(k)];
-                sum0 += rb*cb0[kk];
-                sum1 += rb*cb1[kk];
-                sum2 += rb*cb2[kk];
-                sum3 += rb*cb3[kk];
-                rb = B[i+offset_b*(k+1)];
-                sum0 += rb*cb0[kk+1];
-                sum1 += rb*cb1[kk+1];
-                sum2 += rb*cb2[kk+1];
-                sum3 += rb*cb3[kk+1];
-                rb = B[i+offset_b*(k+2)];
-                sum0 += rb*cb0[kk+2];
-                sum1 += rb*cb1[kk+2];
-                sum2 += rb*cb2[kk+2];
-                sum3 += rb*cb3[kk+2];
-                rb = B[i+offset_b*(k+3)];
-                sum0 += rb*cb0[kk+3];
-                sum1 += rb*cb1[kk+3];
-                sum2 += rb*cb2[kk+3];
-                sum3 += rb*cb3[kk+3];
-            }
-            if(ks+128 > M){
-                for(; k < M; ++k, ++kk){
-                    float rb = B[i+offset_b*k];
-                    sum0 += rb*cb0[kk];
-                    sum1 += rb*cb1[kk];
-                    sum2 += rb*cb2[kk];
-                    sum3 += rb*cb3[kk];
-                }
-            }
-        }
-        memoryBarrierShared();
-    }
-
-    if(i < N && j < M)
-        C[i+offset_c*j] = sum0;
-    if(i < N && j+1 < M)
-        C[i+offset_c*(j+1)] = sum1;
-    if(i < N && j+2 < M)
-        C[i+offset_c*(j+2)] = sum2;
-    if(i < N && j+3 < M)
-        C[i+offset_c*(j+3)] = sum3;    
-}
-
 #define WIDTH 64u
 #define UNROLL1 1u
 #define UNROLL2 8u
@@ -341,7 +250,7 @@ void gemm_4() {
 */
 
 void main() {
-    if((p.M < 128 && p.N < 128) || p.power_of_two == 1)
+    if((p.M < 512 && p.N < 512) || p.power_of_two == 1)
         gemm_2();    
     else 
         gemm_1();

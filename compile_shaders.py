@@ -31,8 +31,8 @@ lst = list()
 for root, dirs, files in os.walk("./"):
     for file in files:
         if file.endswith(".comp"):
-             lst.append(os.path.join(root, file))
-
+            lst.append(os.path.join(root, file))
+ 
 outfile_str = ['#include <cstdlib>\n\nnamespace kernel { \n\tnamespace shaders {\n']
 bin_code = list()
 bin_dict = {}
@@ -88,6 +88,12 @@ with gzip.GzipFile('compile.json.gz', 'w') as fout:
 
 headfile.writelines(outfile_str  + ["\t}\n}"])
 cpp_file.writelines(['#include<cstdlib>\n#include "spv_shader.h"'] + bin_code);
+
+for root, dirs, files in os.walk(dir):
+    for currentFile in files:
+        exts = ('.spv')
+        if currentFile.lower().endswith(exts):
+            os.remove(os.path.join(root, currentFile))
 
 cpp_file.close()
 headfile.close()
