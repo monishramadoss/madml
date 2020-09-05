@@ -22,6 +22,11 @@
 
 namespace layers
 {
+	bool is_power_of_two(uint32_t x)
+	{
+		return ((x != 0) && ((x & (~x + 1)) == x));
+	}
+
 	matmul::matmul() : Base_Layer<matmul_param>(3)
 	{
 		m_type = "matmul";
@@ -33,27 +38,16 @@ namespace layers
 
 	void matmul::computeGroupCount()
 	{
-		if (m_param.m > 1024 && m_param.n > 1024)
-		{
-			m_group_x = static_cast<int>(alignSize(m_param.m, TSM)) / TSM;
-			if (m_group_x > max_compute_work_group_count)
-				m_group_x = max_compute_work_group_count;
-			m_group_y = static_cast<int>(alignSize(m_param.n, TSN)) / TSN;
-			if (m_group_y > max_compute_work_group_count)
-				m_group_y = max_compute_work_group_count;
-		}
-		else
-		{
-			m_group_x = static_cast<int>(alignSize(m_param.m, RTSM)) / RTSM;
-			if (m_group_x > max_compute_work_group_count)
-				m_group_x = max_compute_work_group_count;
-			m_group_y = static_cast<int>(alignSize(m_param.n, RTSN)) / RTSN;
-			if (m_group_y > max_compute_work_group_count)
-				m_group_y = max_compute_work_group_count;
-		}
+		m_group_x = static_cast<int>(alignSize(m_param.m, TSM)) / TSM; //256 -> 2
+		m_group_y = static_cast<int>(alignSize(m_param.n, TSN)) / TSN; //256 -> 64
 		m_group_z = static_cast<int>(alignSize(m_param.batchsize, 1)) / 1;
+
+		if (m_group_x > max_compute_work_group_count)
+			m_group_x = max_compute_work_group_count - 1;
+		if (m_group_y > max_compute_work_group_count)
+			m_group_y = max_compute_work_group_count - 1;
 		if (m_group_z > max_compute_work_group_count)
-			m_group_z = max_compute_work_group_count;
+			m_group_z = max_compute_work_group_count - 1;
 	}
 
 	std::shared_ptr<tensor>& matmul::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -66,12 +60,12 @@ namespace layers
 			m_param.m = x->getShape()[1];
 			m_param.k = x->getShape()[2];
 			m_param.n = w->getShape()[1];
+			m_param.is_power_of_two = is_power_of_two(m_param.m) && is_power_of_two(m_param.n) && is_power_of_two(m_param.k);
 			return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w,
 				Format::kFormatFp32,
 				std::vector<int>{m_param.batchsize, m_param.m, m_param.n});
 		}
-		if (x->getShape().size() != w->getShape().size())
-			std::cerr << "Mat mul dim ERROR" << std::endl;
+
 		if (x->getShape()[x->getShape().size() - 1] != w->getShape()[0])
 			std::cerr << "Mat mul dim ERROR" << std::endl;
 		m_param.total = 0;
@@ -79,6 +73,7 @@ namespace layers
 		m_param.m = x->getShape()[0];
 		m_param.k = x->getShape()[1];
 		m_param.n = w->getShape()[1];
+		m_param.is_power_of_two = is_power_of_two(m_param.m) && is_power_of_two(m_param.n) && is_power_of_two(m_param.k);
 		return layer_construct_forward(kernel::shaders::gemm_spv, sizeof(kernel::shaders::gemm_spv), x, w, Format::kFormatFp32,
 			std::vector<int>{m_param.m, m_param.n});
 	}

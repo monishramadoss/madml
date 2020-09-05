@@ -15,9 +15,9 @@ using namespace std::chrono;
 //#define TEST_MATH
 //#define TEST_MEMORY
 
-//#define TEST_NN
+#define TEST_NN
 
-#define TEST_CNN
+//#define TEST_CNN
 
 //#define TEST_RNN
 
@@ -97,13 +97,14 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 2046;
-		const int K = 2046;
-		const int N = 2046;
+		const int M = 512;
+		const int K = 512;
+		const int N = 512;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto layer = layers::nn::dense(N, false);
-		auto layer2 = layers::nn::dense(N, false);
+
+		//auto layer2 = layers::nn::dense(N, false);
 		auto loss = loss::MSE();
 		std::vector<double> toHost;
 
