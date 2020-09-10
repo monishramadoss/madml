@@ -97,9 +97,9 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 512;
-		const int K = 512;
-		const int N = 512;
+		const int M = 256;
+		const int K = 256;
+		const int N = 256;
 		const std::vector<int> shape_x{ M, K };
 		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto layer1 = layers::nn::dense(N, false);
@@ -116,28 +116,37 @@ void test_fn()
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> seconds = end - start;
 		double first_latency = seconds.count();
-		for (int i = 0; i < 1000; ++i)
+		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		for (int i = 0; i < 100; ++i)
 		{
 			start = std::chrono::system_clock::now();
+
 			t3 = layer1(t1);
 			t4 = layer2(t3);
 			t5 = layer3(t4);
 			t6 = layer4(t5);
+
 			end = std::chrono::system_clock::now();
 			seconds = end - start;
 			toHost.push_back(seconds.count());
 			std::cout << '\r' << i << " compute " << seconds.count();
 		}
 
-		std::cout << std::endl << "Fist Latency " << first_latency << " Avg " << std::accumulate(toHost.begin(), toHost.end(), 0.0) / toHost.size() << std::endl;
+		std::cout << std::endl << "Fist Latency " << first_latency;
+		std::cout << " Avg " << std::accumulate(toHost.begin(), toHost.end(), 0.0) / toHost.size();
+		std::cout << " Max " << *std::max_element(toHost.begin(), toHost.end());
+		std::cout << " Min " << *std::min_element(toHost.begin(), toHost.end()) << std::endl;
 
 		//auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
 		//loss(y_true, t4);
 		//loss.backward();
 		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-		test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
-		test::PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
-		test::PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
+
+		//test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
+
+		//test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
+		//test::PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
+		//test::PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
 
 		std::cin.get();
 	}
@@ -161,16 +170,15 @@ void test_fn()
 
 		auto t3 = cnn_layer_1(t1);
 		std::cout << "input" << std::endl;
-		test::PrintMatrix(reinterpret_cast<float*>(t1->toHost()), t1->getShape());
+		std::cout << *t1;
 		std::cout << "output" << std::endl;
-		test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
+		std::cout << *t3;
 		auto t31 = cnn_layer_1_1(t11);
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t11->toHost()), t11->getShape());
 		std::cout << "output" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t31->toHost()), t31->getShape());
 		auto t4 = cnn_layer_2(t2);
-
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << "output" << std::endl;

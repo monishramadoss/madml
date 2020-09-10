@@ -1,5 +1,6 @@
 #include <functional>
 #include <algorithm>
+#include <iomanip>
 
 #include "common.h"
 #include "utils.h"
@@ -148,18 +149,61 @@ void tensor::update_id()
 	id = objId++;
 }
 
+std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int> shape, size_t offset, std::string step, size_t stage)
+{
+	if (shape.size() == 2)
+	{
+		size_t m = shape[shape.size() - 2];
+		size_t n = shape.back();
+		os << "[";
+		for (size_t x = 0; x < m; ++x)
+		{
+			os << (x != 0 ? step + " " : offset == 0 ? "" : "\n") << "[";
+			for (size_t y = 0; y < n; ++y)
+			{
+				os << data[offset + x * n + y] << ((y + 1) == n ? "]" : ", ");
+			}
+			os << ((x + 1) == m ? "]" : "\n");
+		}
+		return os;
+	}
+	else
+	{
+		std::vector<int>new_shape;
+
+		size_t new_offset = 1;
+		for (int i = 1; i < shape.size(); ++i)
+		{
+			new_shape.push_back(shape[i]);
+			new_offset *= shape[i];
+		}
+		os << "[";
+		for (int i = 0; i < shape[0]; ++i)
+			printMatrix_helper(os, data, new_shape, offset + i * new_offset, step + " ", stage);
+		os << "]";
+		return os;
+	}
+}
+
 std::ostream& operator<<(std::ostream& os, tensor& t)
 {
+	os << std::fixed << std::setprecision(2);
+
 	auto shape = t.getShape();
+	for (auto s : shape)
+		os << s << " ";
+	os << "\n";
 	auto fmt = t.getFormat();
 	if (fmt == Format::kFormatFp32)
 	{
 		float* data = reinterpret_cast<float*>(t.toHost());
+		printMatrix_helper(os, data, shape, 0, " ", shape.size());
 	}
 	if (fmt == Format::kFormatInt32 || fmt == Format::kFormatBool)
 	{
 		int* data = reinterpret_cast<int*>(t.toHost());
 	}
+	os << "\n";
 	return os;
 }
 

@@ -34,9 +34,9 @@ bool isAvailable();
 #include "layer.h"
 
 #include "math.h"
+#include "transform.h"
 #include "matmul.h"
 #include "activation.h"
-#include "transform.h"
 #include "rnn.h"
 #include "nn_layers.h"
 #include "loss.h"

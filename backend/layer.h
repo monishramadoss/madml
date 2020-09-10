@@ -96,7 +96,7 @@ namespace layers
 
 		//		std::vector<std::future<int>> m_futures;
 
-		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3;
+		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3, t4;
 
 	private:
 

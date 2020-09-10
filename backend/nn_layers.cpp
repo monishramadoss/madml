@@ -119,17 +119,18 @@ namespace layers
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
 				t2 = bias->operator()(y, b);
 				t2->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
+				t4 = trans->operator()(t2);
 			}
 			else
 			{
 				y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]}); //8,9
+				t4 = trans->operator()(y);
 			}
 
-			t3 = trans->operator()(!t2 ? y : t2);
 			if (!m1)
 				m1 = get_input_id(x->getId());
 			unset_sub_graph();
-			return t3;
+			return t4;
 		}
 
 		int conv::set_backward()
@@ -189,6 +190,7 @@ namespace layers
 
 			if (!kernel)
 			{
+				//TODO dilation broken
 				m_padding.d = (m_kernel_size.d - 1) * m_dilation.d - m_padding.d;
 				m_padding.h = (m_kernel_size.h - 1) * m_dilation.h - m_padding.h;
 				m_padding.w = (m_kernel_size.w - 1) * m_dilation.w - m_padding.w;
@@ -213,17 +215,18 @@ namespace layers
 					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
 				t2 = bias->operator()(y, b);
 				t2->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
+				t4 = trans->operator()(t2);
 			}
 			else
 			{
 				y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
+				t4 = trans->operator()(y);
 			}
 
-			t3 = trans->operator()(!t2 ? y : t2);
 			if (!m1)
 				m1 = get_input_id(x->getId());
 			unset_sub_graph();
-			return t3;
+			return t4;
 		}
 
 		int convTranspose::set_backward()

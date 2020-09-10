@@ -42,6 +42,7 @@ namespace layers
 			vol2col* kernel;
 			math::add* bias;
 			transpose* trans;
+			transpose* t1_transpose;
 		};
 
 		class convTranspose : public Module

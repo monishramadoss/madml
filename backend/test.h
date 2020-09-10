@@ -23,9 +23,9 @@ namespace test
 
 		int shape_offset = 1;
 		std::vector<int> buckets;
-		int counter;
-		int stage_counter;
-		
+		int counter = 0;
+		int stage_counter = 0;
+
 		if (shape.size() > 2)
 		{
 			counter = static_cast<int>(shape.size()) - 3;
@@ -36,12 +36,10 @@ namespace test
 				buckets.push_back(0);
 			}
 			buckets.back() = -1;
-
 		}
 
 		int m = shape.size() < 2 ? 1 : shape[shape.size() - 2];
 		int n = shape[shape.size() - 1];
-		
 
 		for (int offset = 0; offset < shape_offset; ++offset)
 		{
