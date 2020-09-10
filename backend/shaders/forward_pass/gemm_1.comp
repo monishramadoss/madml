@@ -1,0 +1,58 @@
+#version 460
+
+#define TSM 128u                     // The tile-size in dvolension M
+#define TSN 128u                     // The tile-size in dvolension N
+#define WPTM 8u                     // The amount of work-per-thread in dvolension M
+#define WPTN 8u                     // The amount of work-per-thread in dvolension N
+#define RTSM (TSM/WPTM)     // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
+#define RTSN (TSN/WPTN)     // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
+
+
+layout(push_constant) uniform pushBlock {
+      int total;
+      int batchsize;
+      int M;
+      int N;
+      int K;
+} p;
+
+layout (local_size_x = RTSM, local_size_y = RTSN, local_size_z = 1) in;
+
+layout (binding = 0) readonly buffer ssbA {
+    float A[];
+};
+
+layout (binding = 1) buffer ssbB {
+    float B[];
+};
+
+
+layout (binding = 2)  buffer ssbC {
+  float C[];
+};
+
+void gemm_1(){
+    int M = p.M;
+    int N = p.N;
+    int K = p.K;
+    int b = p.batchsize;
+    // Compute a single element (loop over K)
+    for(uint globalDepth = gl_GlobalInvocationID.z; globalDepth < b; globalDepth += gl_NumWorkGroups.z * gl_WorkGroupSize.z){
+        for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+            for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+                float acc = 0.0;
+                for (uint k=0u; k < K; k++)
+                    acc = fma(A[globalDepth*M*K + globalRow*K + k], B[k*N + globalCol], acc); 
+                C[globalDepth*M*N + globalRow*N + globalCol] = acc;
+            }
+        }
+    }
+}
+
+
+
+
+void main() {
+    gemm_1();
+    
+}
