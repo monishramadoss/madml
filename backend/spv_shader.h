@@ -13,6 +13,8 @@ namespace kernel
 		extern const unsigned int d_relu6_spv[467];
 		extern const unsigned int d_sigmoid_spv[430];
 		extern const unsigned int binary_operator_spv[478];
+		extern const unsigned int d_batch_normalization_spv[244];
+		extern const unsigned int d_instance_normalization_spv[244];
 		extern const unsigned int d_abs_spv[426];
 		extern const unsigned int d_exp_spv[407];
 		extern const unsigned int d_ln_spv[410];
@@ -30,7 +32,7 @@ namespace kernel
 		extern const unsigned int d_sinh_spv[407];
 		extern const unsigned int d_tan_spv[427];
 		extern const unsigned int d_tanh_spv[441];
-		extern const unsigned int gemm_1_spv[1029];
+		extern const unsigned int gemm_1_spv[1033];
 		extern const unsigned int gemm_2_spv[3022];
 		extern const unsigned int celu_spv[583];
 		extern const unsigned int elu_spv[516];
@@ -63,6 +65,8 @@ namespace kernel
 		extern const unsigned int pow_spv[472];
 		extern const unsigned int sub_spv[470];
 		extern const unsigned int xor_spv[483];
+		extern const unsigned int batch_normalization_spv[244];
+		extern const unsigned int instance_normalization_spv[244];
 		extern const unsigned int gruCell_spv[2320];
 		extern const unsigned int lstmCell_spv[2671];
 		extern const unsigned int rnnCell_spv[1588];

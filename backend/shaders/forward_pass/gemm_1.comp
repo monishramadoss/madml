@@ -13,12 +13,11 @@ layout (binding = 0) readonly buffer ssbA {
     float A[];
 };
 
-layout (binding = 1) buffer ssbB {
+layout (binding = 1) readonly buffer ssbB {
     float B[];
 };
 
-
-layout (binding = 2)  buffer ssbC {
+layout (binding = 2) buffer ssbC {
   float C[];
 };
 
