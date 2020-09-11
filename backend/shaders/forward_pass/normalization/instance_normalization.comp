@@ -2,21 +2,34 @@
 layout(push_constant) uniform pushBlock {
     int total;
     int batchsize;
+    int num_dims;
     float eps;
     float momentum;
 } p;
 
 
-layout (local_size_x = 64, local_size_y = 64, local_size_z = 1) in;
+layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
     float A[];
 };
 
-layout (binding = 1)  buffer ssbC {
-  float C[];
+layout (binding = 1) buffer ssbA {
+    float mean[];
 };
 
+layout (binding = 2) buffer ssbA {
+    float bias[];
+};
+
+layout (binding = 3) buffer ssbA {
+    float var[];
+};
+
+
+layout (binding = 4)  buffer ssbC {
+  float B[];
+};
 
 void main(){
 

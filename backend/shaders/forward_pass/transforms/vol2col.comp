@@ -1,5 +1,4 @@
 #version 450
-#define LOCAL_SZ_X 1024
 
 layout(push_constant) uniform pushBlock {
         int total;

@@ -12,6 +12,7 @@ namespace layers
 		{
 			int total;
 			int batchsize;
+			int C;
 			float eps;
 			float momentum;
 		};

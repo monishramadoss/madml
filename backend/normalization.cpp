@@ -19,6 +19,10 @@ namespace layers
 
 		std::shared_ptr<tensor>& BatchNormalization::operator()(const std::shared_ptr<tensor>& x)
 		{
+			if (!y)
+				y = std::make_shared<tensor>(0., x->getShape());
+
+			return y;
 		}
 
 		int BatchNormalization::set_backward() {}
@@ -36,6 +40,10 @@ namespace layers
 
 		std::shared_ptr<tensor>& InstanceNormalization::operator()(const std::shared_ptr<tensor>& x)
 		{
+			if (!y)
+				y = std::make_shared<tensor>(0., x->getShape());
+
+			return y;
 		}
 
 		int InstanceNormalization::set_backward() {}

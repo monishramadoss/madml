@@ -1,23 +1,92 @@
 #version 460
+//https://becominghuman.ai/all-about-normalization-6ea79e70894b
+//https://towardsdatascience.com/implementing-batch-normalization-in-python-a044b0369567
+
 layout(push_constant) uniform pushBlock {
     int total;
     int batchsize;
+    int C;
     float eps;
     float momentum;
 } p;
 
-
-layout (local_size_x = 64, local_size_y = 64, local_size_z = 1) in;
+layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
     float A[];
 };
 
-layout (binding = 1)  buffer ssbC {
-  float C[];
+layout (binding = 1) buffer ssbB {
+    float gamma[];
+};
+
+layout (binding = 2) buffer ssbC {
+    float beta[];
+};
+
+layout (binding = 3) buffer ssbD {
+    float running_mean[];
+};
+
+layout (binding = 4) buffer ssbE {
+    float running_var[];
+};
+
+layout (binding = 5) buffer ssbF {
+    float var[];
+};
+
+layout (binding = 6)  buffer ssbG {
+  float B[];
+};
+
+layout (binding = 7) writeonly buffer ssbH {
+    float centered[];
+};
+
+layout (binding = 8) writeonly buffer ssbI {
+    float norm[];
 };
 
 
-void main(){
+shared float mean;
+shared float variation;
 
+
+void _average(){
+    for (uint x = gl_GlobalInvocationID.x; x < p.total; x += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+        mean += 1/p.total * A[x];
+        memoryBarrierShared();
+    }
+    barrier();
+    for (uint x = gl_GlobalInvocationID.x; x < p.total; x += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+        variation += 1/p.total * ((mean - A[x]) * (mean - A[x]));
+        memoryBarrierShared();
+    }
+}
+
+
+void b_norm(){
+    float momentum = p.momentum;
+    float eps = p.eps;
+    int C = p.C;
+    for (uint x = gl_GlobalInvocationID.x; x < p.total / C; x += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+        for(uint y = gl_GlobalInvocationID.y; y < C; y += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+            running_mean[y] = momentum * running_mean[y] + (1 - momentum) * mean;
+            running_var[y] = momentum * running_var[y] + (1 - momentum) * variation;
+            float std = sqrt(variation + eps);
+            float x_centered = A[x*C+y] - mean;
+            float x_norm = x_centered / std;
+            B[x*C+y] = gamma[y] * x_norm + beta[y];
+            centered[x*C + y] = x_centered;
+            norm[x*C + y] = x_norm;
+        }
+    }
+
+}
+
+
+void main(){
+    _average();
+    b_norm();
 }
