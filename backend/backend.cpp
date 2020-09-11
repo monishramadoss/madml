@@ -98,9 +98,9 @@ void test_fn()
 	std::cout << "testing dnn" << std::endl;
 	{
 		const int B = 8;
-		const int M = 12;
-		const int K = 12;
-		const int N = 12;
+		const int M = 512;
+		const int K = 512;
+		const int N = 512;
 		const std::vector<int> shape_x{ B, M, K };
 		auto* data1 = init::fill_memory_iter(shape_x);
 		auto t1 = std::make_shared<tensor>(tensor(data1, shape_x));
@@ -118,7 +118,6 @@ void test_fn()
 		auto end = std::chrono::system_clock::now();
 		std::chrono::duration<double> seconds = end - start;
 		double first_latency = seconds.count();
-		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		for (int i = 0; i < 100; ++i)
 		{
 			start = std::chrono::system_clock::now();
@@ -137,17 +136,20 @@ void test_fn()
 		std::cout << std::endl << "Fist Latency " << first_latency;
 		std::cout << " Avg " << std::accumulate(toHost.begin(), toHost.end(), 0.0) / toHost.size();
 		std::cout << " Max " << *std::max_element(toHost.begin(), toHost.end());
-		std::cout << " Min " << *std::min_element(toHost.begin(), toHost.end()) << std::endl;
+		std::cout << " Min " << *std::min_element(toHost.begin(), toHost.end());
+		auto const Q1 = toHost.size() / 4;
+		auto const Q2 = toHost.size() / 2;
+		auto const Q3 = Q1 + Q2;
+		std::sort(toHost.begin(), toHost.end());
+		std::cout << " 25th-Q " << toHost[Q1];
+		std::cout << " 50th-Q " << toHost[Q2];
+		std::cout << " 75th-Q " << toHost[Q3];
 
 		//auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
 		//loss(y_true, t4);
 		//loss.backward();
+
 		//test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
-
-		test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
-
-		//test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
-
 		//test::PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 		//test::PrintDiffer(reinterpret_cast<float*>(t5->toHost()), t5->count());
 		//test::PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
@@ -270,6 +272,12 @@ void test_fn()
 		test::PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
 	}
 
+#endif
+
+#ifdef TEST_RESNET
+	std::cout << "testing resent" << std::endl
+	{
+	}
 #endif
 }
 

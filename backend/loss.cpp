@@ -11,7 +11,7 @@ namespace loss
 	}
 
 	void Loss::hook(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x,
-	                const std::shared_ptr<tensor>& _w)
+		const std::shared_ptr<tensor>& _w)
 	{
 		layer_construct_forward(shader, codeSize, _x, _w);
 		if (!m1)

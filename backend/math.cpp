@@ -34,7 +34,7 @@ namespace layers
 		clip::clip(float min, float max, bool in_place) : Base_Layer<clip_operator_param>(2, in_place)
 		{
 			m_type = "clip";
-			m_param = {0, min, max};
+			m_param = { 0, min, max };
 			bck_shader = kernel::shaders::unary_operator_spv;
 			bck_codeSize = sizeof(kernel::shaders::unary_operator_spv);
 		}
@@ -360,7 +360,7 @@ namespace layers
 		std::shared_ptr<tensor>& eq::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			return layer_construct_forward(kernel::shaders::equal_spv, sizeof(kernel::shaders::equal_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 
 		ne::ne(bool in_place) : Base_Layer<>(3, in_place)
@@ -373,7 +373,7 @@ namespace layers
 		std::shared_ptr<tensor>& ne::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			return layer_construct_forward(kernel::shaders::nequal_spv, sizeof(kernel::shaders::nequal_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 
 		lt::lt(bool in_place) : Base_Layer<>(3, in_place)
@@ -386,7 +386,7 @@ namespace layers
 		std::shared_ptr<tensor>& lt::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			return layer_construct_forward(kernel::shaders::less_than_spv, sizeof(kernel::shaders::less_than_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 
 		le::le(bool in_place) : Base_Layer<>(3, in_place)
@@ -399,7 +399,7 @@ namespace layers
 		std::shared_ptr<tensor>& le::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			return layer_construct_forward(kernel::shaders::less_eq_spv, sizeof(kernel::shaders::less_eq_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 
 		gt::gt(bool in_place) : Base_Layer<>(3, in_place)
@@ -412,7 +412,7 @@ namespace layers
 		std::shared_ptr<tensor>& gt::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			return layer_construct_forward(kernel::shaders::greater_than_spv, sizeof(kernel::shaders::greater_than_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 
 		ge::ge(bool in_place) : Base_Layer<>(3, in_place)
@@ -425,7 +425,7 @@ namespace layers
 		std::shared_ptr<tensor>& ge::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
 		{
 			return layer_construct_forward(kernel::shaders::greater_eq_spv, sizeof(kernel::shaders::greater_eq_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 
 		xr::xr(bool in_place) : Base_Layer<>(3, in_place)
@@ -442,7 +442,7 @@ namespace layers
 				std::cerr << "XOR KERNEL REQUIRES BOTH INPUTS BE BOOLEAN VALUES" << std::endl;
 			}
 			return layer_construct_forward(kernel::shaders::xor_spv, sizeof(kernel::shaders::xor_spv), x, w,
-			                               Format::kFormatBool);
+				Format::kFormatBool);
 		}
 	}
 }

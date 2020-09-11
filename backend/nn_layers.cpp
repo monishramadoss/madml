@@ -109,9 +109,6 @@ namespace layers
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, c}));
 			}
 
-			//auto* k_T = new transpose(std::vector<int>{0, 1, 3, 4, 2});
-			//t3 = k_T->operator()(x);
-			//t3->reshape(x->getShape());
 			t1 = kernel->operator()(x); //27 9
 			y = mm->operator()(w, t1);
 			auto out = kernel->output_shape();
@@ -209,10 +206,8 @@ namespace layers
 			}
 
 			t1 = kernel->operator()(x);
-			auto out = kernel->output_shape();
-
 			y = mm->operator()(w, t1);
-
+			auto out = kernel->output_shape();
 			if (USE_BIAS)
 			{
 				if (!b)
