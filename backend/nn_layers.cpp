@@ -109,6 +109,9 @@ namespace layers
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, c}));
 			}
 
+			//auto* k_T = new transpose(std::vector<int>{0, 1, 3, 4, 2});
+			//t3 = k_T->operator()(x);
+			//t3->reshape(x->getShape());
 			t1 = kernel->operator()(x); //27 9
 			y = mm->operator()(w, t1);
 			auto out = kernel->output_shape();
@@ -176,6 +179,7 @@ namespace layers
 			if (USE_BIAS)
 				bias = new math::add();
 			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
+
 			unset_sub_graph();
 		}
 
@@ -187,7 +191,6 @@ namespace layers
 
 			int channels = input_shape[1];
 			int batch_size = input_shape[0];
-
 			if (!kernel)
 			{
 				//TODO dilation broken
@@ -206,8 +209,9 @@ namespace layers
 			}
 
 			t1 = kernel->operator()(x);
-			y = mm->operator()(w, t1);
 			auto out = kernel->output_shape();
+
+			y = mm->operator()(w, t1);
 
 			if (USE_BIAS)
 			{

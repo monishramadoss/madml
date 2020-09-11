@@ -28,9 +28,8 @@ namespace kernel {
 		extern const unsigned int d_sinh_spv[407];
 		extern const unsigned int d_tan_spv[427];
 		extern const unsigned int d_tanh_spv[441];
-		extern const unsigned int gemm_1_spv[1027];
-		extern const unsigned int gemm_2_spv[2978];
-		extern const unsigned int gemm_3_spv[3037];
+		extern const unsigned int gemm_1_spv[1029];
+		extern const unsigned int gemm_2_spv[3022];
 		extern const unsigned int celu_spv[583];
 		extern const unsigned int elu_spv[516];
 		extern const unsigned int gelu_spv[519];

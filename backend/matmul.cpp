@@ -2,7 +2,7 @@
 #include "utils.h"
 #include "matmul.h"
 
-#define GEMM_3
+#define GEMM_1
 
 #define TSM 128                     // The tile-size in dvolension M
 #define TSN 128                     // The tile-size in dvolension N
@@ -35,8 +35,8 @@ namespace layers
 	void matmul::computeGroupCount()
 	{
 #ifdef GEMM_1
-		m_group_x = static_cast<int>(alignSize(m_param.m, RTSM)) / RTSM;
-		m_group_y = static_cast<int>(alignSize(m_param.n, RTSN)) / RTSN;
+		m_group_x = static_cast<int>(alignSize(m_param.m, 64)) / 64;
+		m_group_y = static_cast<int>(alignSize(m_param.n, 64)) / 64;
 		m_group_z = static_cast<int>(alignSize(m_param.batchsize, 1)) / 1;
 #endif
 
@@ -44,12 +44,6 @@ namespace layers
 		m_group_x = static_cast<int>(alignSize(m_param.m, TSM)) / TSM; //256 -> 2
 		m_group_y = static_cast<int>(alignSize(m_param.n, TSN)) / TSN; //256 -> 64
 		m_group_z = static_cast<int>(alignSize(m_param.batchsize, 1)) / 1;
-#endif
-
-#ifdef GEMM_3
-		m_group_x = static_cast<int>(alignSize(m_param.m, 128)) / 128;
-		m_group_y = 1;
-		m_group_z = 1;
 #endif
 
 		if (m_group_x > max_compute_work_group_count)
@@ -72,12 +66,6 @@ namespace layers
 		auto _kernel = kernel::shaders::gemm_2_spv;
 		auto codesize = sizeof(kernel::shaders::gemm_2_spv);
 		t1 = w;
-#endif
-
-#ifdef GEMM_3
-		auto _kernel = kernel::shaders::gemm_3_spv;
-		auto codesize = sizeof(kernel::shaders::gemm_3_spv);
-		t1 = t->operator()(w);
 #endif
 
 		if (x->getShape().size() == w->getShape().size() + 1)

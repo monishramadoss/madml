@@ -142,10 +142,10 @@ void layer::recordCommandBuffer(void* push_constants, size_t push_constants_size
 	VK_CHECK_RESULT(vkBeginCommandBuffer(m_cmd_buffer, &beginInfo));
 	if (push_constants)
 		vkCmdPushConstants(m_cmd_buffer, m_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0,
-		                   static_cast<uint32_t>(push_constants_size), push_constants);
+			static_cast<uint32_t>(push_constants_size), push_constants);
 	vkCmdBindPipeline(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
 	vkCmdBindDescriptorSets(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_layout, 0, 1,
-	                        &m_descriptor_set, 0, nullptr);
+		&m_descriptor_set, 0, nullptr);
 	vkCmdDispatch(m_cmd_buffer, m_group_x, m_group_y, m_group_z);
 
 	VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));
@@ -200,7 +200,7 @@ namespace layers
 	}
 
 	void DFS_f(size_t start, std::vector<bool>& visited, std::vector<std::vector<int>>& adj,
-	           std::vector<size_t>& execution_order)
+		std::vector<size_t>& execution_order)
 	{
 		execution_order.push_back(start);
 		visited[start] = true;

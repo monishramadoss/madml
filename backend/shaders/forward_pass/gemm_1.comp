@@ -1,13 +1,4 @@
 #version 460
-
-#define TSM 128u                     // The tile-size in dvolension M
-#define TSN 128u                     // The tile-size in dvolension N
-#define WPTM 8u                     // The amount of work-per-thread in dvolension M
-#define WPTN 8u                     // The amount of work-per-thread in dvolension N
-#define RTSM (TSM/WPTM)     // The reduced tile-size in dvolension M (TSM/WPTM number of threads)
-#define RTSN (TSN/WPTN)     // The reduced tile-size in dvolension N (TSN/WPTN number of threads)
-
-
 layout(push_constant) uniform pushBlock {
       int total;
       int batchsize;
@@ -16,7 +7,7 @@ layout(push_constant) uniform pushBlock {
       int K;
 } p;
 
-layout (local_size_x = RTSM, local_size_y = RTSN, local_size_z = 1) in;
+layout (local_size_x = 64, local_size_y = 64, local_size_z = 1) in;
 
 layout (binding = 0) readonly buffer ssbA {
     float A[];
@@ -42,7 +33,7 @@ void gemm_1(){
             for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
                 float acc = 0.0;
                 for (uint k=0u; k < K; k++)
-                    acc = fma(A[globalDepth*M*K + globalRow*K + k], B[k*N + globalCol], acc); 
+                    acc += A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
                 C[globalDepth*M*N + globalRow*N + globalCol] = acc;
             }
         }

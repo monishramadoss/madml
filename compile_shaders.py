@@ -40,7 +40,8 @@ bin_dict = {}
 if(os.path.exists('compile.json.gz')):
     with gzip.GzipFile('compile.json.gz', 'r') as fin:
         bin_dict = json.loads(fin.read().decode('utf-8'))
-
+print(len(bin_dict))
+dir_change = len(bin_dict) != len(lst)
 for i in range(0, len(lst)):
     path = lst[i]
     prefix = os.path.splitext(os.path.split(path)[-1])[0]
@@ -50,7 +51,7 @@ for i in range(0, len(lst)):
         bin_dict[prefix] = {'time':0, 'bin':[], 'header':''}
     modified = bin_dict[prefix]['time'] != os.path.getmtime(path)
 
-    if(modified):
+    if(modified or dir_change):
         bin_dict[prefix]['time'] = os.path.getmtime(path)
         bin_file = prefix + '.tmp'
         cmd = ' glslangValidator --target-env spirv1.5 -V ' + path + ' -S comp -o ' + bin_file
@@ -91,7 +92,7 @@ cpp_file.writelines(['#include<cstdlib>\n#include "spv_shader.h"'] + bin_code);
 
 for root, dirs, files in os.walk(dir):
     for currentFile in files:
-        exts = ('.spv')
+        exts = ('.spv', '.tmp')
         if currentFile.lower().endswith(exts):
             os.remove(os.path.join(root, currentFile))
 

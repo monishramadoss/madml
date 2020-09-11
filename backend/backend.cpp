@@ -15,9 +15,9 @@ using namespace std::chrono;
 //#define TEST_MATH
 //#define TEST_MEMORY
 
-//#define TEST_NN
+#define TEST_NN
 
-#define TEST_CNN
+//#define TEST_CNN
 
 //#define TEST_RNN
 
@@ -97,11 +97,13 @@ void test_fn()
 #ifdef TEST_NN
 	std::cout << "testing dnn" << std::endl;
 	{
-		const int M = 256;
-		const int K = 256;
-		const int N = 256;
-		const std::vector<int> shape_x{ M, K };
-		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
+		const int B = 8;
+		const int M = 12;
+		const int K = 12;
+		const int N = 12;
+		const std::vector<int> shape_x{ B, M, K };
+		auto* data1 = init::fill_memory_iter(shape_x);
+		auto t1 = std::make_shared<tensor>(tensor(data1, shape_x));
 		auto layer1 = layers::nn::dense(N, false);
 		auto layer2 = layers::nn::dense(N, false);
 		auto layer3 = layers::nn::dense(N, false);
@@ -109,7 +111,7 @@ void test_fn()
 
 		std::vector<double> toHost;
 		auto start = std::chrono::system_clock::now();
-		auto t3 = layer1(t1);
+		auto t3 = layer1(t1); // {36: 25, 117: 25, 198: 25, }
 		auto t4 = layer2(t3);
 		auto t5 = layer3(t4);
 		auto t6 = layer4(t5);
@@ -140,7 +142,9 @@ void test_fn()
 		//auto y_true = std::make_shared<tensor>(tensor(1.0, t4->getShape()));
 		//loss(y_true, t4);
 		//loss.backward();
-		test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+		//test::PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
+
+		test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
 
 		//test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
 
@@ -164,16 +168,17 @@ void test_fn()
 		auto t1 = std::make_shared<tensor>(tensor(data1, shape_x));
 		auto t2 = std::make_shared<tensor>(tensor(data2, shape_y));
 		auto t11 = std::make_shared<tensor>(tensor(data3, shape_z));
-		auto cnn_layer_1 = layers::nn::conv(1, { 1,3,3 }, { 1,1,1 }, { 0,1,1 }, { 1,1,1 }, 0, false);
+		auto cnn_layer_1 = layers::nn::conv(3, { 1,3,3 }, { 1,1,1 }, { 0,1,1 }, { 1,1,1 }, 0, false);
 		auto cnn_layer_1_1 = layers::nn::conv(1, { 1,3,3 }, { 1,2,2 }, { 0,1,1 }, { 1,1,1 }, 0, false);
 		auto cnn_layer_2 = layers::nn::convTranspose(2, { 1,3,3 }, { 1,1,1 }, { 0,0,0 }, { 1,1,1 }, 0, false);
 
 		auto t3 = cnn_layer_1(t1);
 		std::cout << "input" << std::endl;
-		std::cout << *t1;
+
+		//std::cout << *t1;
 		std::cout << "output" << std::endl;
-		std::cout << *t3;
-		auto t31 = cnn_layer_1_1(t11);
+		test::PrintMatrix(reinterpret_cast<float*>(t3->toHost()), t3->getShape());
+		/*auto t31 = cnn_layer_1_1(t11);
 		std::cout << "input" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t11->toHost()), t11->getShape());
 		std::cout << "output" << std::endl;
@@ -183,7 +188,7 @@ void test_fn()
 		test::PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << "output" << std::endl;
 		test::PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
-		std::cin.get();
+		std::cin.get();*/
 	}
 #endif
 #ifdef TEST_RNN
