@@ -74,6 +74,78 @@ namespace layers
 			};
 		};
 	}
+	namespace nn
+	{
+		//TODO RNN needs a dynamc seq
+
+		class RNN : public Module
+		{
+		public:
+			RNN(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
+				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
+			int set_backward() override;
+			void update_weight() override;
+
+		private:
+			std::shared_ptr<tensor> x, h;
+			int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
+			int m_output_size, m_seq_length;
+			bool USE_BIAS, bidirectional{};
+			std::vector<rnn::RNNCell*> cells;
+			std::vector<std::shared_ptr<tensor>> weights_biases;
+			std::vector<std::shared_ptr<tensor>> cache;
+		};
+
+		class LSTM : public Module
+		{
+		public:
+			LSTM(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
+				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
+				const std::shared_ptr<tensor>& x);
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c);
+			int set_backward() override;
+			void update_weight() override;
+
+		private:
+			std::shared_ptr<tensor> x, h, c;
+			int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
+			int m_output_size, m_seq_length;
+			bool USE_BIAS, bidirectional{};
+			std::vector<rnn::LSTMCell*> cells;
+			std::vector<std::shared_ptr<tensor>> weights_biases;
+			std::vector<std::shared_ptr<tensor>> cache;
+			std::string nonlinearity_;
+		};
+
+		class GRU : public Module
+		{
+		public:
+			GRU(int vocab_size, int hidden_size, int num_layers = 1, int seq_length = 16, bool bidirectional = false,
+				int output_size = 0, float dropout = 0.9, bool bias = false, std::string nonlinearity = "tanh");
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(const std::shared_ptr<tensor>& x);
+			std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> operator()(
+				const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h);
+			int set_backward() override;
+			void update_weight() override;
+
+		protected:
+
+		private:
+			std::shared_ptr<tensor> x, h;
+			int m_vocab_size, m_hidden_size, m_num_layers, m_directions;
+			int m_output_size, m_seq_length;
+			bool USE_BIAS, bidirectional{};
+			std::vector<rnn::GRUCell*> cells;
+			std::vector<std::shared_ptr<tensor>> weights_biases;
+			std::vector<std::shared_ptr<tensor>> cache;
+			std::string nonlinearity_;
+		};
+	}
 }
 
 #endif

@@ -213,6 +213,7 @@ namespace init
 	{
 		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 		auto ret = new float[_shape];
+#pragma omp for
 		for (int i = 0; i < _shape; ++i)
 			ret[i] = static_cast<float>(i);
 		return reinterpret_cast<char*>(ret);
@@ -225,6 +226,7 @@ namespace init
 
 		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 		auto ret = new float[_shape];
+#pragma omp for
 		for (int i = 0; i < _shape; ++i)
 		{
 			auto number = distribution(generator);
@@ -240,6 +242,7 @@ namespace init
 
 		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 		auto ret = new float[_shape];
+#pragma omp for
 		for (int i = 0; i < _shape; ++i)
 		{
 			auto number = distribution(generator);

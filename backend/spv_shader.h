@@ -1,9 +1,7 @@
 #include <cstdlib>
 
-namespace kernel
-{
-	namespace shaders
-	{
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_bias_spv[724];
 		extern const unsigned int d_gemm_spv[871];
 		extern const unsigned int gradient_spv[457];
@@ -15,6 +13,7 @@ namespace kernel
 		extern const unsigned int binary_operator_spv[478];
 		extern const unsigned int d_batch_normalization_spv[244];
 		extern const unsigned int d_instance_normalization_spv[244];
+		extern const unsigned int d_layer_normalization_spv[244];
 		extern const unsigned int d_abs_spv[426];
 		extern const unsigned int d_exp_spv[407];
 		extern const unsigned int d_ln_spv[410];
@@ -65,8 +64,9 @@ namespace kernel
 		extern const unsigned int pow_spv[472];
 		extern const unsigned int sub_spv[470];
 		extern const unsigned int xor_spv[483];
-		extern const unsigned int batch_normalization_spv[244];
-		extern const unsigned int instance_normalization_spv[244];
+		extern const unsigned int batch_normalization_spv[1567];
+		extern const unsigned int instance_normalization_spv[396];
+		extern const unsigned int layer_normalization_spv[244];
 		extern const unsigned int gruCell_spv[2320];
 		extern const unsigned int lstmCell_spv[2671];
 		extern const unsigned int rnnCell_spv[1588];

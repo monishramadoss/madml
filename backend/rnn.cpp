@@ -184,4 +184,400 @@ namespace layers
 			auto m2 = get_input_id(h->getId());
 		}
 	}
+
+	namespace nn
+	{
+		//TODO rnn needs dynamic graph
+
+		RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
+			float dropout, bool bias, std::string nonlinearity) :
+			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
+			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
+		{
+			m_type = "RNN";
+			update_id();
+			add_module(this);
+
+			if (bidirectional)
+				m_directions = 2;
+			if (output_size == 0)
+				m_output_size = vocab_size;
+
+			for (int dir = 0; dir < m_directions; ++dir)
+			{
+				for (int l = 0; l < m_num_layers; ++l)
+				{
+					const int input = l == 0 ? m_vocab_size : m_hidden_size;
+					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
+
+					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input})));
+					weights_biases.push_back(
+						std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size})));
+					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size})));
+					if (USE_BIAS)
+					{
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size})));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output})));
+					}
+					else
+					{
+						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size})));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
+					}
+					set_sub_graph();
+					cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
+					unset_sub_graph();
+				}
+			}
+		}
+
+		std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(const std::shared_ptr<tensor>& x)
+		{
+			h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+			return operator()(x, h);
+		}
+
+		std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> RNN::operator()(
+			const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+		{
+			this->x = x;
+			this->h = h;
+			const auto input_shape = x->getShape();
+			if (x->getShape().size() == 2)
+				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+			cache.push_back(x);
+			cache.push_back(h);
+
+			for (int l = 0; l < m_num_layers; ++l)
+			{
+				const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+			}
+
+			for (int dir = 0; dir < m_directions; ++dir)
+			{
+				for (int i = 0; i < input_shape[0]; ++i)
+				{
+					for (int l = 0; l < m_num_layers; ++l)
+					{
+						const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
+							uint64_t>(l) * 5;
+						const uint64_t cache_idx = static_cast<uint64_t>(l) * 2;
+						const uint64_t direction = dir == 1 ? input_shape[0] - i - 1 : i;
+
+						uint64_t input_offset = cache[cache_idx]->getShape()[2] * direction;
+						uint64_t weight_offset = direction * m_hidden_size;
+						uint64_t output_offset = direction * cache[2 + cache_idx]->getShape()[2];
+
+						if (dir == 1)
+						{
+							if (cache_idx != 0)
+								input_offset += static_cast<uint64_t>(m_seq_length) * cache[cache_idx]->getShape()[2];
+							weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
+							output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
+						}
+						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+							uint64_t>(m_seq_length) * l + i;
+						cells[cell_idx]->operator()(
+							cache[0 + cache_idx],
+							cache[1 + cache_idx],
+							cache[2 + cache_idx],
+							cache[3 + cache_idx],
+							weights_biases[0 + weight_bias_idx],
+							weights_biases[1 + weight_bias_idx],
+							weights_biases[2 + weight_bias_idx],
+							weights_biases[3 + weight_bias_idx],
+							weights_biases[4 + weight_bias_idx],
+							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
+							);
+					}
+				}
+			}
+
+			auto m = get_input_id(x->getId());
+			return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+		}
+
+		int RNN::set_backward()
+		{
+			if (USE_BIAS)
+			{
+			}
+			else
+			{
+			}
+
+			return 1;
+		}
+
+		void RNN::update_weight()
+		{
+		}
+
+		LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
+			float dropout, bool bias, std::string nonlinearity) :
+			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
+			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
+		{
+			m_type = "LSTM";
+			update_id();
+			add_module(this);
+
+			if (bidirectional)
+				m_directions = 2;
+			if (output_size == 0)
+				m_output_size = vocab_size;
+
+			for (int dir = 0; dir < m_directions; ++dir)
+			{
+				for (int l = 0; l < m_num_layers; ++l)
+				{
+					const int input = l == 0 ? m_vocab_size : m_hidden_size;
+					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
+
+					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 4})));
+					weights_biases.push_back(
+						std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 4})));
+					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 4})));
+
+					if (USE_BIAS)
+					{
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, 4})));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output})));
+					}
+					else
+					{
+						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size, 4})));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
+					}
+					set_sub_graph();
+					cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
+					unset_sub_graph();
+				}
+			}
+		}
+
+		std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
+			const std::shared_ptr<tensor>& x)
+		{
+			h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+			c = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+			return operator()(x, h, c);
+		}
+
+		std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> LSTM::operator()(
+			const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h, const std::shared_ptr<tensor>& c)
+		{
+			this->x = x;
+			this->h = h;
+			this->c = c;
+			const auto input_shape = x->getShape();
+			if (x->getShape().size() == 2)
+				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+			cache.push_back(x);
+			cache.push_back(h);
+			cache.push_back(c);
+
+			for (int l = 0; l < m_num_layers; ++l)
+			{
+				const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+			}
+
+			for (int dir = 0; dir < m_directions; ++dir)
+			{
+				for (int i = 0; i < input_shape[0]; ++i)
+				{
+					for (int l = 0; l < m_num_layers; ++l)
+					{
+						const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
+							uint64_t>(l) * 5;
+						const uint64_t cache_idx = static_cast<uint64_t>(l) * 2;
+						const uint64_t direction = dir == 1 ? input_shape[0] - i - 1 : i;
+
+						uint64_t input_offset = direction * cache[cache_idx]->getShape()[2];
+						uint64_t weight_offset = direction * m_hidden_size;
+						uint64_t output_offset = direction * cache[3 + cache_idx]->getShape()[2];
+
+						if (dir == 1)
+						{
+							if (cache_idx != 0)
+								input_offset += static_cast<uint64_t>(m_seq_length) * cache[cache_idx]->getShape()[2];
+							weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
+							output_offset += static_cast<uint64_t>(m_seq_length) * cache[2 + cache_idx]->getShape()[2];
+						}
+						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+							uint64_t>(m_seq_length) * l + i;
+						cells[cell_idx]->operator()(
+							cache[0 + cache_idx],
+							cache[1 + cache_idx],
+							cache[2 + cache_idx],
+							cache[3 + cache_idx],
+							cache[4 + cache_idx],
+							cache[5 + cache_idx],
+							weights_biases[0 + weight_bias_idx],
+							weights_biases[1 + weight_bias_idx],
+							weights_biases[2 + weight_bias_idx],
+							weights_biases[3 + weight_bias_idx],
+							weights_biases[4 + weight_bias_idx],
+							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
+							);
+					}
+				}
+			}
+
+			auto m = get_input_id(x->getId());
+			return std::forward_as_tuple(cache[cache.size() - 3], cache[cache.size() - 2], cache[cache.size() - 1]);
+		}
+
+		int LSTM::set_backward()
+		{
+			if (USE_BIAS)
+			{
+			}
+			else
+			{
+			}
+
+			return 1;
+		}
+
+		void LSTM::update_weight()
+		{
+		}
+
+		GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
+			float dropout, bool bias, std::string nonlinearity) :
+			m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
+			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
+		{
+			m_type = "GRU";
+			update_id();
+			add_module(this);
+
+			if (bidirectional)
+				m_directions = 2;
+			if (output_size == 0)
+				m_output_size = vocab_size;
+
+			for (int dir = 0; dir < m_directions; ++dir)
+			{
+				for (int l = 0; l < m_num_layers; ++l)
+				{
+					const int input = l == 0 ? m_vocab_size : m_hidden_size;
+					const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
+
+					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, input, 3})));
+					weights_biases.push_back(
+						std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, m_hidden_size, 3})));
+					weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output, m_hidden_size, 3})));
+
+					if (USE_BIAS)
+					{
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_hidden_size, 3})));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(1.0, std::vector<int>{output})));
+					}
+					else
+					{
+						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size, 3})));
+						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
+					}
+					set_sub_graph();
+					cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
+					unset_sub_graph();
+				}
+			}
+		}
+
+		std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(const std::shared_ptr<tensor>& x)
+		{
+			h = std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size}));
+			return operator()(x, h);
+		}
+
+		std::tuple<std::shared_ptr<tensor>&, std::shared_ptr<tensor>&> GRU::operator()(
+			const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& h)
+		{
+			this->x = x;
+			this->h = h;
+			const auto input_shape = x->getShape();
+			if (x->getShape().size() == 2)
+				x->reshape(std::vector<int>{input_shape[0], 1, m_vocab_size});
+			cache.push_back(x);
+			cache.push_back(h);
+
+			for (int l = 0; l < m_num_layers; ++l)
+			{
+				const int output = l == m_num_layers - 1 ? m_output_size : m_hidden_size;
+				cache.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, output})));
+				cache.push_back(
+					std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_seq_length, m_directions, m_hidden_size})));
+			}
+
+			for (int dir = 0; dir < m_directions; ++dir)
+			{
+				for (int i = 0; i < input_shape[0]; ++i)
+				{
+					for (int l = 0; l < m_num_layers; ++l)
+					{
+						const uint64_t weight_bias_idx = static_cast<uint64_t>(m_num_layers) * dir * 5 + static_cast<
+							uint64_t>(l) * 5;
+						const uint64_t cache_idx = static_cast<uint64_t>(l) * 2;
+						const uint64_t direction = dir == 1 ? input_shape[0] - i - 1 : i;
+
+						uint64_t input_offset = direction * cache[cache_idx]->getShape()[2];
+						uint64_t weight_offset = direction * m_hidden_size;
+						uint64_t output_offset = direction * cache[3 + cache_idx]->getShape()[2];
+
+						if (dir == 1)
+						{
+							if (cache_idx != 0)
+								input_offset += static_cast<uint64_t>(m_seq_length) * cache[cache_idx]->getShape()[2];
+							weight_offset += static_cast<uint64_t>(m_hidden_size) * m_seq_length;
+							output_offset += static_cast<uint64_t>(m_seq_length) * cache[cache_idx + 2]->getShape()[2];
+						}
+
+						const uint64_t cell_idx = static_cast<uint64_t>(m_num_layers) * dir * m_seq_length + static_cast<
+							uint64_t>(m_seq_length) * l + i;
+						cells[cell_idx]->operator()(
+							cache[0 + cache_idx],
+							cache[1 + cache_idx],
+							cache[2 + cache_idx],
+							cache[3 + cache_idx],
+							weights_biases[0 + weight_bias_idx],
+							weights_biases[1 + weight_bias_idx],
+							weights_biases[2 + weight_bias_idx],
+							weights_biases[3 + weight_bias_idx],
+							weights_biases[4 + weight_bias_idx],
+							static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
+							);
+					}
+				}
+			}
+			auto m = get_input_id(x->getId());
+			return std::forward_as_tuple(cache[cache.size() - 2], cache[cache.size() - 1]);
+		}
+
+		int GRU::set_backward()
+		{
+			if (USE_BIAS)
+			{
+			}
+			else
+			{
+			}
+
+			return 1;
+		}
+
+		void GRU::update_weight()
+		{
+		}
+	}
 }

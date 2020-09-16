@@ -164,7 +164,7 @@ int layer::runCommandBuffer()
 	fence_create_info_.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fence_create_info_.flags = 0;
 
-	VK_CHECK_RESULT(vkCreateFence(m_device, &fence_create_info_, NULL, &fence));
+	VK_CHECK_RESULT(vkCreateFence(m_device, &fence_create_info_, nullptr, &fence));
 
 	kContextMtx.lock();
 	VK_CHECK_RESULT(vkQueueSubmit(kQueue, 1, &submit_info, fence));

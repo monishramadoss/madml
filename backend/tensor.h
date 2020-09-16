@@ -35,10 +35,12 @@ public:
 	void copyTo(tensor dst) const;
 	std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
 	friend std::ostream& operator<<(std::ostream& os, tensor& dt);
-
+	bool is_trainable() const { return trainable; }
+	bool set_trainable() { trainable = true; }
 private:
 
 	int id{};
+	bool trainable = true;
 	bool counted = false;
 	VkDevice m_device;
 	std::vector<int> m_shape;
@@ -63,6 +65,7 @@ namespace init
 	{
 		const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
 		auto ret = new dType[_shape];
+#pragma omp for
 		for (int i = 0; i < _shape; ++i)
 			ret[i] = reinterpret_cast<dType&>(c);
 		return reinterpret_cast<char*>(ret);

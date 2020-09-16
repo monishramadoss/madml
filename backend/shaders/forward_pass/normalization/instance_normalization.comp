@@ -14,20 +14,20 @@ layout (binding = 0) readonly buffer ssbA {
     float A[];
 };
 
-layout (binding = 1) buffer ssbA {
+layout (binding = 1) buffer ssbB {
     float mean[];
 };
 
-layout (binding = 2) buffer ssbA {
+layout (binding = 2) buffer ssbC {
     float bias[];
 };
 
-layout (binding = 3) buffer ssbA {
+layout (binding = 3) buffer ssbD {
     float var[];
 };
 
 
-layout (binding = 4)  buffer ssbC {
+layout (binding = 4)  buffer ssbE {
   float B[];
 };
 

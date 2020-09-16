@@ -25,6 +25,25 @@ namespace layers
 		std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
 		int set_backward() override;
 	};
+
+	namespace nn
+	{
+		class dense : public Module
+		{
+		public:
+			dense(int size, bool use_bias);
+			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
+			int set_backward() override;
+			void update_weight() override;
+
+		private:
+			int m_size;
+			bool USE_BIAS;
+
+			matmul* mm;
+			math::add* bias;
+		};
+	}
 }
 
 #endif

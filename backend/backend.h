@@ -2,8 +2,6 @@
 #define HALMAL_H
 
 #include <vector>
-#include <pybind11/pybind11.h>
-namespace py = pybind11;
 
 enum class Format
 {
@@ -36,9 +34,10 @@ bool isAvailable();
 #include "math.h"
 #include "transform.h"
 #include "matmul.h"
+#include "convolution.h"
 #include "activation.h"
+#include "normalization.h"
 #include "rnn.h"
-#include "nn_layers.h"
 #include "loss.h"
 
 #endif

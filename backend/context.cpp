@@ -147,7 +147,7 @@ context::context()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(enabledExtensions.size());
 	createInfo.ppEnabledExtensionNames = enabledExtensions.data();
 
-	VK_CHECK_RESULT(vkCreateInstance(&createInfo, NULL, &kInstance));
+	VK_CHECK_RESULT(vkCreateInstance(&createInfo, nullptr, &kInstance));
 
 	if (enableValidationLayers)
 	{
@@ -157,7 +157,7 @@ context::context()
 			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
 		createInfo.pfnCallback = &debugReportCallbackFn;
 
-		//VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(kInstance, &createInfo,	NULL, &kDebugReportCallback));
+		//VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(kInstance, &createInfo,	nullptr, &kDebugReportCallback));
 	}
 
 	uint32_t deviceCount;
@@ -197,7 +197,7 @@ context::context()
 	deviceCreateInfo.queueCreateInfoCount = 1;
 	deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
 
-	VK_CHECK_RESULT(vkCreateDevice(kPhysicalDevice, &deviceCreateInfo, NULL, &kDevice));
+	VK_CHECK_RESULT(vkCreateDevice(kPhysicalDevice, &deviceCreateInfo, nullptr, &kDevice));
 
 	vkGetDeviceQueue(kDevice, kQueueFamilyIndex, 0, &kQueue);
 
@@ -205,7 +205,7 @@ context::context()
 	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	commandPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 	commandPoolCreateInfo.queueFamilyIndex = kQueueFamilyIndex;
-	VK_CHECK_RESULT(vkCreateCommandPool(kDevice, &commandPoolCreateInfo, NULL, &kCmdPool));
+	VK_CHECK_RESULT(vkCreateCommandPool(kDevice, &commandPoolCreateInfo, nullptr, &kCmdPool));
 }
 
 context::~context()

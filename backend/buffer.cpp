@@ -29,7 +29,7 @@ bool buffer::init(size_t size_in_bytes, const char* data)
 	bufferCreateInfo.size = size_in_bytes;
 	bufferCreateInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 	bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-	VK_CHECK_RESULT(vkCreateBuffer(m_device, &bufferCreateInfo, NULL, &m_buffer));
+	VK_CHECK_RESULT(vkCreateBuffer(m_device, &bufferCreateInfo, nullptr, &m_buffer));
 
 	VkMemoryRequirements memoryRequirements;
 	vkGetBufferMemoryRequirements(m_device, m_buffer, &memoryRequirements);
@@ -39,7 +39,7 @@ bool buffer::init(size_t size_in_bytes, const char* data)
 	allocateInfo.memoryTypeIndex = findMemoryType(memoryRequirements.memoryTypeBits,
 		VK_MEMORY_PROPERTY_HOST_COHERENT_BIT |
 		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
-	VK_CHECK_RESULT(vkAllocateMemory(m_device, &allocateInfo, NULL, &m_memory));
+	VK_CHECK_RESULT(vkAllocateMemory(m_device, &allocateInfo, nullptr, &m_memory));
 
 	if (data)
 	{

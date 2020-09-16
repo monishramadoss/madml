@@ -135,4 +135,76 @@ namespace layers
 		derivative->runCommandBuffer();
 		return dy->getId();
 	}
+
+	namespace nn
+	{
+		dense::dense(int size, bool use_bias) : m_size(size), USE_BIAS(use_bias)
+		{
+			m_type = "dense";
+			update_id();
+			add_module(this);
+
+			set_sub_graph();
+			mm = new matmul();
+			if (USE_BIAS)
+				bias = new math::add();
+			unset_sub_graph();
+		}
+
+		std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& _x)
+		{
+			this->x = _x;
+			set_sub_graph();
+			auto input_shape = x->getShape();
+			if (!w)
+				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[input_shape.size() - 1], m_size}));
+			y = mm->operator()(x, w);
+
+			if (USE_BIAS)
+			{
+				if (!b)
+					b = std::make_shared<tensor>(tensor(1.0, y->getShape()));
+				y = bias->operator()(y, b);
+			}
+
+			unset_sub_graph();
+			if (!m1)
+				m1 = get_input_id(x->getId());
+			return y;
+
+			// MxK KxN = MxN
+			// dw =  dy * x.T
+			// db = mean(dy)
+			// dx = W.T * dy
+		}
+
+		int dense::set_backward()
+		{
+			if (USE_BIAS)
+			{
+				bias->dy = dy;
+				bias->is_bias = true;
+				bias->set_backward();
+				db = bias->dw;
+
+				mm->dy = bias->dx;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+			else
+			{
+				mm->dy = dy;
+				mm->set_backward();
+				dx = mm->dx;
+				dw = mm->dw;
+			}
+
+			return 1;
+		}
+
+		void dense::update_weight()
+		{
+		}
+	}
 }
