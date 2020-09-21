@@ -3,7 +3,7 @@
 namespace kernel { 
 	namespace shaders {
 		extern const unsigned int d_bias_spv[724];
-		extern const unsigned int d_gemm_spv[871];
+		extern const unsigned int d_gemm_spv[917];
 		extern const unsigned int gradient_spv[457];
 		extern const unsigned int d_celu_spv[690];
 		extern const unsigned int d_elu_spv[497];
@@ -31,7 +31,7 @@ namespace kernel {
 		extern const unsigned int d_sinh_spv[407];
 		extern const unsigned int d_tan_spv[427];
 		extern const unsigned int d_tanh_spv[441];
-		extern const unsigned int gemm_1_spv[1033];
+		extern const unsigned int gemm_1_spv[1246];
 		extern const unsigned int gemm_2_spv[3022];
 		extern const unsigned int celu_spv[583];
 		extern const unsigned int elu_spv[516];
@@ -64,7 +64,7 @@ namespace kernel {
 		extern const unsigned int pow_spv[472];
 		extern const unsigned int sub_spv[470];
 		extern const unsigned int xor_spv[483];
-		extern const unsigned int batch_normalization_spv[1567];
+		extern const unsigned int batch_normalization_spv[1701];
 		extern const unsigned int instance_normalization_spv[396];
 		extern const unsigned int layer_normalization_spv[244];
 		extern const unsigned int gruCell_spv[2320];

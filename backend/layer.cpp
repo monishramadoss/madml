@@ -213,12 +213,6 @@ namespace layers
 		}
 	}
 
-	std::vector<Module*>& Module::get_module()
-	{
-		static std::vector<Module*> M;
-		return M;
-	}
-
 	bool& Module::sub_graph_bit()
 	{
 		static bool requires_sub_graph;
@@ -250,24 +244,12 @@ namespace layers
 		t = false;
 	}
 
-	void Module::add_module(Module* M)
-	{
-		auto& m = get_module();
-		m.push_back(M);
-	}
-
 	void Module::zero_grad()
 	{
 	}
 
 	Module* Module::get_input_id(size_t i)
 	{
-		auto& M = get_module();
-		for (auto m : M)
-		{
-			if (m->y && m->y->getId() == i)
-				return m;
-		}
 		return nullptr;
 	}
 

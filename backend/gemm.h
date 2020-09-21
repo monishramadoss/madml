@@ -6,23 +6,28 @@
 
 namespace layers
 {
-	struct matmul_param
+	struct gemm_param
 	{
 		int total;
 		int batchsize;
+		float alpha;
+		float beta;
+		bool use_bias;
 		int m;
 		int n;
 		int k;
 	};
 
-	class matmul : public Base_Layer<matmul_param>
+	class gemm : public Base_Layer<gemm_param>
 	{
 	private:
 		void computeGroupCount() override;
-		layers::transpose* t;
+		std::shared_ptr<layers::transpose> t;
 	public:
-		explicit matmul();
+		explicit gemm(float alpha, float beta, bool use_bias);
 		std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
+		std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, std::shared_ptr<tensor>& b);
+
 		int set_backward() override;
 	};
 
@@ -40,7 +45,7 @@ namespace layers
 			int m_size;
 			bool USE_BIAS;
 
-			matmul* mm;
+			std::shared_ptr<gemm> mm;
 			math::add* bias;
 		};
 	}

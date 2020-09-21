@@ -77,7 +77,6 @@ namespace layers
 	protected:
 		std::string m_type;
 
-		static std::vector<Module*>& get_module();
 		static bool& sub_graph_bit();
 		static void set_sub_graph();
 		static void unset_sub_graph();
@@ -86,7 +85,6 @@ namespace layers
 		static void eval();
 
 		static void zero_grad();
-		static void add_module(Module* M);
 
 		Module* get_input_id(size_t i);
 
@@ -136,8 +134,8 @@ Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_pl
 {
 	update_id();
 	if (!sub_graph_bit())
-		add_module(this);
-	bck_shader = nullptr;
+
+		bck_shader = nullptr;
 	bck_codeSize = 0;
 	derivative = nullptr;
 	initVulkanThing(forward_buffers);

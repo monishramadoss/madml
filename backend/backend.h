@@ -33,7 +33,7 @@ bool isAvailable();
 
 #include "math.h"
 #include "transform.h"
-#include "matmul.h"
+#include "gemm.h"
 #include "convolution.h"
 #include "activation.h"
 #include "normalization.h"

@@ -1,10 +1,13 @@
 #version 460
 layout(push_constant) uniform pushBlock {
-      int total;
-      int batchsize;
-      int M;
-      int N;
-      int K;
+    int total;
+    int batchsize;
+    float alpha;
+    float beta;
+    bool use_bias;
+    int M;
+    int N;
+    int K;
 } p;
 
 layout (local_size_x = 64, local_size_y = 64, local_size_z = 1) in;
@@ -17,8 +20,12 @@ layout (binding = 1) readonly buffer ssbB {
     float B[];
 };
 
-layout (binding = 2) buffer ssbC {
-  float C[];
+layout (binding = 2) readonly buffer ssbC {
+    float C[];
+};
+
+layout (binding = 3) buffer ssbD {
+  float D[];
 };
 
 void gemm_1(){
@@ -30,10 +37,10 @@ void gemm_1(){
     for(uint globalDepth = gl_GlobalInvocationID.z; globalDepth < b; globalDepth += gl_NumWorkGroups.z * gl_WorkGroupSize.z){
         for (uint globalRow = gl_GlobalInvocationID.x; globalRow < M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
             for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
-                float acc = 0.0;
+                float acc = p.use_bias ? p.beta * C[globalRow*N + globalCol]: 0.0;
                 for (uint k=0u; k < K; k++)
-                    acc += A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
-                C[globalDepth*M*N + globalRow*N + globalCol] = acc;
+                    acc += p.alpha * A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
+                D[globalDepth*M*N + globalRow*N + globalCol] = acc;
             }
         }
     }

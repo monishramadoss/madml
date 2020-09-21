@@ -75,11 +75,10 @@ namespace layers
 			dhw m_kernel_size, m_stride, m_padding, m_dilation;
 			bool USE_BIAS;
 
-			matmul* mm;
-			vol2col* kernel;
-			math::add* bias;
-			transpose* trans;
-			transpose* t1_transpose;
+			std::shared_ptr<gemm> mm;
+			std::shared_ptr<vol2col> kernel;
+			std::shared_ptr<math::add> bias;
+			std::shared_ptr<transpose> trans;
 		};
 
 		class convTranspose : public Module
@@ -96,10 +95,10 @@ namespace layers
 			dhw m_kernel_size, m_stride, m_padding, m_dilation;
 			bool USE_BIAS;
 
-			matmul* mm;
-			vol2col* kernel;
-			math::add* bias;
-			transpose* trans;
+			std::shared_ptr<gemm> mm;
+			std::shared_ptr<vol2col> kernel;
+			std::shared_ptr<math::add> bias;
+			std::shared_ptr<transpose> trans;
 		};
 	}
 }

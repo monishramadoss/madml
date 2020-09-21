@@ -42,6 +42,10 @@ layout (binding = 4) writeonly buffer ssbE {
     float DX[];
 };
 
+layout (binding = 5) buffer ssbF {
+    float DB[];
+};
+
 void d_gemm(){
     for(uint globalDepth = gl_GlobalInvocationID.z; globalDepth < p.batchsize; globalDepth += gl_NumWorkGroups.z * gl_WorkGroupSize.z){
         for (uint globalRow = gl_GlobalInvocationID.x; globalRow < p.M; globalRow += gl_NumWorkGroups.x * gl_WorkGroupSize.x){

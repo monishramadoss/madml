@@ -196,7 +196,6 @@ namespace layers
 		{
 			m_type = "RNN";
 			update_id();
-			add_module(this);
 
 			if (bidirectional)
 				m_directions = 2;
@@ -323,7 +322,6 @@ namespace layers
 		{
 			m_type = "LSTM";
 			update_id();
-			add_module(this);
 
 			if (bidirectional)
 				m_directions = 2;
@@ -459,7 +457,6 @@ namespace layers
 		{
 			m_type = "GRU";
 			update_id();
-			add_module(this);
 
 			if (bidirectional)
 				m_directions = 2;

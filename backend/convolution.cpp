@@ -144,12 +144,12 @@ namespace layers
 		{
 			m_type = "conv";
 			update_id();
-			add_module(this);
+
 			set_sub_graph();
-			mm = new matmul();
+			mm = std::make_shared<gemm>(gemm(1., 1., false));
 			if (USE_BIAS)
-				bias = new math::add();
-			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
+				bias = std::make_shared<math::add>(math::add());
+			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 			unset_sub_graph();
 		}
 
@@ -163,7 +163,7 @@ namespace layers
 			int batch_size = input_shape[0];
 
 			if (!kernel)
-				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
+				kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 			if (!w)
 			{
 				int c = static_cast<int>(channels * m_kernel_size.d * m_kernel_size.h * m_kernel_size.w);
@@ -231,13 +231,12 @@ namespace layers
 		{
 			m_type = "convT";
 			update_id();
-			add_module(this);
-			set_sub_graph();
-			mm = new matmul();
-			if (USE_BIAS)
-				bias = new math::add();
-			trans = new transpose(std::vector<int>{1, 0, 2, 3, 4});
 
+			set_sub_graph();
+			mm = std::make_shared<gemm>(gemm(1., 1., false));
+			if (USE_BIAS)
+				bias = std::make_shared<math::add>(math::add());
+			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 			unset_sub_graph();
 		}
 
@@ -258,7 +257,7 @@ namespace layers
 				m_stride.d = m_stride.d != 0 && m_stride.d > 1 ? 1 / m_stride.d : 1;
 				m_stride.h = m_stride.h != 0 && m_stride.h > 1 ? 1 / m_stride.h : 1;
 				m_stride.w = m_stride.w != 0 && m_stride.w > 1 ? 1 / m_stride.w : 1;
-				kernel = new vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation);
+				kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 			}
 			if (!w)
 			{

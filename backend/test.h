@@ -85,7 +85,7 @@ namespace test
 		}
 	}
 
-	PyObject* test_memory(PyObject* self, PyObject* args)
+	void test_memory()
 	{
 		std::cout << "\ntesting memory" << std::endl;
 		const std::vector<int> shape_x{ 512,512,512,4 };
@@ -117,28 +117,24 @@ namespace test
 			avg2 += toDevice[i];
 		}
 		std::cout << "\nAvg toHost: " << avg1 / toHost.size() << " Avg toDevice: " << avg2 / toDevice.size() << std::endl;
-		Py_RETURN_NONE;
 	}
 
-	PyObject* test_trans(PyObject* self, PyObject* args)
+	void test_trans()
 	{
 		std::cout << "\ntesting trans_op" << std::endl;
 		const std::vector<int> shape_x{ 2, 3, 4 };
-		char* dat = init::normal_distribution_init(shape_x, 20, 2);
-		auto t1 = std::make_shared<tensor>(tensor(dat, shape_x));
+		auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
 		auto k1 = layers::transpose(std::vector<int>{ 1, 2, 0});
-		auto t2 = k1.operator()(t1);
+		auto t2 = k1(t1);
 
 		PrintDiffer(reinterpret_cast<float*>(t1->toHost()), t1->count());
 		std::cout << "\n";
 		PrintDiffer(reinterpret_cast<float*>(t2->toHost()), t2->count());
 		std::cout << "\n";
-		Py_RETURN_NONE;
 	}
 
-	PyObject* test_math(PyObject* self, PyObject* args)
+	void test_math()
 	{
-		PyObject* obj = nullptr;
 		std::cout << "\ntesting add_op" << std::endl;
 		const std::vector<int> shape_x{ 2000 };
 		auto t1 = std::make_shared<tensor>(tensor(-6.0, shape_x));
@@ -156,10 +152,9 @@ namespace test
 		std::cout << "\n";
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		std::cout << "\n";
-		Py_RETURN_NONE;
 	}
 
-	PyObject* test_dnn(PyObject* self, PyObject* args)
+	void test_dnn()
 	{
 		std::cout << "\ntesting dnn" << std::endl;
 		const int B = 8;
@@ -212,10 +207,10 @@ namespace test
 
 		PrintDiffer(reinterpret_cast<float*>(t3->toHost()), t3->count());
 		std::cout << "\n";
-		Py_RETURN_NONE;
+		delete[] data1;
 	}
 
-	PyObject* test_conv(PyObject* self, PyObject* args)
+	void test_conv()
 	{
 		std::cout << "\ntesting cnn" << std::endl;
 		std::vector<int> shape_x{ 1, 1, 1, 5, 5 };
@@ -248,10 +243,12 @@ namespace test
 		std::cout << "output" << std::endl;
 		PrintMatrix(reinterpret_cast<float*>(t4->toHost()), t4->getShape());
 		std::cout << std::endl;
-		Py_RETURN_NONE;
+		delete[] data1;
+		delete[] data2;
+		delete[] data3;
 	}
 
-	PyObject* test_norm(PyObject* self, PyObject* args)
+	void test_norm()
 	{
 		std::cout << "\ntesting normalization" << std::endl;
 		std::vector<int> shape_x{ 2, 3, 1, 5, 5 };
@@ -264,10 +261,10 @@ namespace test
 		PrintMatrix(reinterpret_cast<float*>(t1->toHost()), t1->getShape());
 		PrintMatrix(reinterpret_cast<float*>(t2->toHost()), t2->getShape());
 		std::cout << std::endl;
-		Py_RETURN_NONE;
+		delete[] data1;
 	}
 
-	PyObject* test_rnn(PyObject* self, PyObject* args)
+	void test_rnn()
 	{
 		int length = 4;
 		int vocab = 16;
@@ -320,9 +317,8 @@ namespace test
 			PrintDiffer(reinterpret_cast<float*>(t4->toHost()), t4->count());
 			std::cout << std::endl;
 		}
-		Py_RETURN_NONE;
 	}
-	PyObject* test_mnist(PyObject* self, PyObject* args)
+	void test_mnist()
 	{
 		std::cout << "\ntesting mnist" << std::endl;
 		auto l1 = layers::nn::dense(64, true);
@@ -347,7 +343,6 @@ namespace test
 		//loss_fn(t6, y_true);
 		PrintDiffer(reinterpret_cast<float*>(t6->toHost()), t6->count());
 		std::cout << std::endl;
-		Py_RETURN_NONE;
 	}
 
 	void test_resnet()
