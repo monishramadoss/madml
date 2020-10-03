@@ -19,4 +19,3 @@ bias = np.array([0, 1]).astype(np.float32)
 mean = np.array([0, 3]).astype(np.float32)
 var = np.array([1, 1.5]).astype(np.float32)
 y = _batchnorm_test_mode(x, s, bias, mean, var).astype(np.float32)
-

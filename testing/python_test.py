@@ -47,8 +47,6 @@ def load():
     print('test_labels', mnist["test_labels"].shape)
     return mnist["training_images"], mnist["training_labels"], mnist["test_images"], mnist["test_labels"]
 
-
-
 init()
 tr_x, tr_y, te_x, te_y = load()
 
@@ -60,5 +58,3 @@ tr_x, tr_y, te_x, te_y = load()
 
 for x, y in zip(tr_x, tr_y):
     pass
-
-
