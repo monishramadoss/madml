@@ -1,7 +1,8 @@
 #ifndef HALMAL_H
 #define HALMAL_H
-
+#include <pybind11/pybind11.h>
 #include <vector>
+namespace py = pybind11;
 
 enum class Format
 {

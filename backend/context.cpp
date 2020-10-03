@@ -11,6 +11,7 @@ bool enableValidationLayers = false;
 VkInstance kInstance;
 VkPhysicalDevice kPhysicalDevice;
 VkDevice kDevice;
+std::vector<VkDevice> kDevices;
 VkQueue kQueue;
 VkCommandPool kCmdPool;
 VkDebugReportCallbackEXT kDebugReportCallback;
@@ -130,9 +131,9 @@ context::context()
 
 	VkApplicationInfo applicationInfo = {};
 	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	applicationInfo.pApplicationName = "halaml Library";
+	applicationInfo.pApplicationName = "madml backend Library";
 	applicationInfo.applicationVersion = 0;
-	applicationInfo.pEngineName = "halaml";
+	applicationInfo.pEngineName = "backend";
 	applicationInfo.engineVersion = 0;
 	applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -157,7 +158,7 @@ context::context()
 			VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
 		createInfo.pfnCallback = &debugReportCallbackFn;
 
-		//VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(kInstance, &createInfo,	nullptr, &kDebugReportCallback));
+		//VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(kInstance, &createInfo, nullptr, &kDebugReportCallback));
 	}
 
 	uint32_t deviceCount;
@@ -198,7 +199,6 @@ context::context()
 	deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
 
 	VK_CHECK_RESULT(vkCreateDevice(kPhysicalDevice, &deviceCreateInfo, nullptr, &kDevice));
-
 	vkGetDeviceQueue(kDevice, kQueueFamilyIndex, 0, &kQueue);
 
 	VkCommandPoolCreateInfo commandPoolCreateInfo = {};

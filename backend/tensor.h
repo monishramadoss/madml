@@ -9,12 +9,28 @@
 
 class buffer;
 
+struct TENSOR_OBJ
+{
+	int id;
+	bool trainable;
+	bool counted;
+	bool is_onDevice;
+
+	VkDevice m_device;
+	std::vector<int> m_shape;
+	Format format;
+	size_t size_in_byte;
+	std::shared_ptr<buffer> m_buffer;
+	std::shared_ptr<char> m_data;
+};
+
 class tensor
 {
 public:
 	tensor(Format fmt = Format::kFormatFp32);
 	tensor(char* data, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
-	tensor(float c, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
+	tensor(float c, const std::vector<int>& shape, Format fmt);
+	tensor(float c, const std::vector<int>& shape);
 
 	void* map() const;
 	void unMap() const;
@@ -39,16 +55,19 @@ public:
 	bool set_trainable() { trainable = true; }
 private:
 
-	int id{};
+	int id;
 	bool trainable = true;
 	bool counted = false;
-	VkDevice m_device;
+	bool is_onDevice;
+
+	Format format;
 	std::vector<int> m_shape;
 	size_t size_in_byte;
-	std::shared_ptr<buffer> m_buffer;
 	std::shared_ptr<char> m_data;
-	Format format;
-	bool is_onDevice;
+
+	VkDevice m_device;
+	std::shared_ptr<buffer> m_buffer;
+
 	static int& get_object_id();
 	void update_id();
 };
@@ -70,7 +89,6 @@ namespace init
 			ret[i] = reinterpret_cast<dType&>(c);
 		return reinterpret_cast<char*>(ret);
 	}
-
 	char* fill_memory_iter(std::vector<int> shape);
 	char* normal_distribution_init(std::vector<int> shape, float mean, float std);
 	char* uniform_distribution_init(std::vector<int> shape, float min, float max);

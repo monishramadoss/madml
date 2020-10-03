@@ -26,6 +26,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="conv_test.py" />
+    <Compile Include="norm_test.py" />
+    <Compile Include="python_test.py" />
     <Compile Include="test_1.py">
       <SubType>Code</SubType>
     </Compile>
@@ -36,6 +39,14 @@
       <Project>{6b0875f4-a651-4318-aaba-e48bf5505ef9}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="..\madml\madml.pyproj">
+      <Name>madml</Name>
+      <Project>{18dde651-13ef-4633-bde8-c6aa2f1f5eb3}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="PythonSettings.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

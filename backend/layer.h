@@ -12,6 +12,21 @@
 constexpr int local_sz_x = 1024;
 constexpr int max_compute_work_group_count = 1024;
 
+struct LAYER_OBJ
+{
+	VkDevice m_device;
+	VkPipeline m_pipeline;
+	VkCommandBuffer m_cmd_buffer;
+	VkDescriptorPool m_descriptor_pool;
+	VkDescriptorSet m_descriptor_set;
+	VkDescriptorSetLayout m_descriptor_set_layout;
+	VkPipelineLayout m_pipeline_layout;
+	VkShaderModule m_module;
+	int m_group_x;
+	int m_group_y;
+	int m_group_z;
+};
+
 namespace layers
 {
 	class Module;

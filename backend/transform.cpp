@@ -40,7 +40,7 @@ namespace layers
 		return stride;
 	}
 
-	transpose::transpose(const std::vector<int> order) : Base_Layer<transpose_param>(3)
+	transpose::transpose(const std::vector<int>& order) : Base_Layer<transpose_param>(3)
 	{
 		m_type = "transpose";
 		m_param.num_axes = static_cast<int>(order.size());
@@ -91,3 +91,10 @@ namespace layers
 		m_group_z = 1;
 	}
 }
+
+//
+//PYBIND11_MODULE(backend, m)
+//{
+//	py::class_<layers::transpose>(m, "transpose")
+//		.def(py::init<const std::vector<int>&>());
+//}

@@ -52,6 +52,21 @@ tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byt
 	reshape(m_data.get(), shape);
 }
 
+tensor::tensor(float c, const std::vector<int>& shape) : size_in_byte(0), format(Format::kFormatFp32)
+{
+	createContext();
+	if (!counted)
+	{
+		update_id();
+		counted = true;
+	}
+
+	m_device = kDevice;
+	m_data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, c));
+	is_onDevice = true;
+	reshape(m_data.get(), shape);
+}
+
 void* tensor::map() const
 {
 	void* p;
@@ -263,3 +278,9 @@ namespace init
 		return normal_distribution_init(shape, 0, a * a);
 	}
 }
+
+//PYBIND11_MODULE(backend, m)
+//{
+//	py::class_<tensor>(m, "tensor")
+//		.def(py::init<float, const std::vector<int>&>());
+//}

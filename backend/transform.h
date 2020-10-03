@@ -32,7 +32,7 @@ namespace layers
 		std::vector<int> stride;
 		std::vector<int> d_stride;
 	public:
-		transpose(std::vector<int> order);
+		transpose(const std::vector<int>& order);
 		std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
 		int set_backward() override;
 	};

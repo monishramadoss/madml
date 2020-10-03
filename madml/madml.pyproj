@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>18dde651-13ef-4633-bde8-c6aa2f1f5eb3</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>madml.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -24,7 +25,24 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="madml.py" />
+    <Compile Include="madml\errors.py" />
+    <Compile Include="madml\nn\convolution.py" />
+    <Compile Include="madml\nn\linear.py" />
+    <Compile Include="madml\nn\module.py" />
+    <Compile Include="madml\nn\activation.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="madml\nn\normalization.py" />
+    <Compile Include="madml\nn\rnn.py" />
+    <Compile Include="madml\nn\__init__.py" />
+    <Compile Include="setup.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="madml\tensor.py" />
+    <Compile Include="madml\utils.py" />
+    <Compile Include="madml\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\backend\backend.vcxproj">
@@ -32,6 +50,10 @@
       <Project>{6b0875f4-a651-4318-aaba-e48bf5505ef9}</Project>
       <Private>True</Private>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="madml\" />
+    <Folder Include="madml\nn\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
