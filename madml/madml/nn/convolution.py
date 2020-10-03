@@ -177,17 +177,17 @@ class _ConvTransposeNd(_ConvNd):
         return ret
 
 class ConvTranspose1d(_ConvTransposeNd):
-    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,
+    def __init__(self,
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,
-        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,
-        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,
-        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,
-        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,
-        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):
+        stride: Union[int, list[int]]=1,
+        padding: Union[int, list[int]]=0,
+        output_padding: Union[int, list[int]]=0,
+        groups: int=1,
+        bias: bool=True,
+        dilation: _size_1_t=1,
+        padding_mode: str='zeros'):
 
         kernel_size = single(kernel_size)
         stride = single(stride)
@@ -199,19 +199,18 @@ class ConvTranspose1d(_ConvTransposeNd):
     def forward(self, input):
         output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
 
-class ConvTranspose2d(_ConvTransposeNd):class ConvTranspose1d(_ConvTransposeNd):
-    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,
+class ConvTranspose2d(_ConvTransposeNd):
+    def __init__(self,
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]] = 1,
-        padding: Union[int, list[int]] = 0,
-        output_padding: Union[int, list[int]] = 0,
-        groups: int = 1,
-        bias: bool = True,
-        dilation: _size_1_t = 1,
-        padding_mode: str = 'zeros'
-    ):
+        stride: Union[int, list[int]]=1,
+        padding: Union[int, list[int]]=0,
+        output_padding: Union[int, list[int]]=0,
+        groups: int=1,
+        bias: bool=True,
+        dilation: _size_1_t=1,
+        padding_mode: str='zeros'):
 
         kernel_size = double(kernel_size)
         stride = double(stride)
@@ -224,23 +223,23 @@ class ConvTranspose2d(_ConvTransposeNd):class ConvTranspose1d(_ConvTransposeNd):
         output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
 
 class ConvTranspose3d(_ConvTransposeNd):
-    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,    def __init__(self,
+    def __init__(self,
         in_channels: int,
         out_channels: int,
         kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,        padding: Union[int, list[int]]=0,
-        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,        output_padding: Union[int, list[int]]=0,
-        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,        groups: int=1,
-        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,        bias: bool=True,
-        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,        dilation: _size_1_t=1,
-        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):        padding_mode: str='zeros'):
+        stride: Union[int, list[int]]=1,
+        padding: Union[int, list[int]]=0,
+        output_padding: Union[int, list[int]]=0,
+        groups: int=1,
+        bias: bool=True,
+        dilation: _size_1_t=1,
+        padding_mode: str='zeros'):
 
         kernel_size = triple(kernel_size)
         stride = triple(stride)
         padding = triple(padding)
         dilation = triple(dilation)
-        output_padding = single(output_padding)
+        output_padding = triple(output_padding)
         super(ConvTranspose3d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, True, output_padding, groups, bias, padding_mode)
 
     def forward(self, input):

@@ -33,6 +33,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="madml\nn\normalization.py" />
+    <Compile Include="madml\nn\pooling.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="madml\nn\rnn.py" />
     <Compile Include="madml\nn\__init__.py" />
     <Compile Include="setup.py">
