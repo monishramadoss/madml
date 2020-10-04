@@ -3,13 +3,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from typing import List, Optional, Union
+#from typing import Optional
 
 import numpy as np
 from .module import Module
 
 class Identity(Module):
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         super(Identity, self).__init__()
 
     def forward(self, input):

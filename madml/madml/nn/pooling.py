@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from typing import List, Optional, Union
 
-import numpy as np
+#import numpy as np
 from .module import Module
 from madml.utils import single, double, triple
 

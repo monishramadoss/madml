@@ -3,9 +3,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from typing import List, Optional, Union
-
-import numpy as np
+from typing import  Optional
+#import numpy as np
 from .module import Module
 
 class Threshold(Module):
