@@ -1,10 +1,18 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from typing import List, Optional, Union
+
+import numpy as np
 from .module import Module
 
 class Identity(Module):
     def __init__(self, *args, **kwargs):
         super(Identity, self).__init__()
 
-    def forward(self, input: Tensor) -> Tensor:
+    def forward(self, input):
         return input
 
 class Linear(Module):

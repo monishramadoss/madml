@@ -1,9 +1,7 @@
 #include<cstdlib>
 #include "spv_shader.h"
-namespace kernel
-{
-	namespace shaders
-	{
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_bias_spv[724] = {
 			0x07230203,0x00010500,0x0008000a,0x00000072,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -100,10 +98,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_gemm_spv[917] = {
 			0x07230203,0x00010500,0x0008000a,0x0000007e,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -224,10 +221,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gradient_spv[457] = {
 			0x07230203,0x00010500,0x0008000a,0x00000045,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -291,10 +287,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_celu_spv[690] = {
 			0x07230203,0x00010500,0x0008000a,0x0000006b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -387,10 +382,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_elu_spv[497] = {
 			0x07230203,0x00010500,0x0008000a,0x0000004b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -459,10 +453,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_relu_spv[420] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003e,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -521,10 +514,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_relu6_spv[467] = {
 			0x07230203,0x00010500,0x0008000a,0x00000047,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -589,10 +581,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_sigmoid_spv[430] = {
 			0x07230203,0x00010500,0x0008000a,0x00000040,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -652,10 +643,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int binary_operator_spv[478] = {
 			0x07230203,0x00010500,0x0008000a,0x00000043,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -721,10 +711,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_batch_normalization_spv[244] = {
 			0x07230203,0x00010500,0x0008000a,0x00000018,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -761,10 +750,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_instance_normalization_spv[244] = {
 			0x07230203,0x00010500,0x0008000a,0x00000018,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -801,10 +789,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_layer_normalization_spv[244] = {
 			0x07230203,0x00010500,0x0008000a,0x00000018,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -841,10 +828,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_abs_spv[426] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003f,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -904,10 +890,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_exp_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -964,10 +949,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_ln_spv[410] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003c,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1025,10 +1009,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_sqrt_spv[416] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003d,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1086,10 +1069,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int unary_operator_spv[401] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003a,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1146,10 +1128,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_acos_spv[444] = {
 			0x07230203,0x00010500,0x0008000a,0x00000043,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1211,10 +1192,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_acosh_spv[440] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1275,10 +1255,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_asin_spv[440] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1339,10 +1318,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_asinh_spv[440] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1403,10 +1381,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_atan_spv[434] = {
 			0x07230203,0x00010500,0x0008000a,0x00000041,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1467,10 +1444,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_atanh_spv[434] = {
 			0x07230203,0x00010500,0x0008000a,0x00000041,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1531,10 +1507,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_cos_spv[411] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003c,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1592,10 +1567,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_cosh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1652,10 +1626,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_sin_spv[441] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1717,10 +1690,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_sinh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1777,10 +1749,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_tan_spv[427] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003f,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1840,10 +1811,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_tanh_spv[441] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -1905,10 +1875,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gemm_1_spv[1246] = {
 			0x07230203,0x00010500,0x0008000a,0x000000c7,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2070,10 +2039,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gemm_2_spv[3022] = {
 			0x07230203,0x00010500,0x0008000a,0x00000208,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2457,10 +2425,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int celu_spv[583] = {
 			0x07230203,0x00010500,0x0008000a,0x00000056,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2539,10 +2506,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int elu_spv[516] = {
 			0x07230203,0x00010500,0x0008000a,0x0000004f,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2613,10 +2579,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gelu_spv[519] = {
 			0x07230203,0x00010500,0x0008000a,0x00000053,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2687,10 +2652,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int hardshrink_spv[538] = {
 			0x07230203,0x00010500,0x0008000a,0x00000053,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2764,10 +2728,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int hardtanh_spv[559] = {
 			0x07230203,0x00010500,0x0008000a,0x00000055,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2843,10 +2806,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int leakyrelu_spv[473] = {
 			0x07230203,0x00010500,0x0008000a,0x00000046,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2912,10 +2874,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int logsigmoid_spv[442] = {
 			0x07230203,0x00010500,0x0008000a,0x00000040,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -2977,10 +2938,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int prelu_spv[471] = {
 			0x07230203,0x00010500,0x0008000a,0x00000046,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3045,10 +3005,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int relu_spv[423] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003c,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3107,10 +3066,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int relu6_spv[434] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003e,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3171,10 +3129,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int selu_spv[516] = {
 			0x07230203,0x00010500,0x0008000a,0x0000004d,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3245,10 +3202,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int sigmoid_spv[425] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003f,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3308,10 +3264,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int softplus_spv[474] = {
 			0x07230203,0x00010500,0x0008000a,0x00000047,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3377,10 +3332,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int softshrink_spv[586] = {
 			0x07230203,0x00010500,0x0008000a,0x0000005d,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3460,10 +3414,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int softsign_spv[446] = {
 			0x07230203,0x00010500,0x0008000a,0x00000041,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3525,10 +3478,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int tanhshrink_spv[437] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003f,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3589,10 +3541,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int add_spv[470] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3657,10 +3608,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int div_spv[470] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3725,10 +3675,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int equal_spv[480] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3794,10 +3743,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int greater_eq_spv[480] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3863,10 +3811,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int greater_than_spv[480] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -3932,10 +3879,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int less_eq_spv[480] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4001,10 +3947,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int less_than_spv[480] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4070,10 +4015,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int max_spv[472] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4138,10 +4082,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int min_spv[472] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4206,10 +4149,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int mod_spv[470] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4274,10 +4216,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int mul_spv[470] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4342,10 +4283,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int nequal_spv[480] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4411,10 +4351,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int pow_spv[472] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4479,10 +4418,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int sub_spv[470] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4547,10 +4485,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int xor_spv[483] = {
 			0x07230203,0x00010500,0x0008000a,0x00000044,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4617,10 +4554,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int batch_normalization_spv[1701] = {
 			0x07230203,0x00010500,0x0008000a,0x0000011e,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4839,10 +4775,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int instance_normalization_spv[396] = {
 			0x07230203,0x00010500,0x0008000a,0x00000024,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4898,10 +4833,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int layer_normalization_spv[244] = {
 			0x07230203,0x00010500,0x0008000a,0x00000018,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -4938,10 +4872,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int gruCell_spv[2320] = {
 			0x07230203,0x00010500,0x0008000a,0x00000181,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -5237,10 +5170,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int lstmCell_spv[2671] = {
 			0x07230203,0x00010500,0x0008000a,0x000001bd,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -5580,10 +5512,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int rnnCell_spv[1588] = {
 			0x07230203,0x00010500,0x0008000a,0x000000ed,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -5788,10 +5719,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int col2vol_spv[2063] = {
 			0x07230203,0x00010500,0x0008000a,0x0000015e,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6055,10 +5985,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int transpose_spv[756] = {
 			0x07230203,0x00010500,0x0008000a,0x00000076,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6159,10 +6088,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int vol2col_spv[2074] = {
 			0x07230203,0x00010500,0x0008000a,0x0000015c,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6428,10 +6356,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int abs_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6488,10 +6415,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int ceil_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6548,10 +6474,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int clip_spv[459] = {
 			0x07230203,0x00010500,0x0008000a,0x00000042,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6615,10 +6540,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int exp_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6675,10 +6599,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int floor_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6735,10 +6658,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int ln_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6795,10 +6717,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int round_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6855,10 +6776,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int sqrt_spv[475] = {
 			0x07230203,0x00010500,0x0008000a,0x00000047,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6924,10 +6844,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int acos_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -6984,10 +6903,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int acosh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7044,10 +6962,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int asin_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7104,10 +7021,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int asinh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7164,10 +7080,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int atan_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7224,10 +7139,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int atanh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7284,10 +7198,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int cos_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7344,10 +7257,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int cosh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7404,10 +7316,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int sin_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7464,10 +7375,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int sinh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7524,10 +7434,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int tan_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7584,10 +7493,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int tanh_spv[407] = {
 			0x07230203,0x00010500,0x0008000a,0x0000003b,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7644,10 +7552,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int d_MSE_spv[498] = {
 			0x07230203,0x00010500,0x0008000a,0x00000048,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7716,10 +7623,9 @@ namespace kernel
 	}
 } //namespace kernel, shaders
 
-namespace kernel
-{
-	namespace shaders
-	{
+
+namespace kernel { 
+	namespace shaders {
 		extern const unsigned int MSE_spv[611] = {
 			0x07230203,0x00010500,0x0008000a,0x00000058,0x00000000,0x00020011,0x00000001,0x0006000b,
 			0x00000001,0x4c534c47,0x6474732e,0x3035342e,0x00000000,0x0003000e,0x00000000,0x00000001,
@@ -7801,3 +7707,4 @@ namespace kernel
 		};
 	}
 } //namespace kernel, shaders
+

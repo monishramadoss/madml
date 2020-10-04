@@ -1,3 +1,10 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from typing import List, Optional, Union
+
 import numpy as np
 from .module import Module
 from madml.utils import single, double, triple
@@ -6,32 +13,32 @@ class _ConvNd(Module):
     __constants__ = ['stride', 'padding', 'dilation', 'groups',
                      'padding_mode', 'output_padding', 'in_channels',
                      'out_channels', 'kernel_size']
-    __annotations__ = {'bias': Optional[list]}
+    __annotations__ = {'bias': Optional[List]}
 
     _in_channels : int
     out_channels : int
-    kernel_size : Tuple[int, ...]
-    stride : Tuple[int, ...]
-    padding : Tuple[int, ...]
-    dilation : Tuple[int, ...]
+    kernel_size : List[int]
+    stride : List[int]
+    padding : List[int]
+    dilation : List[int]
     transposed : bool
-    output_padding : Tuple[int, ...]
+    output_padding : List[int]
     groups : int
     padding_mode : str
-    weight : Tensor
-    bias : Optional[Tensor]
+    weight : List[float]
+    bias : Optional[List[float]]
 
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Optional[int, list[int]],
-                 stride: Optional[int, list[int]],
-                 padding: Optional[int, list[int]],
-                 dilation: Optional[int, list[int]],
+                 kernel_size: Optional[int, List[int]],
+                 stride: Optional[int, List[int]],
+                 padding: Optional[int, List[int]],
+                 dilation: Optional[int, List[int]],
                  transposed: bool,
-                 output_padding: Optional[int, list[int]],
+                 output_padding: Optional[int, List[int]],
                  groups: int,
-                 bias: Optional[list[float]],
+                 bias: Optional[List[float]],
                  padding_mode: str) -> None:
         super(_ConvNd, self).__init__()
 
@@ -55,7 +62,7 @@ class _ConvNd(Module):
         self.output_padding = output_padding
         self.groups = groups
         self.padding_mode = padding_mode
-        self._reversed_padding_repeated_twice = _reverse_repeat_tuple(self.padding, 2)
+        #self._reversed_padding_repeated_twice = _reverse_repeat_tuple(self.padding, 2)
         if transposed:
             self.weight = np.zeros((in_channels, out_channels // groups, *kernel_size))
         else:
@@ -79,7 +86,7 @@ class _ConvNd(Module):
         return s.format(**self.__dict__)
 
     def __setstate__(self, state):
-        super(_ConvNd, self).__setstate__(state)
+        #super(_ConvNd, self).__setstate__(state)
         if not hasattr(self, 'padding_mode'):
             self.padding_mode = 'zeros'
 
@@ -87,11 +94,11 @@ class Conv1d(_ConvNd):
     def __init__(self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,
-        dilation: Union[int, list[int]]=1,
-        groups: Union[int, list[int]]=1,
+        kernel_size: Union[int, List[int]],
+        stride: Union[int, List[int]]=1,
+        padding: Union[int, List[int]]=0,
+        dilation: Union[int, List[int]]=1,
+        groups: Union[int, List[int]]=1,
         bias: bool=True,
         padding_mode: str='zeros'):
 
@@ -105,11 +112,11 @@ class Conv2d(_ConvNd):
     def __init__(self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,
-        dilation: Union[int, list[int]]=1,
-        groups: Union[int, list[int]]=1,
+        kernel_size: Union[int, List[int]],
+        stride: Union[int, List[int]]=1,
+        padding: Union[int, List[int]]=0,
+        dilation: Union[int, List[int]]=1,
+        groups: Union[int, List[int]]=1,
         bias: bool=True,
         padding_mode: str='zeros'):
 
@@ -123,11 +130,11 @@ class Conv3d(_ConvNd):
     def __init__(self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,
-        dilation: Union[int, list[int]]=1,
-        groups: Union[int, list[int]]=1,
+        kernel_size: Union[int, List[int]],
+        stride: Union[int, List[int]]=1,
+        padding: Union[int, List[int]]=0,
+        dilation: Union[int, List[int]]=1,
+        groups: Union[int, List[int]]=1,
         bias: bool=True,
         padding_mode: str='zeros'):
 
@@ -180,13 +187,13 @@ class ConvTranspose1d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,
-        output_padding: Union[int, list[int]]=0,
+        kernel_size: Union[int, List[int]],
+        stride: Union[int, List[int]]=1,
+        padding: Union[int, List[int]]=0,
+        output_padding: Union[int, List[int]]=0,
         groups: int=1,
         bias: bool=True,
-        dilation: _size_1_t=1,
+        dilation: Union[int, List[int]]=1,
         padding_mode: str='zeros'):
 
         kernel_size = single(kernel_size)
@@ -197,19 +204,20 @@ class ConvTranspose1d(_ConvTransposeNd):
         super(ConvTranspose1d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, True, output_padding, groups, bias, padding_mode)
 
     def forward(self, input):
-        output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
+        #output_padding = self._output_padding(input, self.output_size, self.stride, self.padding, self.kernel_size)
+        pass
 
 class ConvTranspose2d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,
-        output_padding: Union[int, list[int]]=0,
+        kernel_size: Union[int, List[int]],
+        stride: Union[int, List[int]]=1,
+        padding: Union[int, List[int]]=0,
+        output_padding: Union[int, List[int]]=0,
         groups: int=1,
         bias: bool=True,
-        dilation: _size_1_t=1,
+        dilation: Union[int, List[int]]=1,
         padding_mode: str='zeros'):
 
         kernel_size = double(kernel_size)
@@ -220,19 +228,20 @@ class ConvTranspose2d(_ConvTransposeNd):
         super(ConvTranspose2d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, True, output_padding, groups, bias, padding_mode)
 
     def forward(self, input):
-        output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
+        #output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
+        pass
 
 class ConvTranspose3d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,
         out_channels: int,
-        kernel_size: Union[int, list[int]],
-        stride: Union[int, list[int]]=1,
-        padding: Union[int, list[int]]=0,
-        output_padding: Union[int, list[int]]=0,
+        kernel_size: Union[int, List[int]],
+        stride: Union[int, List[int]]=1,
+        padding: Union[int, List[int]]=0,
+        output_padding: Union[int, List[int]]=0,
         groups: int=1,
         bias: bool=True,
-        dilation: _size_1_t=1,
+        dilation: Union[int, List[int]]=1,
         padding_mode: str='zeros'):
 
         kernel_size = triple(kernel_size)
@@ -243,4 +252,5 @@ class ConvTranspose3d(_ConvTransposeNd):
         super(ConvTranspose3d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, True, output_padding, groups, bias, padding_mode)
 
     def forward(self, input):
-        output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
+        #output_padding = self._output_padding(input, output_size, self.stride, self.padding, self.kernel_size)
+        pass

@@ -38,6 +38,9 @@
     </Compile>
     <Compile Include="madml\nn\rnn.py" />
     <Compile Include="madml\nn\__init__.py" />
+    <Compile Include="madml\tensor_ops.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="setup.py">
       <SubType>Code</SubType>
     </Compile>

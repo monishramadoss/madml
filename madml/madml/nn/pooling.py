@@ -1,3 +1,11 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from typing import List, Optional, Union
+
+import numpy as np
 from .module import Module
 from madml.utils import single, double, triple
 
@@ -7,8 +15,8 @@ class _MaxPoolNd(Module):
     return_indices : bool
     ceil_mode : bool
 
-    def __init__(self, kernel_size: Union[int, list[int]], stride: Optional[Union[int, list[int]]]=None,
-                 padding: Union[int, list[int]]=0, dilation: Union[int, list[int]]=1,
+    def __init__(self, kernel_size: Union[int, List[int]], stride: Optional[Union[int, List[int]]]=None,
+                 padding: Union[int, List[int]]=0, dilation: Union[int, List[int]]=1,
                  return_indices: bool=False, ceil_mode: bool=False) -> None:
         super(_MaxPoolNd, self).__init__()
         self.kernel_size = kernel_size
@@ -28,23 +36,23 @@ class MaxPool1d(_MaxPoolNd):
     dilation : int
 
 class MaxPool2d(_MaxPoolNd):
-    kernel_size : Union[int, list[int]]
-    stride : Union[int, list[int]]
-    padding : Union[int, list[int]]
-    dilation : Union[int, list[int]]
+    kernel_size : Union[int, List[int]]
+    stride : Union[int, List[int]]
+    padding : Union[int, List[int]]
+    dilation : Union[int, List[int]]
 
 class MaxPool3d(_MaxPoolNd):
-    kernel_size : Union[int, list[int]]
-    stride : Union[int, list[int]]
-    padding : Union[int, list[int]]
-    dilation : Union[int, list[int]]
+    kernel_size : Union[int, List[int]]
+    stride : Union[int, List[int]]
+    padding : Union[int, List[int]]
+    dilation : Union[int, List[int]]
 
 class _MaxUnpoolNd(Module):
     __constants__ = ['kernel_size', 'stride', 'padding']
 
-    kernel_size : Union[int, list[int]]
-    stride : Optional[Union[int, list[int]]]
-    padding : Union[int, list[int]]
+    kernel_size : Union[int, List[int]]
+    stride : Optional[Union[int, List[int]]]
+    padding : Union[int, List[int]]
 
     def __init__(self, kernel_size, stride, padding):
         super(_MaxUnpoolNd, self).__init__()
@@ -65,7 +73,7 @@ class MaxUnpool1d(_MaxUnpoolNd):
         super(MaxUnpool1d, self).__init__(kernel_size, stride, padding)
 
 class MaxUnpool2d(_MaxUnpoolNd):
-    def __init__(self, kernel_size: Union[int, list[int]], stride: Optional[Union[int, list[int]]]=None, padding: Union[int, list[int]]=0) -> None:
+    def __init__(self, kernel_size: Union[int, List[int]], stride: Optional[Union[int, List[int]]]=None, padding: Union[int, List[int]]=0) -> None:
         kernel_size = double(kernel_size)
         padding = double(padding)
         if stride:
@@ -73,7 +81,7 @@ class MaxUnpool2d(_MaxUnpoolNd):
         super(MaxUnpool2d, self).__init__(kernel_size, stride, padding)
 
 class MaxUnpool3d(_MaxUnpoolNd):
-    def __init__(self, kernel_size: Union[int, list[int]], stride: Optional[Union[int, list[int]]]=None, padding: Union[int, list[int]]=0) -> None:
+    def __init__(self, kernel_size: Union[int, List[int]], stride: Optional[Union[int, List[int]]]=None, padding: Union[int, List[int]]=0) -> None:
         kernel_size = triple(kernel_size)
         padding = triple(padding)
         if stride:
@@ -82,15 +90,15 @@ class MaxUnpool3d(_MaxUnpoolNd):
 
 class _AvgPoolNd(Module):
     __constants__ = ['kernel_size', 'stride', 'padding', 'ceil_mode', 'count_include_pad', 'divisor_override']
-    kernel_size : Union[int, list[int]]
-    stride : Union[int, list[int]]
-    padding : Union[int, list[int]]
+    kernel_size : Union[int, List[int]]
+    stride : Union[int, List[int]]
+    padding : Union[int, List[int]]
     ceil_mode : bool
     count_include_pad : bool
     divisor_override : bool
 
     def __init__(self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override) -> None:
-        super(AvgPoolNd, self).__init__()
+        super(_AvgPoolNd, self).__init__()
         self.kernel_size = kernel_size
         self.stride = stride
         self.padding = padding
@@ -109,7 +117,7 @@ class AvgPool1d(_AvgPoolNd):
         super(AvgPool1d, self).__init__(kernel_size, stride, padding, ceil_mode, count_include_pad, False)
 
 class AvgPool2d(_AvgPoolNd):
-    def __init__(self, kernel_size: Union[int, list[int]], stride: Optional[Union[int, list[int]]]=None, padding: Union[int, list[int]]=0,
+    def __init__(self, kernel_size: Union[int, List[int]], stride: Optional[Union[int, List[int]]]=None, padding: Union[int, List[int]]=0,
                  ceil_mode: bool=False, count_include_pad: bool=True, divisor_override: bool=None) -> None:
         kernel_size = double(kernel_size)
         stride = double(stride if stride is not None else kernel_size)
@@ -117,21 +125,21 @@ class AvgPool2d(_AvgPoolNd):
         super(AvgPool2d, self).__init__(kernel_size, stride, padding, ceil_mode, count_include_pad,)
 
     def __setstate__(self, d):
-        super(AvgPool2d, self).__setstate__(d)
+        #super(AvgPool2d, self).__setstate__(d)
         self.__dict__.setdefault('padding', 0)
         self.__dict__.setdefault('ceil_mode', False)
         self.__dict__.setdefault('count_include_pad', True)
 
 class AvgPool3d(_AvgPoolNd):
-    def __init__(self, kernel_size: Union[int, list[int]], stride: Optional[Union[int, list[int]]]=None, padding: Union[int, list[int]]=0,
+    def __init__(self, kernel_size: Union[int, List[int]], stride: Optional[Union[int, List[int]]]=None, padding: Union[int, List[int]]=0,
                  ceil_mode: bool=False, count_include_pad: bool=True, divisor_override: bool=None) -> None:
         kernel_size = triple(kernel_size)
         stride = triple(stride if stride is not None else kernel_size)
         padding = triple(padding)
-        super(AvgPool2d, self).__init__(kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override)
+        super(AvgPool3d, self).__init__(kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override)
 
     def __setstate__(self, d):
-        super(AvgPool3d, self).__setstate__(d)
+        #super(AvgPool3d, self).__setstate__(d)
         self.__dict__.setdefault('padding', 0)
         self.__dict__.setdefault('ceil_mode', False)
         self.__dict__.setdefault('count_include_pad', True)

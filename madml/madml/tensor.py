@@ -7,38 +7,38 @@ class tensor:
 		if not init:
 			self.data = np.zeros(shape) if data is None else data
 
-	@classmethod
-	def reshape(cls, shape):
-		cls.data.reshape(shape)
+	
+	def reshape(self, shape):
+		self.data.reshape(shape)
 
-	@classmethod
-	def __eq__(cls, value):
-		return tensor(cls.shape, data=cls.data == value)
+	
+	def __eq__(self, value):
+		return tensor(self.shape, data=self.data == value)
 
-	@classmethod
-	def __ne__(cls, value):
-		return tensor(cls.shape, data=cls.data != value)
+	
+	def __ne__(self, value):
+		return tensor(self.shape, data=self.data != value)
 
-	@classmethod
-	def __le__(cls, value):
-		return tensor(cls.shape, data=cls.data < value)
+	
+	def __le__(self, value):
+		return tensor(self.shape, data=self.data < value)
 
-	@classmethod
-	def __gt__(cls, value):
-		return tensor(cls.shape, data=cls.data > value)
+	
+	def __gt__(self, value):
+		return tensor(self.shape, data=self.data > value)
 
-	@classmethod
-	def __add__(cls, value):
-		return tensor(cls.shape, data=cls.data + value)
+	
+	def __add__(self, value):
+		return tensor(self.shape, data=self.data + value)
 
-	@classmethod
-	def __sub__(cls, value):
-		return tensor(cls.shape, data=cls.data - value)
+	
+	def __sub__(self, value):
+		return tensor(self.shape, data=self.data - value)
 
-	@classmethod
-	def __mul__(cls, value):
-		return tensor(cls.shape, data=cls.data * value)
+	
+	def __mul__(self, value):
+		return tensor(self.shape, data=self.data * value)
 
-	@classmethod
-	def __div__(cls, value):
-		return tensor(cls.shape, data=cls.data * value)
+	
+	def __div__(self, value):
+		return tensor(self.shape, data=self.data * value)
