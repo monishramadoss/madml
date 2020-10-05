@@ -8,10 +8,10 @@ import madml
 import madml.nn as nn
 
 filename = [
-["training_images","train-images-idx3-ubyte.gz"],
-["test_images","t10k-images-idx3-ubyte.gz"],
-["training_labels","train-labels-idx1-ubyte.gz"],
-["test_labels","t10k-labels-idx1-ubyte.gz"]
+    ["training_images","train-images-idx3-ubyte.gz"],
+    ["test_images","t10k-images-idx3-ubyte.gz"],
+    ["training_labels","train-labels-idx1-ubyte.gz"],
+    ["test_labels","t10k-labels-idx1-ubyte.gz"]
 ]
 
 if not os.path.exists('./data'):
@@ -53,10 +53,10 @@ def load():
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
+        self.conv1 = nn.Conv2d(1, 32, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.conv2 = nn.Conv2d(32, 46, 5)
+        self.fc1 = nn.Linear(46 * 5 * 5, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
         self.relu1 = nn.ReLU()

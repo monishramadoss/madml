@@ -2,10 +2,10 @@ import backend
 import unittest
 
 
-class Test_test2(unittest.TestCase):
-    def test_A(self):
+class Test_backend(unittest.TestCase):
+    def test_memory(self):
         backend.test_memory()	    
-        self.assertTrue('This is broken')
+        self.assertTrue('This works')
 
 
 if __name__ == '__main__':

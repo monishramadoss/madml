@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>712f3d51-4a97-47dd-9d07-b8d2e334b7ad</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>python_test.py</StartupFile>
+    <StartupFile>mnist_test.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -28,7 +28,7 @@
   <ItemGroup>
     <Compile Include="conv_test.py" />
     <Compile Include="norm_test.py" />
-    <Compile Include="python_test.py" />
+    <Compile Include="mnist_test.py" />
     <Compile Include="test_1.py">
       <SubType>Code</SubType>
     </Compile>

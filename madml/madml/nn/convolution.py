@@ -31,12 +31,12 @@ class _ConvNd(Module):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
-                 kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]],
-                 padding: Union[int, List[int]],
-                 dilation: Union[int, List[int]],
+                 kernel_size: List[int],
+                 stride: List[int],
+                 padding: List[int],
+                 dilation:  List[int],
                  transposed: bool,
-                 output_padding: Union[int, List[int]],
+                 output_padding: List[int],
                  groups: int,
                  bias: Optional[List[float]],
                  padding_mode: str) -> None:
@@ -67,6 +67,9 @@ class _ConvNd(Module):
             self.weight = np.zeros((in_channels, out_channels // groups, *kernel_size))
         else:
             self.weight = np.zeros((out_channels, in_channels // groups, *kernel_size))
+
+    def forward(self, x):
+        pass
 
     def extra_repr(self):
         s = ('{in_channels}, {out_channels}, kernel_size={kernel_size}'

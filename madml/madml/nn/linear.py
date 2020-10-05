@@ -27,6 +27,11 @@ class Linear(Module):
         self.weight = np.zeros((out_features, in_features))
         if bias:
             self.bias = np.zeros((out_features))
+    def forward(self, x):        
+        y = np.matmul(x, self.weight)
+        if self.bias:
+            y += self.bias
+        return y
 
 class Bilinear(Module):
     __constants__ = ['in1_features', 'in2_features', 'out_features']
@@ -40,6 +45,11 @@ class Bilinear(Module):
         self.in2_features = in2_features
         self.out_features = out_features
         self.weight = np.zeros((out_features, in1_features, in2_features))
-
         if bias:
             self.bias = np.zeros((out_features))
+
+    def forward(self, x):
+        y = np.matmul(x, self.weight)
+        if self.bias:
+            y += self.bias
+        return y
