@@ -36,8 +36,6 @@ layout (local_size_x = 16, local_size_y = 64, local_size_z = 1) in;
 
 void vol2col(){
     float n_output_plane = channels * kernel_h * kernel_w * kernel_d;
-    float channels_col = channels * kernel_h * kernel_w * kernel_d;
-
     uint elt = gl_GlobalInvocationID.y;
     if(elt >= batchsize)
         return;
@@ -46,7 +44,7 @@ void vol2col(){
     float data_col = elt * n_output_plane * height_col * width_col * depth_col;
 
     uint c_col = gl_GlobalInvocationID.x;
-    if(c_col >= channels_col)
+    if(c_col >= n_output_plane)
         return;
 
     uint w_offset = c_col % uint(kernel_w);

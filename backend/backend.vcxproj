@@ -24,6 +24,7 @@
     <ClInclude Include="loss.h" />
     <ClInclude Include="gemm.h" />
     <ClInclude Include="normalization.h" />
+    <ClInclude Include="pooling.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="buffer.h" />
@@ -47,6 +48,7 @@
     <ClCompile Include="math.cpp" />
     <ClCompile Include="gemm.cpp" />
     <ClCompile Include="normalization.cpp" />
+    <ClCompile Include="pooling.cpp" />
     <ClCompile Include="rnn.cpp" />
     <ClCompile Include="spv_shader.cpp" />
     <ClCompile Include="tensor.cpp" />

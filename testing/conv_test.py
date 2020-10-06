@@ -21,7 +21,7 @@ def im2col(A, kernel, pad, stride, dilation):
     n_output_plane = int(channels * kernel_w * kernel_h)
     output_length = int(batch_size * height_col * width_col)
     B = np.zeros(shape=int(batch_size * n_output_plane * output_length))
-
+    
     for elt in range(batch_size):
         data_im = elt * channels * height * width
         data_col = elt * n_output_plane * output_length
@@ -34,6 +34,7 @@ def im2col(A, kernel, pad, stride, dilation):
                 h_im = int(h_col * stride_h - pad_h + h_offset * dilation_h)
                 for w_col in range(int(width_col)):
                     w_im = int(w_col * stride_w - pad_w + w_offset * dilation_w)
+            
                     if h_im >= 0 and  h_im < height and w_im >= 0 and w_im < width:
                         col_idx = int(data_col + (index * height_col + h_col) * width_col + w_col)
                         im_idx = int(data_im + (c_im * height + h_im) * width + w_im)
@@ -120,6 +121,7 @@ if __name__ == "__main__":
     inpt = np.arange(0, 25, dtype=np.float32).reshape(1, 1, 5, 5)
     weight = np.ones((1,3,3)).reshape(1,-1)
     ic = im2col(inpt, (3,3), (1,1), (1,1), (1,1)) # 9x25
+    print(ic)
     # ot = np.matmul(weight, ic)
     # x = np.array([[[[0., 1., 2.],  # (1, 1, 3, 3)
     #             [3., 4., 5.],

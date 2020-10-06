@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from typing import  Optional
-#import numpy as np
+import numpy as np
 from .module import Module
 
 class Threshold(Module):
@@ -34,6 +34,9 @@ class ReLU(Module):
     def extra_repr(self) -> str:
         inplace_str = 'inplace=True' if self.inplace else ''
         return inplace_str
+    
+    def forward_cpu(self, x):        
+        return np.maximum(x, 0)       
 
 class RReLU(Module):
     __constants__ = ['lower', 'upper', 'inplace']

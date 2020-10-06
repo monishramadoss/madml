@@ -36,6 +36,7 @@ bool isAvailable();
 #include "transform.h"
 #include "gemm.h"
 #include "convolution.h"
+#include "pooling.h"
 #include "activation.h"
 #include "normalization.h"
 #include "rnn.h"

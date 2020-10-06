@@ -12,7 +12,7 @@ class Identity(Module):
     def __init__(self):
         super(Identity, self).__init__()
 
-    def forward(self, input):
+    def forward_cpu(self, input):
         return input
 
 class Linear(Module):
@@ -27,7 +27,7 @@ class Linear(Module):
         self.weight = np.zeros((out_features, in_features))
         if bias:
             self.bias = np.zeros((out_features))
-    def forward(self, x):        
+    def forward_cpu(self, x):        
         y = np.matmul(x, self.weight)
         if self.bias:
             y += self.bias
@@ -48,7 +48,7 @@ class Bilinear(Module):
         if bias:
             self.bias = np.zeros((out_features))
 
-    def forward(self, x):
+    def forward_cpu(self, x):
         y = np.matmul(x, self.weight)
         if self.bias:
             y += self.bias

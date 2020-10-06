@@ -1,9 +1,20 @@
-class Module:
-    def __init__(self,):
-        pass
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
 
-    def forward(self, x):
-        raise NotImplemented( "{} forward for layer not Implemented".format(self.__name__))    
+from typing import List
+
+class Module:
+    
+    def __init__(self,):
+        self.cache = []    
+        
+    def forward(self, *args):
+        return self.forward_cpu(*args)
+
+    def forward_cpu(self, *args):
+        raise NotImplementedError( "{} forward_cpu for layer not Implemented".format(self))    
 
     def __call__(self, *args):
-        return self.forward(args)
+        return self.forward(*args)

@@ -1,45 +1,20 @@
 #import backend
 import numpy as np
 
-class tensor:
-    def __init__(self, shape:list(), data=None, dtype=float, init=False):
-        self.shape = shape
-        if not init or data is not None:
-            self.data = np.zeros(shape) if data is None else data
-        else:
-            self.data = data
-    
-    def reshape(self, shape):
-        self.data.reshape(shape)
+class tensor(np.ndarray):
 
-    
-    def __eq__(self, value):
-        return tensor(self.shape, data=self.data == value)
+    def __new__(cls, input_array, info=None):
+        obj = np.asarray(input_array).view(cls)
+        obj.info = info
+        return obj
 
-    
-    def __ne__(self, value):
-        return tensor(self.shape, data=self.data != value)
+    def __array_finalize__(self, obj):
+        if obj is None: return
+        self.info = getattr(obj, 'info', None)
 
-    
-    def __le__(self, value):
-        return tensor(self.shape, data=self.data < value)
+    def __array_wrap__(self, out_arr, context=None):
+        return super(tensor, self).__array_wrap__(self, out_arr, context)
 
-    
-    def __gt__(self, value):
-        return tensor(self.shape, data=self.data > value)
-
-    
-    def __add__(self, value):
-        return tensor(self.shape, data=self.data + value)
-
-    
-    def __sub__(self, value):
-        return tensor(self.shape, data=self.data - value)
-
-    
-    def __mul__(self, value):
-        return tensor(self.shape, data=self.data * value)
-
-    
-    def __div__(self, value):
-        return tensor(self.shape, data=self.data * value)
+    def to(self, device: str):
+        print(str)
+        
