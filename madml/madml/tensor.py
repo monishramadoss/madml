@@ -1,20 +1,28 @@
-#import backend
+import backend
 import numpy as np
+from typing import Union, List
 
-class tensor(np.ndarray):
+class tensor:
+    def __init__(self, data: Union[List[float], np.ndarray], shape: List[int]=None):
+        self.data = np.asarray(data)
+        if(shape is None):
+            self.shape = [len(data)] if type(data) is list else data.shape
+        self.size = self._size(self.shape)
 
-    def __new__(cls, input_array, info=None):
-        obj = np.asarray(input_array).view(cls)
-        obj.info = info
-        return obj
+    def reshape(self, shape: List[List]):
+        new_size = self._size(shape)
+        new_shape = shape
+        if(new_size == self.size):
+            self.shape = shape
+        else:   
+            t = []
+            for i in range(len(shape)):
+                if new_shape[i] == -1:
+                    new_shape[i] = new_size // self.size
+            self.shape = new_shape        
 
-    def __array_finalize__(self, obj):
-        if obj is None: return
-        self.info = getattr(obj, 'info', None)
-
-    def __array_wrap__(self, out_arr, context=None):
-        return super(tensor, self).__array_wrap__(self, out_arr, context)
-
-    def to(self, device: str):
-        print(str)
-        
+    def _size(self, shape):
+        size = 1
+        for s in shape:
+            size *= s
+        return size       

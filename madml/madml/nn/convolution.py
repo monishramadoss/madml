@@ -90,8 +90,6 @@ class _ConvNd(Module):
         if(len(x.shape) == 5):
             self._col[0] = int((x.shape[-3] + 2*self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
             self._im[0] = x.shape[-3]
-
-
         
         self.batch_size = x.shape[0]
         B, n_output_plane, output_length = im2col(x, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
@@ -105,6 +103,20 @@ class _ConvNd(Module):
 
         self.cache = [x, B]
         return y
+    
+    def backward_cpu(self, dout):
+        self.d_bias = np.sum(dout, axis=(0, 2, 3, 4))
+        n_filter, c_filter, d_filter, h_filter, w_filter = self.weight.shape
+
+        dout_reshaped = dout.transpose(1, 2, 3, 4, 0).reshape(n_filter, -1)
+        self.d_weight = dout_reshaped @ X_col.T        
+        self.d_weight = d_weight.reshape(W.shape)
+        w_reshape = self.weight.reshape(n_filter, -1)
+        
+        dx_col = w_reshape.T @ dout_reshaped
+        dx = col2im_indices(dX_col, X.shape, h_filter, w_filter, padding=padding, stride=stride)
+
+        return dx
 
     def extra_repr(self):
         s = ('{in_channels}, {out_channels}, kernel_size={kernel_size}'

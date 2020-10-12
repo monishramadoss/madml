@@ -34,15 +34,15 @@ class RNNBase(Module):
         self.dropout = float(dropout)
         self.bidirectional = bidirectional
         num_directions = 2 if bidirectional else 1
-
+        
         if mode == 'LSTM':
-            gate_size = 4 * hidden_size
+            gate_size = 4 
         elif mode == 'GRU':
-            gate_size = 3 * hidden_size
+            gate_size = 3
         elif mode == 'RNN_TANH':
-            gate_size = hidden_size
+            gate_size = 1
         elif mode == 'RNN_RELU':
-            gate_size = hidden_size
+            gate_size = 1
         else:
             raise ValueError("Unrecognized RNN mode: " + mode)
 
@@ -52,10 +52,10 @@ class RNNBase(Module):
             for direction in range(num_directions):
                 layer_input_size = input_size if layer == 0 else hidden_size * num_directions
 
-                w_ih = np.zeros((gate_size, layer_input_size))
-                w_hh = np.zeros((gate_size, hidden_size))
-                b_ih = np.zeros((gate_size))
-                b_hh = np.zeros((gate_size))
+                w_ih = np.zeros((gate_size, hidden_size, layer_input_size))
+                w_hh = np.zeros((gate_size, hidden_size, hidden_size))
+                b_ih = np.zeros((gate_size, hidden_size))
+                b_hh = np.zeros((gate_size, hidden_size))
                 layer_params = (w_ih, w_hh, b_ih, b_hh)
 
                 suffix = '_reverse' if direction == 1 else ''
@@ -68,6 +68,38 @@ class RNNBase(Module):
                     setattr(self, name, param)
                 self._flat_weights_names.extend(param_names)
                 self._all_weights.append(param_names)
+        self._flat_weights = [(lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names]
+
+    def forward_cpu(self, x, hx, cx=None):
+        max_batch_size = input.size(0) if self.batch_first else input.size(1)
+
+        if hx is None:
+            num_directions = 2 if self.bidirectional else 1
+            hx = np.zeros(self.num_layters * num_directions, max_batch_size, self.hidden_size)
+        if cx is None and self.mode == 'LSTM':
+            num_directions = 2 if self.bidirectional else 1
+            cx = np.zeros(self.num_layters * num_directions, max_batch_size, self.hidden_size)
+        
+        x_one_hot = np.zeros(self.input_size)
+        x_one_hot[x] = 1.
+        x_one_hot = x_one_hot.reshape(1, -1)
+        x = np.column_stack((hx, x_one_hot))
+        print(self._flat_weights_names)
+
+    def extra_repr(self) -> str:
+        s = '{input_size}, {hidden_size}'
+        if self.num_layers != 1:
+            s += ', num_layers={num_layers}'
+        if self.bias is not True:
+            s += ', bias={bias}'
+        if self.batch_first is not False:
+            s += ', batch_first={batch_first}'
+        if self.dropout != 0:
+            s += ', dropout={dropout}'
+        if self.bidirectional is not False:
+            s += ', bidirectional={bidirectional}'
+        return s.format(**self.__dict__)
+
 
 class RNN(RNNBase):
     def __init__(self, *args, **kwargs):
@@ -83,7 +115,7 @@ class RNN(RNNBase):
 class LSTM(RNNBase):
     def __init__(self, *args, **kwargs):
         super(LSTM, self).__init__('LSTM', *args, **kwargs)
-
+            
 class GRU(RNNBase):
     def __init__(self, *args, **kwargs):
         super(GRU, self).__init__('GRU', *args, **kwargs)

@@ -2,6 +2,7 @@ import numpy as np
 from urllib import request
 import gzip
 import pickle
+from tqdm import tqdm
 import os
 
 import madml
@@ -56,7 +57,7 @@ class Net(nn.Module):
         self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(32, 46, 3)
-        self.fc1 = nn.Linear(46 * 3 * 3, 120)
+        self.fc1 = nn.Linear(46 * 12 * 12, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
         self.relu1 = nn.ReLU()
@@ -66,19 +67,30 @@ class Net(nn.Module):
 
     def forward(self, x):
         bs = x.shape[0]
-        x = self.conv1(x)
+        x = self.conv1(x) # 32 x 28 x 28
         x = self.relu1(x)
-        x = self.pool(x)        
-        x = self.pool(self.relu2(self.conv2(x)))
+        x = self.pool(x) # 32 x 14 x 14
+        x = self.conv2(x) # 46 x 12 x 12
+        x = self.relu2(x)
         x = x.reshape((bs, -1))        
         x = self.relu3(self.fc1(x))
         x = self.relu4(self.fc2(x))
         x = self.fc3(x)
         return x
 x, y, x1, y1 = load()
-print(x.shape)
+x = x.reshape((-1, 32, 1, 1, 28, 28))
+x1 = x1.reshape((-1, 1, 1, 1, 28, 28))
+print(x.shape, x1.shape)
+print(x[0,...].shape, x1[0,...].shape)
 n = Net()
 data = np.ones((1, 1, 1, 5, 5))
 p_data = np.ones((5, 10, 1, 28, 28))
-inpt = np.arange(0, 64*64, dtype=np.float32).reshape((1, 1, 1, 64, 64))
-y = n(inpt)
+inpt = np.arange(0, 28*28, dtype=np.float32).reshape((1, 1, 1, 28, 28))
+
+for i in tqdm(range(x.shape[0])):
+    y = n(x[i,...].astype(np.float32))
+    break
+
+for i in tqdm(range(x.shape[0])):
+    y = n(x1[i,...].astype(np.float32))
+    break

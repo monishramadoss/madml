@@ -56,10 +56,23 @@ class _MaxPoolNd(Module):
         # 4 X 32x1x25
         max_idx = np.argmax(B, axis=0)
         y = B[max_idx, range(max_idx.size)]
-        y = y.reshape(self.in_channels, self.batch_size, *self._col)
+        y = y.reshape(x.shape[1], x.shape[0], *self._col)
         y = np.transpose(y, (1, 0, 2, 3, 4))
-        self.cache = [max_idx]
+        self.cache = [x, max_idx, B]
         return y
+
+    def backward_cpu(self, dout):
+        x, max_idx, B = self.cache
+        n, c, d, h, w = x.shape        
+        
+        dx_col = np.zeros_like(B)
+        dout_col = dout.transpose(2,3,4,0,1).ravel()
+        dx = dx_col[max_idx, range(dout_col.size)] = dout_col
+        dx = col2im_indices(dx_col, (n * c, 1, d, h, w), size, size, padding=0, stride=stride)
+        dx = dx.reshape(x.shape)
+        return dx
+
+
 
 class MaxPool1d(_MaxPoolNd):
     kernel_size : int
@@ -76,6 +89,7 @@ class MaxPool1d(_MaxPoolNd):
         dilation = single(dilation)
         super(MaxPool1d, self).__init__(kernel_size, stride, padding, dilation, return_indices, ceil_mode)
 
+
 class MaxPool2d(_MaxPoolNd):
     kernel_size : Union[int, List[int]]
     stride : Union[int, List[int]]
@@ -90,6 +104,7 @@ class MaxPool2d(_MaxPoolNd):
         dilation = double(dilation)
         super(MaxPool2d, self).__init__(kernel_size, stride, padding, dilation, return_indices, ceil_mode)
 
+
 class MaxPool3d(_MaxPoolNd):
     kernel_size : Union[int, List[int]]
     stride : Union[int, List[int]]
@@ -103,6 +118,7 @@ class MaxPool3d(_MaxPoolNd):
         padding = triple(padding)
         dilation = triple(dilation)
         super(MaxPool3d, self).__init__(kernel_size, stride, padding, dilation, return_indices, ceil_mode)
+
 
 class _MaxUnpoolNd(Module):
     __constants__ = ['kernel_size', 'stride', 'padding']
@@ -188,12 +204,22 @@ class _AvgPoolNd(Module):
         self.in_channels = 1
         B, n_output_plane, output_length = im2col(x, self.batch_size, self.in_channels, self._col, self._im, self.kernel_size, self.stride, self.padding, self.dilation)
 
-        y = np.mean(B, axis=0)
-        y = y.reshape(self.in_channels, self.batch_size, *self._col)
+        mean = np.mean(B, axis=0)
+        y = mean.reshape(self.in_channels, self.batch_size, *self._col)
         y = np.transpose(y, (1, 0, 2, 3, 4))        
-        
+        self.cache = [x, mean, B]
         return y
+    def backward_cpu(self, dout):
+        x, max_idx, B = self.cache
+        n, c, d, h, w = x.shape        
+        
+        dx_col = np.zeros_like(B)
+        dout_col = dout.transpose(2,3,4,0,1).ravel()
+        dx = dx_col[:, range(dout_col.size)] = 1./ dx_col.shape[0] * dout_col
 
+        dx = col2im_indices(dx_col, (n * c, 1, d, h, w), size, size, padding=0, stride=stride)
+        dx = dx.reshape(x.shape)
+        return dx
 
 class AvgPool1d(_AvgPoolNd):
     def __init__(self, kernel_size: int, stride: int=None, padding: int=0, ceil_mode: bool=False, count_include_pad: bool=True) -> None:

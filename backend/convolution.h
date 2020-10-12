@@ -5,6 +5,8 @@
 #include <utility>
 #include "backend.h"
 #include "layer.h"
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 
 namespace layers
 {
@@ -101,5 +103,7 @@ namespace layers
 			std::shared_ptr<transpose> trans;
 		};
 	}
+
+	py::array_t<float> im2col_cpu(py::array_t<float> input1, py::array_t<float> result, std::vector<int>& params);
 }
 #endif

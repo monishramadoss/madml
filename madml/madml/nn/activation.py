@@ -35,8 +35,13 @@ class ReLU(Module):
         inplace_str = 'inplace=True' if self.inplace else ''
         return inplace_str
     
-    def forward_cpu(self, x):        
+    def forward_cpu(self, x):   
+        self.cache = [x]     
         return np.maximum(x, 0)       
+    def backward_cpu(self, dout):
+        dx = dout.copy()
+        dx[cache[0] <= 0] = 0
+        return dx
 
 class RReLU(Module):
     __constants__ = ['lower', 'upper', 'inplace']
@@ -81,7 +86,14 @@ class ReLU6(Hardtanh):
         return inplace_str
 
 class Sigmoid(Module):
-    pass
+    def forward_cpu(self, x):
+        y = 1. / (1 + np.exp(-x))
+        cahce = [y]
+        return y
+
+    def backward_cpu(slef, dout):
+        return cache[0] * (1. - cache[0]) * dout
+
 
 class Hardsigmoid(Module):
     pass

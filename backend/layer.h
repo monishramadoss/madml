@@ -56,8 +56,8 @@ public:
 	void bindTensor(std::shared_ptr<tensor> tensor, int binding);
 
 	virtual void computeGroupCount() = 0;
-	VkDevice m_device;
 
+	VkDevice m_device;
 	VkPipeline m_pipeline;
 	VkCommandBuffer m_cmd_buffer;
 	VkDescriptorPool m_descriptor_pool;
@@ -82,6 +82,8 @@ namespace layers
 
 		std::shared_ptr<Module> getptr();
 		std::shared_ptr<tensor> dx, dy, dw, db;
+		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3, t4;
+
 		virtual int set_backward() { return -1; }
 
 		//std::vector<std::future<int>>& get_futures();
@@ -107,13 +109,7 @@ namespace layers
 		static int& get_object_id();
 		void update_id();
 
-		//		std::vector<std::future<int>> m_futures;
 
-		std::shared_ptr<tensor> x, y, w, b, t1, t2, t3, t4;
-
-	private:
-
-		//void BFS(std::vector<std::vector<int>> adj, int s = 0);
 	};
 }
 
@@ -145,13 +141,9 @@ public:
 };
 
 template <typename T>
-Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 })
+Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 }), bck_shader(nullptr), bck_codeSize(0)
 {
 	update_id();
-	if (!sub_graph_bit())
-
-		bck_shader = nullptr;
-	bck_codeSize = 0;
 	derivative = nullptr;
 	initVulkanThing(forward_buffers);
 }
