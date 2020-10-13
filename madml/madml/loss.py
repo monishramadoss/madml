@@ -1,6 +1,3 @@
-
-
-
 import numpy as np
 import madml.regularization as reg
 

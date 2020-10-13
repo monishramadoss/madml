@@ -40,7 +40,7 @@ class ReLU(Module):
         return np.maximum(x, 0)       
     def backward_cpu(self, dout):
         dx = dout.copy()
-        dx[cache[0] <= 0] = 0
+        dx[self.cache[0] <= 0] = 0
         return dx
 
 class RReLU(Module):
@@ -88,11 +88,11 @@ class ReLU6(Hardtanh):
 class Sigmoid(Module):
     def forward_cpu(self, x):
         y = 1. / (1 + np.exp(-x))
-        cahce = [y]
+        self.cache = [y]
         return y
 
-    def backward_cpu(slef, dout):
-        return cache[0] * (1. - cache[0]) * dout
+    def backward_cpu(self, dout):
+        return self.cache[0] * (1. - self.cache[0]) * dout
 
 
 class Hardsigmoid(Module):

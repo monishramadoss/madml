@@ -77,15 +77,13 @@ class Net(nn.Module):
         x = self.relu4(self.fc2(x))
         x = self.fc3(x)
         return x
+
 x, y, x1, y1 = load()
 x = x.reshape((-1, 32, 1, 1, 28, 28))
 x1 = x1.reshape((-1, 1, 1, 1, 28, 28))
 print(x.shape, x1.shape)
 print(x[0,...].shape, x1[0,...].shape)
 n = Net()
-data = np.ones((1, 1, 1, 5, 5))
-p_data = np.ones((5, 10, 1, 28, 28))
-inpt = np.arange(0, 28*28, dtype=np.float32).reshape((1, 1, 1, 28, 28))
 
 for i in tqdm(range(x.shape[0])):
     y = n(x[i,...].astype(np.float32))

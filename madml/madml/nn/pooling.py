@@ -67,9 +67,9 @@ class _MaxPoolNd(Module):
         
         dx_col = np.zeros_like(B)
         dout_col = dout.transpose(2,3,4,0,1).ravel()
-        dx = dx_col[max_idx, range(dout_col.size)] = dout_col
-        dx = col2im_indices(dx_col, (n * c, 1, d, h, w), size, size, padding=0, stride=stride)
-        dx = dx.reshape(x.shape)
+        dx_col[max_idx, range(dout_col.size)] = dout_col
+        dx = None #col2im_indices(dx_col, (n * c, 1, d, h, w), size, size, padding=0, stride=stride)
+        #dx = dx.reshape(x.shape)
         return dx
 
 

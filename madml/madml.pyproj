@@ -52,6 +52,9 @@
     <Compile Include="madml\__init__.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="madml\optimizer.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\backend\backend.vcxproj">

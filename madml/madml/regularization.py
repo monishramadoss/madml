@@ -1,3 +1,7 @@
+
+import numpy as np
+import madml
+
 def l2_reg(W, lam=1e-3):
     return .5 * lam * np.sum(W * W)
 

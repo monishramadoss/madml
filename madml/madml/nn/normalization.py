@@ -53,7 +53,7 @@ class BatchNorm(_NormBase):
         self.cache = [x, x_norm, mu, var]
         return y
     
-    def backward_cpu(self, dy):
+    def backward_cpu(self, dout):
         x, x_norm, mu, var = self.cache
         N, C = x.shape
         x_mu = x-mu
@@ -98,7 +98,7 @@ class InstanceNorm(_NormBase):
         self.cache = [x, x_norm, mu, var]
         return y
     
-    def backward_cpu(self, dy):
+    def backward_cpu(self, dout):
         x, x_norm, mu, var = self.cache
         N, C = x.shape
         x_mu = x-mu
@@ -113,19 +113,19 @@ class InstanceNorm(_NormBase):
         self.d_bias = np.sum(dout, axis=0)
         return dx
 
-class InstanceNorm1d(_InstanceNorm):
+class InstanceNorm1d(InstanceNorm):
     def _check_input_dim(self, input):
         if input.dim() == 2:
             raise ValueError('InstanceNorm1d returns 0-filled tensor to 2D tensor. This is because InstanceNorm1d reshapes inputs to (1, N * C, ...) from (N, C,...) and this makes variances 0.')
         if input.dim() != 3:
             raise ValueError('expected 3D input (got {}D input)'.format(input.dim()))
 
-class InstanceNorm2d(_InstanceNorm):
+class InstanceNorm2d(InstanceNorm):
     def _check_input_dim(self, input):
         if input.dim() != 4:
             raise ValueError('expected 4D input (got {}D input)'.format(input.dim()))
 
-class InstanceNorm3d(_InstanceNorm):
+class InstanceNorm3d(InstanceNorm):
     def _check_input_dim(self, input):
         if input.dim() != 5:
             raise ValueError('expected 5D input (got {}D input)'.format(input.dim()))

@@ -38,6 +38,9 @@
     <Compile Include="test_3.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="test_4.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\backend\backend.vcxproj">

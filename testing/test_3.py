@@ -32,8 +32,9 @@ class Test_madml(unittest.TestCase):
                 x = self.relu4(self.fc2(x))
                 x = self.fc3(x)
                 return x
+
         m = Net()       
-        self.assertTrue("THIS WORKS")
+        self.assertTrue("model gen works")
 
 if __name__ == '__main__':
     unittest.main()

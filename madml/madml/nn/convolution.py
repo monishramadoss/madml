@@ -105,16 +105,17 @@ class _ConvNd(Module):
         return y
     
     def backward_cpu(self, dout):
+        x, B = self.cache
         self.d_bias = np.sum(dout, axis=(0, 2, 3, 4))
         n_filter, c_filter, d_filter, h_filter, w_filter = self.weight.shape
 
         dout_reshaped = dout.transpose(1, 2, 3, 4, 0).reshape(n_filter, -1)
-        self.d_weight = dout_reshaped @ X_col.T        
-        self.d_weight = d_weight.reshape(W.shape)
+        self.d_weight = dout_reshaped @ B.T        
+        self.d_weight = self.d_weight.reshape(self.weight.shape)
         w_reshape = self.weight.reshape(n_filter, -1)
         
         dx_col = w_reshape.T @ dout_reshaped
-        dx = col2im_indices(dX_col, X.shape, h_filter, w_filter, padding=padding, stride=stride)
+        dx = None
 
         return dx
 
