@@ -6,15 +6,12 @@
 #include "backend.h"
 #include "layer.h"
 
-
-
 namespace layers
 {
 	namespace nn
 	{
 		class maxPooling : Module
 		{
-
 		public:
 			class maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
@@ -33,7 +30,6 @@ namespace layers
 
 		class maxUnPooling : Module
 		{
-
 		public:
 			class maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
@@ -52,7 +48,6 @@ namespace layers
 
 		class avgPooling : Module
 		{
-
 		public:
 			class avgPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type, bool use_bias);
 			std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);

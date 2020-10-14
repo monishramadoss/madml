@@ -59,14 +59,11 @@ namespace layers
 			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 			runCommandBuffer();
 
-			auto m1 = get_input_id(x->getId());
-			auto m2 = get_input_id(h->getId());
+			auto
+				auto m2 = get_input_id(h->getId());
 		}
 
-		LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({
-																				   0, vocab_size, hidden_size, output_size,
-																				   0, 0
-			})
+		LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11), m_param({ 0, vocab_size, hidden_size, output_size, 0, 0 })
 		{
 			if (output_size == 0)
 				m_param.output_size = vocab_size;
@@ -121,15 +118,12 @@ namespace layers
 			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 			runCommandBuffer();
 
-			auto m1 = get_input_id(x->getId());
-			auto m2 = get_input_id(h->getId());
+			auto
+				auto m2 = get_input_id(h->getId());
 			auto m3 = get_input_id(c->getId());
 		}
 
-		GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
-																				 0, vocab_size, hidden_size, output_size, 0,
-																				 0
-			})
+		GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({ 0, vocab_size, hidden_size, output_size, 0, 0 })
 		{
 			if (output_size == 0)
 				m_param.output_size = vocab_size;
@@ -180,8 +174,8 @@ namespace layers
 			recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
 			runCommandBuffer();
 
-			auto m1 = get_input_id(x->getId());
-			auto m2 = get_input_id(h->getId());
+			auto
+				auto m2 = get_input_id(h->getId());
 		}
 	}
 
@@ -195,7 +189,6 @@ namespace layers
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
 		{
 			m_type = "RNN";
-			update_id();
 
 			if (bidirectional)
 				m_directions = 2;
@@ -223,9 +216,8 @@ namespace layers
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size})));
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 					}
-					set_sub_graph();
+
 					cells.push_back(new rnn::RNNCell(input, m_hidden_size, output));
-					unset_sub_graph();
 				}
 			}
 		}
@@ -321,7 +313,6 @@ namespace layers
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 		{
 			m_type = "LSTM";
-			update_id();
 
 			if (bidirectional)
 				m_directions = 2;
@@ -350,9 +341,8 @@ namespace layers
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size, 4})));
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 					}
-					set_sub_graph();
+
 					cells.push_back(new rnn::LSTMCell(input, m_hidden_size, output));
-					unset_sub_graph();
 				}
 			}
 		}
@@ -456,7 +446,6 @@ namespace layers
 			m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
 		{
 			m_type = "GRU";
-			update_id();
 
 			if (bidirectional)
 				m_directions = 2;
@@ -485,9 +474,8 @@ namespace layers
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{m_hidden_size, 3})));
 						weights_biases.push_back(std::make_shared<tensor>(tensor(0.0, std::vector<int>{output})));
 					}
-					set_sub_graph();
+
 					cells.push_back(new rnn::GRUCell(input, m_hidden_size, output));
-					unset_sub_graph();
 				}
 			}
 		}

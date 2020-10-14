@@ -11,7 +11,6 @@ tensor::tensor(Format fmt) : size_in_byte(0), format(fmt)
 	createContext();
 	if (!counted)
 	{
-		update_id();
 		counted = true;
 	}
 	is_onDevice = false;
@@ -23,7 +22,6 @@ tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : size_in_
 	createContext();
 	if (!counted)
 	{
-		update_id();
 		counted = true;
 	}
 
@@ -38,7 +36,6 @@ tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byt
 	createContext();
 	if (!counted)
 	{
-		update_id();
 		counted = true;
 	}
 
@@ -57,7 +54,6 @@ tensor::tensor(float c, const std::vector<int>& shape) : size_in_byte(0), format
 	createContext();
 	if (!counted)
 	{
-		update_id();
 		counted = true;
 	}
 

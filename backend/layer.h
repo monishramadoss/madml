@@ -87,29 +87,10 @@ namespace layers
 		virtual int set_backward() { return -1; }
 
 		//std::vector<std::future<int>>& get_futures();
-		int get_id() const;
-		Module* m1 = nullptr;
-		Module* m2 = nullptr;
 
 	protected:
 		std::string m_type;
-
-		static bool& sub_graph_bit();
-		static void set_sub_graph();
-		static void unset_sub_graph();
-
-		static bool& train();
-		static void eval();
-
 		static void zero_grad();
-
-		Module* get_input_id(size_t i);
-
-		int id = 0;
-		static int& get_object_id();
-		void update_id();
-
-
 	};
 }
 
@@ -141,10 +122,8 @@ public:
 };
 
 template <typename T>
-Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 }), bck_shader(nullptr), bck_codeSize(0)
+Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 }), bck_shader(nullptr), bck_codeSize(0), derivative(nullptr)
 {
-	update_id();
-	derivative = nullptr;
 	initVulkanThing(forward_buffers);
 }
 
@@ -201,9 +180,7 @@ int Base_Layer<T>::set_backward()
 }
 
 template <typename T>
-std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
-	const std::shared_ptr<tensor>& _x, Format fmt,
-	std::vector<int> output_shape)
+std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, Format fmt, std::vector<int> output_shape)
 {
 	x = _x;
 	float* t = (float*)x->toHost();
@@ -225,8 +202,6 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 
 	bindTensor(x, 0);
 	bindTensor(y, 1);
-
-	m1 = get_input_id(x->getId());
 
 	if (train() && bck_codeSize && !derivative)
 	{
@@ -269,9 +244,6 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 	bindTensor(x, 0);
 	bindTensor(w, 1);
 	bindTensor(y, 2);
-
-	m1 = get_input_id(x->getId());
-	m2 = get_input_id(w->getId());
 
 	if (train() && bck_codeSize && !derivative)
 	{

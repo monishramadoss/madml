@@ -69,7 +69,7 @@ private:
 	std::shared_ptr<buffer> m_buffer;
 
 	static int& get_object_id();
-	void update_id();
+	void
 };
 
 #endif

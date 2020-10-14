@@ -1,0 +1,676 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="buffer" Collapsed="true">
+    <Position X="140.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAQAAAAAEAAAAAAAAAAAAAAAAAKAAABACAAAAAg=</HashCode>
+      <FileName>buffer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="context" Collapsed="true">
+    <Position X="142" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>context.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layer" Collapsed="true">
+    <Position X="81" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>hBAAAAAEAgBAAIAAAAAAAAZIABAAAIAAAAggDAAAIgA=</HashCode>
+      <FileName>layer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Base_Layer&lt;T&gt;" Collapsed="true">
+    <Position X="69" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ARAAAAEAgAEAABAoAAAAAAIAAAAIQAAAAAAAAABAAAA=</HashCode>
+      <FileName>layer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="tensor" Collapsed="true">
+    <Position X="143.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAiEBQAAQAQAAAABIAKCAAAAAEiEABACAARCgQEQgA=</HashCode>
+      <FileName>tensor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::vol2col" Collapsed="true">
+    <Position X="83.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAAAAAAEAAAAAIAAAAAAAAEAAAAAAAAAAA=</HashCode>
+      <FileName>convolution.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::col2vol" Collapsed="true">
+    <Position X="99.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAEAQAAAAEAAAAAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>convolution.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::gemm" Collapsed="true">
+    <Position X="124.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAQCAABAAAA=</HashCode>
+      <FileName>gemm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::copy" Collapsed="true">
+    <Position X="0.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAIAAAAAAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>transform.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::transpose" Collapsed="true">
+    <Position X="27.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAAAAEAAAAAIAAABQAAAACAEAAABAAAA=</HashCode>
+      <FileName>transform.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::Module" Collapsed="true">
+    <Position X="69" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAIAAAAAAQAAAAAAAIAQAEABgAAAAAAQhgAABABIQ=</HashCode>
+      <FileName>layer.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::celu" Collapsed="true">
+    <Position X="52.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAIAAAEAAAAAAAAAAAAAAAAAAQAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::elu" Collapsed="true">
+    <Position X="68" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::hardshrink" Collapsed="true">
+    <Position X="86" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::hardtanh" Collapsed="true">
+    <Position X="113" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::leakyrelu" Collapsed="true">
+    <Position X="126.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::logsigmoid" Collapsed="true">
+    <Position X="2.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAgAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::prelu" Collapsed="true">
+    <Position X="16.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::relu" Collapsed="true">
+    <Position X="29.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::relu6" Collapsed="true">
+    <Position X="38.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAQAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::selu" Collapsed="true">
+    <Position X="54.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::sigmoid" Collapsed="true">
+    <Position X="70.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAABAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::softplus" Collapsed="true">
+    <Position X="88.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAQEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::softshrink" Collapsed="true">
+    <Position X="101.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAIAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::softsign" Collapsed="true">
+    <Position X="115.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::activation::tanhshrink" Collapsed="true">
+    <Position X="128.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::conv" Collapsed="true">
+    <Position X="60" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACEAAgAAAwAKAEEAEAAAAAAAAAAEAAAAAAAAAABAAAI=</HashCode>
+      <FileName>convolution.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::convTranspose" Collapsed="true">
+    <Position X="62.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACEAAgAAAwAKAEEAEAAAAAAAAAAAAAAAAAAAAABAAAI=</HashCode>
+      <FileName>convolution.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::dense" Collapsed="true">
+    <Position X="64.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAgAAAAEAEAAAAAAAAAAACAAAAAAAAAJAAAA=</HashCode>
+      <FileName>gemm.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::maxPooling" Collapsed="true">
+    <Position X="66.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACEAAgAAAwAKAEAAEAAAAAAAAAAAAAAAAAAAAABAAAI=</HashCode>
+      <FileName>pooling.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::maxUnPooling" Collapsed="true">
+    <Position X="69" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACEAAgAAAwAKAEAAEAAAAAAAAAAAAAAAAAAAAABAAAI=</HashCode>
+      <FileName>pooling.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::avgPooling" Collapsed="true">
+    <Position X="71.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ACEAAgAAAwAKAEAAEAAAAAAAAAAAAAAAAAAAAABAAAI=</HashCode>
+      <FileName>pooling.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::RNN" Collapsed="true">
+    <Position X="73.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BCEAAAAAAgAIAAABEAAAAAADAAIAQAAAQAFCAAhAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::LSTM" Collapsed="true">
+    <Position X="75.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BCEAAAAAAgAMAAQBEAAAAAADAAIAAACAQAFCAAhAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::nn::GRU" Collapsed="true">
+    <Position X="78" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BCEAAAAAAgAMAAABEAAAAAADAAIACAAAQAFCAAhAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="loss::Loss" Collapsed="true">
+    <Position X="5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAQAAAAgAAAAAAAAAAAAAAAAAABAAAAAAAAAAA=</HashCode>
+      <FileName>loss.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="loss::MSE" Collapsed="true">
+    <Position X="5" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>loss.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::normalization::BatchNormalization" Collapsed="true">
+    <Position X="41" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAACBAAAA=</HashCode>
+      <FileName>normalization.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::normalization::InstanceNormalization" Collapsed="true">
+    <Position X="56.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>normalization.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::normalization::LayerNormalization" Collapsed="true">
+    <Position X="72.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAIAAgAAAAAAAAAAAABAAAA=</HashCode>
+      <FileName>normalization.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::abs" Collapsed="true">
+    <Position X="90.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAACAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::ceil" Collapsed="true">
+    <Position X="104" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAEAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::clip" Collapsed="true">
+    <Position X="131" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAgAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::exp" Collapsed="true">
+    <Position X="7.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::floor" Collapsed="true">
+    <Position X="18.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAIAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::ln" Collapsed="true">
+    <Position X="32" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::round" Collapsed="true">
+    <Position X="43.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAgAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::sqrt" Collapsed="true">
+    <Position X="59" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::acos" Collapsed="true">
+    <Position X="74.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAACAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::acosh" Collapsed="true">
+    <Position X="92.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::asin" Collapsed="true">
+    <Position X="106.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAEAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::asinh" Collapsed="true">
+    <Position X="117.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::atan" Collapsed="true">
+    <Position X="133.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEgAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::atanh" Collapsed="true">
+    <Position X="9.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAgAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::cos" Collapsed="true">
+    <Position X="20.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAQAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::cosh" Collapsed="true">
+    <Position X="34.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAABAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::sin" Collapsed="true">
+    <Position X="45.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAQAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::sinh" Collapsed="true">
+    <Position X="61.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::tan" Collapsed="true">
+    <Position X="77" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::tanh" Collapsed="true">
+    <Position X="95" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAgAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::add" Collapsed="true">
+    <Position X="108.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAACAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::sub" Collapsed="true">
+    <Position X="119.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAABAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::mul" Collapsed="true">
+    <Position X="135.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAABAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::div" Collapsed="true">
+    <Position X="11.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAACAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::mod" Collapsed="true">
+    <Position X="23" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::pow" Collapsed="true">
+    <Position X="36.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAIAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::max" Collapsed="true">
+    <Position X="47.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::min" Collapsed="true">
+    <Position X="63.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAQAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::eq" Collapsed="true">
+    <Position X="79.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::ne" Collapsed="true">
+    <Position X="97.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAgAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::lt" Collapsed="true">
+    <Position X="110.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAABAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::le" Collapsed="true">
+    <Position X="122" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::gt" Collapsed="true">
+    <Position X="137.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAIAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::ge" Collapsed="true">
+    <Position X="14" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAQAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::math::xr" Collapsed="true">
+    <Position X="25.25" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAEAAAAAAAAAAAAAEAAAAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::rnn::RNNCell" Collapsed="true">
+    <Position X="50" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABEAAAAAAAAAAAAAEAAAAAIAAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::rnn::LSTMCell" Collapsed="true">
+    <Position X="65.75" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABEACAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="layers::rnn::GRUCell" Collapsed="true">
+    <Position X="81.5" Y="5.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABEAAAAAAAAAAAAAEAAAAAIAAAAAAAAAAAAAAgAAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Struct Name="tensorParam" Collapsed="true">
+    <Position X="143.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>context.cpp</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="LAYER_OBJ" Collapsed="true">
+    <Position X="140.25" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>gBAAAAAAAgAAAAAAAAAAAABAABAAAIAAAAAADAAAAAA=</HashCode>
+      <FileName>layer.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="operator_param" Collapsed="true">
+    <Position X="145.5" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>layer.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="TENSOR_OBJ" Collapsed="true">
+    <Position X="142" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAABQAAAAQAAAAAIAACAAAAAAAEABACAAACAAAAgA=</HashCode>
+      <FileName>tensor.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::activation_param" Collapsed="true">
+    <Position X="140.25" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAQAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::dhw" Collapsed="true">
+    <Position X="143.75" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEQAgAAAAAAAA=</HashCode>
+      <FileName>convolution.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::vol2col_param" Collapsed="true">
+    <Position X="142" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAABAAAgAAIIBgBIEAIAJQAAAAQMQQAgAAAQA=</HashCode>
+      <FileName>convolution.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::gemm_param" Collapsed="true">
+    <Position X="145.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACAAAAAAAAAIAAABAAAAAAAAAAAkkAQAAAAAAA=</HashCode>
+      <FileName>gemm.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::transpose_param" Collapsed="true">
+    <Position X="145.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>transform.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::activation::two_param" Collapsed="true">
+    <Position X="140.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAEAQAAAAAAA=</HashCode>
+      <FileName>activation.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="loss::loss_param" Collapsed="true">
+    <Position X="142" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>loss.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::normalization::norm_param" Collapsed="true">
+    <Position X="143.75" Y="2.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAgAAAAIAAAAAACAAAIAAAAAEIAgAAAAAA=</HashCode>
+      <FileName>normalization.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::math::clip_operator_param" Collapsed="true">
+    <Position X="142" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAQAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAA=</HashCode>
+      <FileName>math.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Struct Name="layers::rnn::RNN_cell_param" Collapsed="true">
+    <Position X="140.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAQAAAAgAAAAAAAAAAAAgAAAgAAAAAQAEAAAAAAAAA=</HashCode>
+      <FileName>rnn.h</FileName>
+    </TypeIdentifier>
+  </Struct>
+  <Typedef Name="Shape" Collapsed="true">
+    <Position X="142" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>backend.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Typedef Name="shaderc_shader_kind" Collapsed="true">
+    <Position X="140.25" Y="7" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>utils.h</FileName>
+    </TypeIdentifier>
+  </Typedef>
+  <Enum Name="Format" Collapsed="true">
+    <Position X="140.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAgAAAAgAAAAIAAAAACAGAAACAAEAAAASAAAAAAAA=</HashCode>
+      <FileName>backend.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="FusedActivationType" Collapsed="true">
+    <Position X="142" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAAAAAAAEAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>backend.h</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

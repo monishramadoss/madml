@@ -143,20 +143,16 @@ namespace layers
 			m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 		{
 			m_type = "conv";
-			update_id();
-
-			set_sub_graph();
 			mm = std::make_shared<gemm>(gemm(1., 1., false));
 			if (USE_BIAS)
 				bias = std::make_shared<math::add>(math::add());
 			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
-			unset_sub_graph();
 		}
 
 		std::shared_ptr<tensor>& conv::operator()(const std::shared_ptr<tensor>& x_)
 		{
 			x = x_;
-			set_sub_graph();
+
 			auto input_shape = x->getShape();
 
 			int channels = input_shape[1];
@@ -188,9 +184,6 @@ namespace layers
 				t4 = trans->operator()(y);
 			}
 
-			if (!m1)
-				m1 = get_input_id(x->getId());
-			unset_sub_graph();
 			return t4;
 		}
 
@@ -230,20 +223,17 @@ namespace layers
 			USE_BIAS(use_bias)
 		{
 			m_type = "convT";
-			update_id();
 
-			set_sub_graph();
 			mm = std::make_shared<gemm>(gemm(1., 1., false));
 			if (USE_BIAS)
 				bias = std::make_shared<math::add>(math::add());
 			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
-			unset_sub_graph();
 		}
 
 		std::shared_ptr<tensor>& convTranspose::operator()(const std::shared_ptr<tensor>& x_)
 		{
 			x = x_;
-			set_sub_graph();
+
 			auto input_shape = x->getShape();
 
 			int channels = input_shape[1];
@@ -282,9 +272,6 @@ namespace layers
 				t4 = trans->operator()(y);
 			}
 
-			if (!m1)
-				m1 = get_input_id(x->getId());
-			unset_sub_graph();
 			return t4;
 		}
 
@@ -324,6 +311,7 @@ namespace layers
 	{
 		int batch_size = params[0];
 		int in_channels = params[1];
+
 		// std::vector<int> _vol = { params[2], params[3], params[4] };
 		// std::vector<int> _col = { params[5], params[6], params[7] };
 		// std::vector<int> kernel_size = { params[8], params[9], params[10] };
@@ -334,7 +322,7 @@ namespace layers
 		int n_output_plane = in_channels * params[8] * params[9] * params[10];
 		int output_length = batch_size * params[5] * params[6] * params[7];
 		int index_length = in_channels * params[5] * params[6] * params[7];
-		
+
 		py::buffer_info buf1 = input1.request();
 		py::buffer_info buf2 = result.request();
 		float* ptr1 = (float*)buf1.ptr;
@@ -381,6 +369,7 @@ namespace layers
 	{
 		int batch_size = params[0];
 		int in_channels = params[1];
+
 		// std::vector<int> _vol = { params[2], params[3], params[4] };
 		// std::vector<int> _col = { params[5], params[6], params[7] };
 		// std::vector<int> kernel_size = { params[8], params[9], params[10] };
@@ -431,8 +420,6 @@ namespace layers
 			}
 		}
 
-
 		return result;
 	}
-
 }

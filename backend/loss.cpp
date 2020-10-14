@@ -14,7 +14,7 @@ namespace loss
 		const std::shared_ptr<tensor>& _w)
 	{
 		layer_construct_forward(shader, codeSize, _x, _w);
-		if (!m1)
+
 		{
 			m1 = get_input_id(_w->getId());
 			m1->dy = y;

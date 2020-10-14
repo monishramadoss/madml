@@ -20,9 +20,8 @@ namespace layers
 		bck_codeSize = sizeof(kernel::shaders::d_gemm_spv);
 		bck_shader = kernel::shaders::d_gemm_spv;
 		bck_shader = kernel::shaders::d_gemm_spv;
-		set_sub_graph();
+
 		t = std::make_shared<transpose>(transpose(std::vector<int>{1, 0}));
-		unset_sub_graph();
 	}
 
 	void gemm::computeGroupCount()
@@ -123,25 +122,20 @@ namespace layers
 		dense::dense(int size, bool use_bias) : m_size(size), USE_BIAS(use_bias)
 		{
 			m_type = "dense";
-			update_id();
-			set_sub_graph();
+
 			mm = std::make_shared<gemm>(gemm(1.0, 1.0, USE_BIAS));
-			unset_sub_graph();
 		}
 
 		std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& _x)
 		{
 			this->x = _x;
-			set_sub_graph();
+
 			auto input_shape = x->getShape();
 			if (!w)
 				w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[input_shape.size() - 1], m_size}));
 
 			y = mm->operator()(x, w, b);
 
-			unset_sub_graph();
-			if (!m1)
-				m1 = get_input_id(x->getId());
 			return y;
 
 			// MxK KxN = MxN
