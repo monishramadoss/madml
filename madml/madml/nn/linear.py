@@ -4,9 +4,9 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #from typing import Optional
-
-import numpy as np
 from .module import Module
+from madml.tensor import tensor
+import madml
 
 class Identity(Module):
     def __init__(self):
@@ -24,16 +24,16 @@ class Linear(Module):
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = np.zeros((out_features, in_features))
+        self.weight = madml.zeros((out_features, in_features))
         if bias:
-            self.bias = np.zeros((out_features))
+            self.bias = madml.zeros((out_features))
 
-    def forward_cpu(self, x):
-        y = np.zeros((x.shape[0], self.out_features))
+    def forward_cpu(self, x: tensor) -> tensor:
+        y = madml.zeros((x.shape[0], self.out_features))
         for b in range(x.shape[0]):
-            y[b,...] = np.matmul(self.weight, x[b,...]) 
+            y[b] = madml.matmul(self.weight, x[b,...])
             if self.bias is not None:
-                y[b,...] = y[b,...] + self.bias
+                y[b] = y[b] + self.bias
         return y
 
 class Bilinear(Module):
@@ -47,12 +47,12 @@ class Bilinear(Module):
         self.in1_features = in1_features
         self.in2_features = in2_features
         self.out_features = out_features
-        self.weight = np.zeros((out_features, in1_features, in2_features))
+        self.weight = madml.zeros((out_features, in1_features, in2_features))
         if bias:
-            self.bias = np.zeros((out_features))
+            self.bias = madml.zeros((out_features))
 
-    def forward_cpu(self, x):
-        y = np.matmul(x, self.weight)
+    def forward_cpu(self, x: tensor) -> tensor:
+        y = madml.matmul(x, self.weight)
         if self.bias:
             y += self.bias
         return y

@@ -1,3 +1,9 @@
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+from typing import  Optional
 from collections import defaultdict
 from copy import deepcopy
 from itertools import chain
@@ -15,8 +21,6 @@ class Optimizer(object):
             raise ValueError("optimizer got an empty parameter list")
         if not isinstance(param_groups[0], dict):
             param_groups = [{'params': param_groups}]
-        for param_group in param_groups:
-            self.add_param_group(param_group)
 
     def __getstate__(self):
         return {
@@ -50,10 +54,9 @@ class Optimizer(object):
             return packed
         param_groups = [pack_group(g) for g in self.param_groups]
         # Remap state to use order indices as keys
-        packed_state = {(param_mappings[id(k)] if isinstance(k, torch.Tensor) else k): v
-                        for k, v in self.state.items()}
+
         return {
-            'state': packed_state,
+            'state': None,
             'param_groups': param_groups,
         }
 
@@ -63,40 +66,9 @@ class Optimizer(object):
                 if p.grad is not None:
                     p.grad.detach_()
                     p.grad.zero_()
+
     def step(self, closure):
         raise NotImplementedError
-
-    def add_param_group(self, param_group):
-        assert isinstance(param_group, dict), "param group must be a dict"
-
-        params = param_group['params']    
-        param_group['params'] = [params]
-
-        if isinstance(params, set):
-            raise TypeError('optimizer parameters need to be organized in ordered collections, but '
-                            'the ordering of tensors in sets will change between runs. Please use a list instead.')
-        else:
-            param_group['params'] = list(params)
-
-        for param in param_group['params']:
-            if not param.is_leaf:
-                raise ValueError("can't optimize a non-leaf Tensor")
-
-        for name, default in self.defaults.items():
-            if default is required and name not in param_group:
-                raise ValueError("parameter group didn't specify a value of required optimization parameter " + name)
-            else:
-                param_group.setdefault(name, default)
-
-        param_set = set()
-        for group in self.param_groups:
-            param_set.update(set(group['params']))
-
-        if not param_set.isdisjoint(set(param_group['params'])):
-            raise ValueError("some parameters appear in more than one parameter group")
-
-        self.param_groups.append(param_group)
-
 
 class Adagrad(Optimizer):
     def __init__(self, params, lr=1e-2, lr_decay=0, weight_decay=0, initial_accumulator_value=0, eps=1e-10):
@@ -113,12 +85,12 @@ class Adagrad(Optimizer):
 
         defaults = dict(lr=lr, lr_decay=lr_decay, eps=eps, weight_decay=weight_decay, initial_accumulator_value=initial_accumulator_value)
         super(Adagrad, self).__init__(params, defaults)
-        
+
         for group in self.param_groups:
             for p in group['params']:
                 state = self.state[p]
                 state['step'] = 0
-                state['sum'] = np.full_like(p, initial_accumulator_value)
+                state['sum'] = madml.full_like(p, initial_accumulator_value)
 
     def share_memory(self):
         for group in self.param_groups:
@@ -129,13 +101,10 @@ class Adagrad(Optimizer):
     def step(self, closure=None):
         raise NotImplementedError
         loss = None
-        if closure is not None:
-            with torch.enable_grad():
-                loss = closure()
 
         for group in self.param_groups:
             for p in group['params']:
-                ass
+                pass
 
         return loss
 
@@ -170,7 +139,6 @@ class Adam(Optimizer):
 
         return loss
 
-
 class RMSprop(Optimizer):
     def __init__(self, params, lr=1e-2, alpha=0.99, eps=1e-8, weight_decay=0, momentum=0, centered=False):
         if not 0.0 <= lr:
@@ -196,7 +164,6 @@ class RMSprop(Optimizer):
     def step(self, closure=None):
         loss = None
 
-
 class SGD(Optimizer):
     def __init__(self, params, lr=1e-2, momentum=0, dampening=0, weight_decay=0, nesterov=False):
         if lr < 0.0:
@@ -211,7 +178,7 @@ class SGD(Optimizer):
         if nesterov and (momentum <= 0 or dampening != 0):
             raise ValueError("Nesterov momentum requires a momentum and zero dampening")
         super(SGD, self).__init__(params, defaults)
-    
+
     def __setstate__(self, state):
         super(SGD, self).__setstate__(state)
         for group in self.param_groups:
@@ -226,6 +193,6 @@ class SGD(Optimizer):
             dampening = group['dampening']
             nesterov = group['nesterov']
 
-            for p in group['params']:        
+            for p in group['params']:
                 pass
         return loss

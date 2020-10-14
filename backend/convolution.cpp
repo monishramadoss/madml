@@ -1,7 +1,6 @@
 #include "common.h"
 #include "utils.h"
 #include "convolution.h"
-#include <omp.h>
 
 constexpr int local_sz_x_conv = 16;
 constexpr int local_sz_y_conv = 64;
@@ -336,8 +335,6 @@ namespace layers
 		int output_length = batch_size * params[5] * params[6] * params[7];
 		int index_length = in_channels * params[5] * params[6] * params[7];
 		
-		
-		
 		py::buffer_info buf1 = input1.request();
 		py::buffer_info buf2 = result.request();
 		float* ptr1 = (float*)buf1.ptr;
@@ -347,7 +344,7 @@ namespace layers
 		{
 			int data_col = elt * in_channels * params[2] * params[3] * params[4];
 			int data_vol = elt * n_output_plane * params[5] * params[6] * params[7];
-#pragma omp parallel for
+
 			for (int index = 0; index < index_length; ++index)
 			{
 				int w_offset = index % params[10];
@@ -376,6 +373,64 @@ namespace layers
 				}
 			}
 		}
+
+		return result;
+	}
+
+	py::array_t<float> col2im_cpu(py::array_t<float> input1, py::array_t<float> result, std::vector<int>& params)
+	{
+		int batch_size = params[0];
+		int in_channels = params[1];
+		// std::vector<int> _vol = { params[2], params[3], params[4] };
+		// std::vector<int> _col = { params[5], params[6], params[7] };
+		// std::vector<int> kernel_size = { params[8], params[9], params[10] };
+		// std::vector<int> stride = { params[11], params[12], params[13] };
+		// std::vector<int> padding = { params[14], params[15], params[16] };
+		// std::vector<int> dilation = { params[17], params[18], params[19] };
+
+		int n_output_plane = in_channels * params[8] * params[9] * params[10];
+		int output_length = batch_size * params[5] * params[6] * params[7];
+		int index_length = in_channels * params[5] * params[6] * params[7];
+
+		py::buffer_info buf1 = input1.request();
+		py::buffer_info buf2 = result.request();
+		float* ptr1 = (float*)buf1.ptr;
+		float* ptr2 = (float*)buf2.ptr;
+
+		for (int elt = 0; elt < batch_size; ++elt)
+		{
+			int data_col = elt * in_channels * params[2] * params[3] * params[4];
+			int data_vol = elt * n_output_plane * params[5] * params[6] * params[7];
+
+			for (int index = 0; index < index_length; ++index)
+			{
+				int w_offset = index % params[10];
+				int h_offset = (index / params[10]) % params[9];
+				int d_offset = (index / params[10] / params[9]) % params[8];
+				int c_vol = int(index / params[10] / params[9] / params[8]);
+
+				for (int d_col = 0; d_col < params[5]; ++d_col)
+				{
+					int d_vol = d_col * params[11] - params[14] + d_offset * params[17];
+					for (int h_col = 0; h_col < params[6]; ++h_col)
+					{
+						int h_vol = h_col * params[12] - params[15] + h_offset * params[18];
+						for (int w_col = 0; w_col < params[7]; ++w_col)
+						{
+							int w_vol = w_col * params[13] - params[16] + w_offset * params[19];
+							if (d_vol >= 0 && d_vol < params[2] && h_vol >= 0 && h_vol < params[3] && w_vol >= 0 && w_vol < params[4])
+							{
+								int data_vol_idx = data_vol + ((c_vol * params[2] + d_vol) * params[3] + h_vol) * params[4] + w_vol;
+								int data_col_idx = data_col + ((index * params[5] + d_col) * params[6] + h_col) * params[7] + w_col;
+								if (data_col_idx < buf2.shape[0] && data_vol_idx < buf1.shape[0])
+									ptr2[data_vol_idx] = ptr1[data_col_idx];
+							}
+						}
+					}
+				}
+			}
+		}
+
 
 		return result;
 	}

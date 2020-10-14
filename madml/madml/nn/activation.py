@@ -4,8 +4,10 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from typing import  Optional
-import numpy as np
 from .module import Module
+from madml.tensor import tensor
+import madml
+import random
 
 class Threshold(Module):
     __constants__ = ['threshold', 'value', 'inplace']
@@ -23,6 +25,16 @@ class Threshold(Module):
         inplace_str = ', inplace=True' if self.inplace else ''
         return 'threshold={}, value={}{}'.format(self.threshold, self.value, inplace_str)
 
+    def forward_cpu(self, x: tensor) -> tensor:
+        self.cache = [x]
+        x[x <= self.threshold] = self.value
+        return x
+
+    def backward_cpu(self, dy: tensor) -> tensor:
+        dx = dy.copy()
+        dx[self.cache[0] <= self.threshold] = 0
+        return dx
+
 class ReLU(Module):
     __constatns__ = ['inplace']
     inplace : bool
@@ -34,12 +46,13 @@ class ReLU(Module):
     def extra_repr(self) -> str:
         inplace_str = 'inplace=True' if self.inplace else ''
         return inplace_str
-    
-    def forward_cpu(self, x):   
-        self.cache = [x]     
-        return np.maximum(x, 0)       
-    def backward_cpu(self, dout):
-        dx = dout.copy()
+
+    def forward_cpu(self, x: tensor) -> tensor:
+        self.cache = [x]
+        return madml.max(x, axis=0)
+
+    def backward_cpu(self, dy: tensor) -> tensor:
+        dx = dy.copy()
         dx[self.cache[0] <= 0] = 0
         return dx
 
@@ -59,6 +72,15 @@ class RReLU(Module):
     def extra_repr(self):
         inplace_str = ', inplace=True' if self.inplace else ''
         return 'lower={}, upper={}{}'.format(self.lower, self.upper, inplace_str)
+
+    def forward_cpu(self, x: tensor) -> tensor:
+        self.cache[0]
+        x[x < 0] = x * random.uniform(self.lower, self.upper)
+        return x
+    def backward_cpu(self, dy: tensor) -> tensor:
+        dx = dy.copy()
+        dx[self.cache[0] <= 0] = 0
+        return dx
 
 class Hardtanh(Module):
     __constants__ = ['min_val', 'max_val', 'inplace']
@@ -86,14 +108,13 @@ class ReLU6(Hardtanh):
         return inplace_str
 
 class Sigmoid(Module):
-    def forward_cpu(self, x):
-        y = 1. / (1 + np.exp(-x))
+    def forward_cpu(self, x: tensor) -> tensor:
+        y = 1. / (1 + madml.exp(-x))
         self.cache = [y]
         return y
 
-    def backward_cpu(self, dout):
-        return self.cache[0] * (1. - self.cache[0]) * dout
-
+    def backward_cpu(self, dy: tensor) -> tensor:
+        return self.cache[0] * (1. - self.cache[0]) * dy
 
 class Hardsigmoid(Module):
     pass

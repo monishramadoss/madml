@@ -48,6 +48,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="madml\tensor.py" />
+    <Compile Include="madml\test.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="madml\utils.py" />
     <Compile Include="madml\__init__.py">
       <SubType>Code</SubType>

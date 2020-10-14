@@ -4,14 +4,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from typing import List, Optional, Union
-
-import numpy as np
 from .module import Module
 from madml.utils import *
+from madml.tensor import tensor
 
 def dim_fix(arr, arg_arr):
     j = 0
-    for i in range(len(arg_arr)-1, len(arr)):
+    for i in range(len(arg_arr) - 1, len(arr)):
         arr[i] = arg_arr[j]
         j+=1
     return arr
@@ -71,50 +70,50 @@ class _ConvNd(Module):
         self.padding_mode = padding_mode
         self._col = [1,1,1]
         self._im = [1,1,1]
-       
-        #self._reversed_padding_repeated_twice = _reverse_repeat_tuple(self.padding, 2)
+        #self._reversed_padding_repeated_twice =
+        #_reverse_repeat_tuple(self.padding, 2)
         if transposed:
-            self.weight = np.ones((in_channels, out_channels // groups, *kernel_size))
+            self.weight = madml.ones((in_channels, out_channels // groups, *kernel_size))
         else:
-            self.weight = np.ones((out_channels, in_channels // groups, *kernel_size))
+            self.weight = madml.ones((out_channels, in_channels // groups, *kernel_size))
         self._use_bias = bias
         self.bias = None
 
-    def forward_cpu(self, x):
+    def forward_cpu(self, x: tensor) -> tensor:
         if(len(x.shape) >= 3):
-            self._col[2] = int((x.shape[-1] + 2*self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
-            self._im [2] = x.shape[-1]
+            self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
+            self._im[2] = x.shape[-1]
         if (len(x.shape) >= 4):
-            self._col[1] = int((x.shape[-2] + 2*self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
+            self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
             self._im[1] = x.shape[-2]
         if(len(x.shape) == 5):
-            self._col[0] = int((x.shape[-3] + 2*self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
+            self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
             self._im[0] = x.shape[-3]
-        
+
         self.batch_size = x.shape[0]
         B, n_output_plane, output_length = im2col(x, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
-        
-        y = np.matmul(self.weight.reshape(-1, n_output_plane), B)
+
+        y = madml.matmul(self.weight.reshape(-1, n_output_plane), B)
         y = y.reshape((self.out_channels, self.batch_size, *self._col))
-        y = np.transpose(y, (1,0,2,3,4))
+        y = madml.transpose(y, (1,0,2,3,4))
 
         if self._use_bias:
             y = bias_add(y, self.bias, y.shape)
 
         self.cache = [x, B]
         return y
-    
-    def backward_cpu(self, dout):
+
+    def backward_cpu(self, dy: tensor) -> tensor:
         x, B = self.cache
-        self.d_bias = np.sum(dout, axis=(0, 2, 3, 4))
+        self.d_bias = madml.reduce_sum(dy, axis=(0, 2, 3, 4))
         n_filter, c_filter, d_filter, h_filter, w_filter = self.weight.shape
 
-        dout_reshaped = dout.transpose(1, 2, 3, 4, 0).reshape(n_filter, -1)
-        self.d_weight = dout_reshaped @ B.T        
+        dy_reshaped = dy.transpose(1, 2, 3, 4, 0).reshape(n_filter, -1)
+        self.d_weight = dy_reshaped @ B.T
         self.d_weight = self.d_weight.reshape(self.weight.shape)
         w_reshape = self.weight.reshape(n_filter, -1)
-        
-        dx_col = w_reshape.T @ dout_reshaped
+
+        dx_col = w_reshape.T @ dy_reshaped
         dx = None
 
         return dx
@@ -141,7 +140,6 @@ class _ConvNd(Module):
         if not hasattr(self, 'padding_mode'):
             self.padding_mode = 'zeros'
 
-
 class Conv1d(_ConvNd):
     def __init__(self,
         in_channels: int,
@@ -159,7 +157,6 @@ class Conv1d(_ConvNd):
         padding = single(padding)
         dilation = single(dilation)
         super(Conv1d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, False, single(0), groups, bias, padding_mode)
-
 
 class Conv2d(_ConvNd):
     def __init__(self,
@@ -179,7 +176,6 @@ class Conv2d(_ConvNd):
         dilation = double(dilation)
         super(Conv2d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, False, double(0), groups, bias, padding_mode)
 
-
 class Conv3d(_ConvNd):
     def __init__(self,
         in_channels: int,
@@ -198,7 +194,6 @@ class Conv3d(_ConvNd):
         dilation = triple(dilation)
         super(Conv3d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, False, triple(0), groups, bias, padding_mode)
 
-
 class _ConvTransposeNd(_ConvNd):
     def __init__(self, in_channels, out_channels, kernel_size, stride,
                  padding, dilation, transposed, output_padding,
@@ -215,8 +210,7 @@ class _ConvTransposeNd(_ConvNd):
             if len(output_size) == k + 2:
                 output_size = output_size[2:]
             if len(output_size) != k:
-                raise ValueError("output_size must have {} or {} elements (got {})"
-                    .format(k, k + 2, len(output_size)))
+                raise ValueError("output_size must have {} or {} elements (got {})".format(k, k + 2, len(output_size)))
 
             min_sizes = []
             max_sizes = []
@@ -237,22 +231,19 @@ class _ConvTransposeNd(_ConvNd):
                 res.append(output_size[d] - min_sizes[d])
             ret = res
         return ret
-    
-    def forward_cpu(self, x):
+    def forward_cpu(self, x: tensor) -> tensor:
         if(len(x.shape) >= 3):
-            self._col[2] = int(x.shape[-1] + 2*self.padding[2] - (self.dilation[2] * (self.kernel_size[2] - 1) + 1) // self.stride[2] + 1)
-            self._im [2] = x.shape[-1]
+            self._col[2] = int(x.shape[-1] + 2 * self.padding[2] - (self.dilation[2] * (self.kernel_size[2] - 1) + 1) // self.stride[2] + 1)
+            self._im[2] = x.shape[-1]
         if (len(x.shape) >= 4):
-            self._col[1] = int(x.shape[-2] + 2*self.padding[1] - (self.dilation[1] * (self.kernel_size[1] - 1) + 1) // self.stride[1] + 1)
+            self._col[1] = int(x.shape[-2] + 2 * self.padding[1] - (self.dilation[1] * (self.kernel_size[1] - 1) + 1) // self.stride[1] + 1)
             self._im[1] = x.shape[-2]
         if(len(x.shape) == 5):
-            self._col[0] = int(x.shape[-3] + 2*self.padding[0] - (self.dilation[0] * (self.kernel_size[0] - 1) + 1) // self.stride[0] + 1)
+            self._col[0] = int(x.shape[-3] + 2 * self.padding[0] - (self.dilation[0] * (self.kernel_size[0] - 1) + 1) // self.stride[0] + 1)
             self._im[0] = x.shape[-3]
 
-        #output_padding = self._output_padding(x, self._col, self.stride, self.padding, self.kernel_size)
-         
-
-
+        #output_padding = self._output_padding(x, self._col, self.stride,
+        #self.padding, self.kernel_size)
 class ConvTranspose1d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,
@@ -273,8 +264,6 @@ class ConvTranspose1d(_ConvTransposeNd):
         output_padding = single(output_padding)
         super(ConvTranspose1d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, True, output_padding, groups, bias, padding_mode)
 
-   
-
 class ConvTranspose2d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,
@@ -294,7 +283,6 @@ class ConvTranspose2d(_ConvTransposeNd):
         dilation = double(dilation)
         output_padding = double(output_padding)
         super(ConvTranspose2d, self).__init__(in_channels, out_channels, kernel_size, stride, padding, dilation, True, output_padding, groups, bias, padding_mode)
-
 
 class ConvTranspose3d(_ConvTransposeNd):
     def __init__(self,

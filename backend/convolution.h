@@ -105,5 +105,6 @@ namespace layers
 	}
 
 	py::array_t<float> im2col_cpu(py::array_t<float> input1, py::array_t<float> result, std::vector<int>& params);
+	py::array_t<float> col2im_cpu(py::array_t<float> input1, py::array_t<float> result, std::vector<int>& params);
 }
 #endif

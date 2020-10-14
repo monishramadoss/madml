@@ -4,13 +4,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 #from typing import List, Optional, Union
-
-import numpy as np
 from .module import Module
+from madml.tensor import tensor
+import madml
 
 def exp_running_avg(running, new, gamma=.9):
     return gamma * running + (1. - gamma) * new
-
 
 class _NormBase(Module):
     __constants__ = ['track_running_stats', 'momentum', 'eps', 'num_features', 'affine']
@@ -19,7 +18,7 @@ class _NormBase(Module):
     momentum : float
     affine : bool
     track_running_stats : bool
-    
+
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=True, track_running_stats: bool=True) -> None:
         super(_NormBase, self).__init__()
         self.num_features = num_features
@@ -28,44 +27,44 @@ class _NormBase(Module):
         self.affine = affine
         self.track_running_stats = track_running_stats
         if self.affine:
-            self.weight = np.zeros((num_features))
-            self.bias = np.zeros((num_features))
+            self.weight = madml.zeros((num_features))
+            self.bias = madml.zeros((num_features))
         if self.track_running_stats:
-            self.running_mean = np.zeros(num_features)
-            self.running_var = np.zeros(num_features)
+            self.running_mean = madml.zeros(num_features)
+            self.running_var = madml.zeros(num_features)
             self.num_batches_tracked = 0
-           
+
     def extra_repr(self):
         return '{num_features}, eps={eps}, momentum={momentum}, affine={affine}, track_running_stats={track_running_stats}'.format(**self.__dict__)
 
 class BatchNorm(_NormBase):
     def __init__(self, num_features, eps=1e-5, momentum=0.1, affine=True, track_running_stats=True):
         super(BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
-    
-    def forward_cpu(self, x):
-        mu = np.mean(x, axis=0)
-        var = np.var(x, axis=0)
-        x_norm = (x-mu)/np.sqrt(var + self.eps)
+
+    def forward_cpu(self, x: tensor) -> tensor:
+        mu = madml.mean(x, axis=0)
+        var = madml.var(x, axis=0)
+        x_norm = (x - mu) / madml.sqrt(var + self.eps)
         y = self.weight * x_norm + self.bias
-        
+
         self.running_mean = exp_running_avg(self.running_mean, mu, self.momentum)
         self.running_var = exp_running_avg(self.running_var, var, self.momentum)
         self.cache = [x, x_norm, mu, var]
         return y
-    
-    def backward_cpu(self, dout):
+
+    def backward_cpu(self, dy: tensor) -> tensor:
         x, x_norm, mu, var = self.cache
         N, C = x.shape
-        x_mu = x-mu
+        x_mu = x - mu
 
-        std_inv = 1. / np.sqrt(var + self.eps)
-        dx_norm = dout * self.weight
-        dvar = np.sum(dx_norm * x_mu, axis=0) * -.5 * std_inv ** 3
-        dmu = np.sum(dx_norm * -std_inv, axis=0) + dvar * np.mean(-2. * x_mu, axis=0)
+        std_inv = 1. / madml.sqrt(var + self.eps)
+        dx_norm = dy * self.weight
+        dvar = madml.reduce_sum(dx_norm * x_mu, axis=0) * -.5 * std_inv ** 3
+        dmu = madml.reduce_sum(dx_norm * -std_inv, axis=0) + dvar * madml.mean(-2. * x_mu, axis=0)
 
-        dx = (dx_norm * std_inv) + (dvar * 2 * x_mu/N) + (dmu / N)
-        self.d_weight = np.sum(dout * x_norm, axis=0)
-        self.d_bias = np.sum(dout, axis=0)
+        dx = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
+        self.d_weight = madml.reduce_sum(dy * x_norm, axis=0)
+        self.d_bias = madml.reduce_sum(dy, axis=0)
         return dx
 
 class BatchNorm1d(BatchNorm):
@@ -87,30 +86,30 @@ class InstanceNorm(_NormBase):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=False, track_running_stats: bool=False) -> None:
         super(InstanceNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
 
-    def forward_cpu(self, x):
-        mu = np.mean(x, axis=0)
-        var = np.var(x, axis=0)
-        x_norm = (x-mu)/np.sqrt(var + self.eps)
+    def forward_cpu(self, x: tensor) -> tensor:
+        mu = madml.mean(x, axis=0)
+        var = madml.var(x, axis=0)
+        x_norm = (x - mu) / madml.sqrt(var + self.eps)
         y = self.weight * x_norm + self.bias
-        
+
         self.running_mean = exp_running_avg(self.running_mean, mu, self.momentum)
         self.running_var = exp_running_avg(self.running_var, var, self.momentum)
         self.cache = [x, x_norm, mu, var]
         return y
-    
-    def backward_cpu(self, dout):
+
+    def backward_cpu(self, dy: tensor) -> tensor:
         x, x_norm, mu, var = self.cache
         N, C = x.shape
-        x_mu = x-mu
+        x_mu = x - mu
 
-        std_inv = 1. / np.sqrt(var + self.eps)
-        dx_norm = dout * self.weight
-        dvar = np.sum(dx_norm * x_mu, axis=0) * -.5 * std_inv ** 3
-        dmu = np.sum(dx_norm * -std_inv, axis=0) + dvar * np.mean(-2. * x_mu, axis=0)
+        std_inv = 1. / madml.sqrt(var + self.eps)
+        dx_norm = dy * self.weight
+        dvar = madml.reduce_sum(dx_norm * x_mu, axis=0) * -.5 * std_inv ** 3
+        dmu = madml.reduce_sum(dx_norm * -std_inv, axis=0) + dvar * madml.mean(-2. * x_mu, axis=0)
 
-        dx = (dx_norm * std_inv) + (dvar * 2 * x_mu/N) + (dmu / N)
-        self.d_weight = np.sum(dout * x_norm, axis=0)
-        self.d_bias = np.sum(dout, axis=0)
+        dx = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
+        self.d_weight = madml.reduce_sum(dy * x_norm, axis=0)
+        self.d_bias = madml.reduce_sum(dy, axis=0)
         return dx
 
 class InstanceNorm1d(InstanceNorm):

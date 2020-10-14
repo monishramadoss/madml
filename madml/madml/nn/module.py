@@ -6,15 +6,15 @@ from __future__ import unicode_literals
 from typing import List
 
 class Module:
-    
+
     def __init__(self,):
-        self.cache = []    
-        
+        self.cache = []
+
     def forward(self, *args):
         return self.forward_cpu(*args)
 
-    def forward_cpu(self, *args):
-        raise NotImplementedError( "{} forward_cpu for layer not Implemented".format(self))    
+    def forward_cpu(self, args):
+        raise NotImplementedError("{} forward_cpu for layer not Implemented".format(self))
 
     def __call__(self, *args):
         return self.forward(*args)
