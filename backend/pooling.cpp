@@ -4,128 +4,123 @@
 
 constexpr int local_sz_x_conv = 16;
 constexpr int local_sz_y_conv = 64;
-namespace layers
+
+maxPooling::maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
-	namespace nn
-	{
-		maxPooling::maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-			m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
-		{
-			m_type = "maxPooling";
+    m_type = "maxPooling";
 
-			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
-		}
+    trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
+}
 
-		std::shared_ptr<tensor>& maxPooling::operator()(const std::shared_ptr<tensor>& x_)
-		{
-			x = x_;
+std::shared_ptr<tensor>& maxPooling::operator()(const std::shared_ptr<tensor>& x_)
+{
+    x = x_;
 
-			auto input_shape = x->getShape();
-			int channels = 1;
-			int batch_size = input_shape[0] * input_shape[1];
+    auto input_shape = x->getShape();
+    int channels = 1;
+    int batch_size = input_shape[0] * input_shape[1];
 
-			if (!kernel)
-				kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
+    if (!kernel)
+        kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-			t1 = kernel->operator()(x);
+    t1 = kernel->operator()(x);
 
-			// argmax t1 across n_output_plane
-			auto out = kernel->output_shape();
+    // argmax t1 across n_output_plane
+    auto out = kernel->output_shape();
 
-			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
-			t4 = trans->operator()(y);
+    y->reShape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
+    t4 = trans->operator()(y);
 
-			return t4;
-		}
+    return t4;
+}
 
-		int maxPooling::set_backward()
-		{
-			return 1;
-		}
+int maxPooling::set_backward()
+{
+    return 1;
+}
 
-		void maxPooling::update_weight()
-		{
-		}
+void maxPooling::update_weight()
+{
+}
 
-		maxUnPooling::maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-			m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
-		{
-			m_type = "maxUnPooling";
+maxUnPooling::maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+{
+    m_type = "maxUnPooling";
 
-			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
-		}
+    trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
+}
 
-		std::shared_ptr<tensor>& maxUnPooling::operator()(const std::shared_ptr<tensor>& x_)
-		{
-			x = x_;
+std::shared_ptr<tensor>& maxUnPooling::operator()(const std::shared_ptr<tensor>& x_)
+{
+    x = x_;
 
-			auto input_shape = x->getShape();
-			int channels = 1;
-			int batch_size = input_shape[0] * input_shape[1];
+    auto input_shape = x->getShape();
+    int channels = 1;
+    int batch_size = input_shape[0] * input_shape[1];
 
-			if (!kernel)
-				kernel = std::make_shared<col2vol>(col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation));
+    if (!kernel)
+        kernel = std::make_shared<col2vol>(col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-			t1 = kernel->operator()(x);
+    t1 = kernel->operator()(x);
 
-			// argmax t1 across n_output_plane
-			auto out = kernel->output_shape();
+    // argmax t1 across n_output_plane
+    auto out = kernel->output_shape();
 
-			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
-			t4 = trans->operator()(y);
+    y->reShape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
+    t4 = trans->operator()(y);
 
-			return t4;
-		}
+    return t4;
+}
 
-		int maxUnPooling::set_backward()
-		{
-			return 1;
-		}
+int maxUnPooling::set_backward()
+{
+    return 1;
+}
 
-		void maxUnPooling::update_weight()
-		{
-		}
+void maxUnPooling::update_weight()
+{
+}
 
-		avgPooling::avgPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-			bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-			m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
-		{
-			m_type = "avgPooling";
+avgPooling::avgPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+{
+    m_type = "avgPooling";
 
-			trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
-		}
+    trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
+}
 
-		std::shared_ptr<tensor>& avgPooling::operator()(const std::shared_ptr<tensor>& x_)
-		{
-			x = x_;
+std::shared_ptr<tensor>& avgPooling::operator()(const std::shared_ptr<tensor>& x_)
+{
+    x = x_;
 
-			auto input_shape = x->getShape();
-			int channels = 1;
-			int batch_size = input_shape[0] * input_shape[1];
+    auto input_shape = x->getShape();
+    int channels = 1;
+    int batch_size = input_shape[0] * input_shape[1];
 
-			if (!kernel)
-				kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
+    if (!kernel)
+        kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-			t1 = kernel->operator()(x);
+    t1 = kernel->operator()(x);
 
-			// mean t1 across n_output_plane
-			auto out = kernel->output_shape();
+    // mean t1 across n_output_plane
+    auto out = kernel->output_shape();
 
-			y->reshape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
-			t4 = trans->operator()(y);
+    y->reShape(std::vector<int>{m_num_filters, batch_size, out[0], out[1], out[2]});
+    t4 = trans->operator()(y);
 
-			return t4;
-		}
+    return t4;
+}
 
-		int avgPooling::set_backward()
-		{
-			return 1;
-		}
+int avgPooling::set_backward()
+{
+    return 1;
+}
 
-		void avgPooling::update_weight()
-		{
-		}
-	}
+void avgPooling::update_weight()
+{
 }

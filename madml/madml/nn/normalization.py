@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 #from typing import List, Optional, Union
 from .module import Module
-from madml.tensor import tensor
+from madml import tensor
 import madml
 
 def exp_running_avg(running, new, gamma=.9):

@@ -187,7 +187,7 @@
       <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultiThreadedDebugDLL</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(PythonHome)\Library\Include;$(PythonHome)\Include;C:\VulkanSDK\1.2.148.1\Include;$(PythonHome)\lib\site-packages\pybind11\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
-      <MultiProcessorCompilation>false</MultiProcessorCompilation>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

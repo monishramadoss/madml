@@ -19,6 +19,6 @@ void main()
 {
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
-        Y[i] = max(0, X[i]);
+       Y[i] = max(X[i], 0);
     }
 }

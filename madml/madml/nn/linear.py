@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 #from typing import Optional
 from .module import Module
-from madml.tensor import tensor
+from madml import tensor
 import madml
 
 class Identity(Module):

@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from typing import Union, List
 import math
-from madml.tensor import tensor
+from madml import tensor
 
 def _size(shape: List[int]):
     size = 1
@@ -14,19 +14,23 @@ def _size(shape: List[int]):
     return size
 
 def zeros(shape: List[int]) -> tensor:
-    data = [0 for _ in _size(shape)]
+    data = [0 for _ in range(_size(shape))]
     return tensor(data, shape)
 
 def zeros_like(T: tensor) -> tensor:
     return zeros(T.shape)
 
 def ones(shape: List[int]) -> tensor:
-    data = [1 for _ in _size(shape)]
+    data = [1 for _ in range(_size(shape))]
     return tensor(data, shape)
 
 def full_like(T: tensor, val: float) -> tensor:
     data = [val for _ in T.size]
     return tensor(data, T.shape)
+
+def fill(shape: List[int], val: float) -> tensor:
+    data = [val for _ in range(_size(shape))]
+    return tensor(data, shape)
 
 def reduce_sum(T: tensor, axis: Union[List[int], int]=None) -> tensor:
     def _sum(data: List[float], size: int) -> int:

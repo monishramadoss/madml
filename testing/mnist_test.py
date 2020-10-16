@@ -7,13 +7,11 @@ import os
 
 import madml
 import madml.nn as nn
-
-filename = [
-    ["training_images","train-images-idx3-ubyte.gz"],
+from madml import tensor
+filename = [["training_images","train-images-idx3-ubyte.gz"],
     ["test_images","t10k-images-idx3-ubyte.gz"],
     ["training_labels","train-labels-idx1-ubyte.gz"],
-    ["test_labels","t10k-labels-idx1-ubyte.gz"]
-]
+    ["test_labels","t10k-labels-idx1-ubyte.gz"]]
 
 if not os.path.exists('./data'):
     os.makedirs('./data')
@@ -21,15 +19,15 @@ if not os.path.exists('./data'):
 def download_mnist():
     base_url = "http://yann.lecun.com/exdb/mnist/"
     for name in filename:
-        print("Downloading "+name[1]+"...")
-        request.urlretrieve(base_url+name[1], './data/'+ name[1])
+        print("Downloading " + name[1] + "...")
+        request.urlretrieve(base_url + name[1], './data/' + name[1])
     print("Download complete.")
 
 def save_mnist():
     mnist = {}
     for name in filename[:2]:
         with gzip.open('./data/' + name[1], 'rb') as f:
-            mnist[name[0]] = np.frombuffer(f.read(), np.uint8, offset=16).reshape(-1,28*28)
+            mnist[name[0]] = np.frombuffer(f.read(), np.uint8, offset=16).reshape(-1,28 * 28)
     for name in filename[-2:]:
         with gzip.open('./data/' + name[1], 'rb') as f:
             mnist[name[0]] = np.frombuffer(f.read(), np.uint8, offset=8)
@@ -72,7 +70,7 @@ class Net(nn.Module):
         x = self.pool(x) # 32 x 14 x 14
         x = self.conv2(x) # 46 x 12 x 12
         x = self.relu2(x)
-        x = x.reshape((bs, -1))        
+        x = x.reshape((bs, -1))
         x = self.relu3(self.fc1(x))
         x = self.relu4(self.fc2(x))
         x = self.fc3(x)
@@ -81,10 +79,13 @@ class Net(nn.Module):
 x, y, x1, y1 = load()
 x = x.reshape((-1, 32, 1, 1, 28, 28))
 x1 = x1.reshape((-1, 1, 1, 1, 28, 28))
+
 print(x.shape, x1.shape)
 print(x[0,...].shape, x1[0,...].shape)
 n = Net()
 
+tx = tensor(x.tolist(), x.shape)
+ty = tensor(y.tolist(), y.shape)
 for i in tqdm(range(x.shape[0])):
     y = n(x[i,...].astype(np.float32))
     break

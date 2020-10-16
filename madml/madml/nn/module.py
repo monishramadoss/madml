@@ -7,9 +7,9 @@ from typing import List
 
 class Module:
 
-    def __init__(self,):
+    def __init__(self, backend=None):
         self.cache = []
-
+        self.backend = backend
     def forward(self, *args):
         return self.forward_cpu(*args)
 

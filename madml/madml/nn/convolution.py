@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from typing import List, Optional, Union
 from .module import Module
 from madml.utils import *
-from madml.tensor import tensor
+from madml import tensor
 
 def dim_fix(arr, arg_arr):
     j = 0

@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 from typing import List
 from .module import Module
 import madml
-from madml.tensor import tensor
+from madml import tensor
 
 class RNNBase(Module):
     __constants__ = ['mode', 'input_size', 'hidden_size', 'num_layers', 'bias',

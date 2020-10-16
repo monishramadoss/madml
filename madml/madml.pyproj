@@ -31,6 +31,9 @@
     </Compile>
     <Compile Include="madml\nn\convolution.py" />
     <Compile Include="madml\nn\linear.py" />
+    <Compile Include="madml\nn\math.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="madml\nn\module.py" />
     <Compile Include="madml\nn\activation.py">
       <SubType>Code</SubType>
@@ -47,7 +50,6 @@
     <Compile Include="madml\tensor_ops.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\tensor.py" />
     <Compile Include="madml\test.py">
       <SubType>Code</SubType>
     </Compile>

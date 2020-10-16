@@ -1,7 +1,8 @@
 #version 450
 #define LOCAL_SZ_X 1024
-
+const float PI = 3.1415926535897932384626433832795;
 layout(push_constant) uniform pushBlock {
+      float alpha;
       int total;
 } p;
 
@@ -19,6 +20,6 @@ void main()
 {
     for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x))
     {
-        Y[i] = 0.5 * X[i] * (1 + tanh(0.797885*X[i] + 0.035677 * X[i] * X[i] * X[i] ));
+        Y[i] = 0.5 * X[i] * (1 + tanh(sqrt(PI)/2) * (X[i] + 0.044715 * pow(X[i], 3)));
     }
 }

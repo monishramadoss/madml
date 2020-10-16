@@ -4,8 +4,8 @@
 class context
 {
 public:
-	context();
-	~context();
+    context();
+    ~context();
 };
 
 void createContext();
