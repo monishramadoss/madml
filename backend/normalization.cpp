@@ -61,7 +61,8 @@ std::shared_ptr<tensor>& BatchNormalization::operator()(const std::shared_ptr<te
 
 int BatchNormalization::set_backward() { return -1; }
 
-InstanceNormalization::InstanceNormalization(float eps, float momentum, int num_features, bool affine) : Base_Layer<norm_param>(2)
+InstanceNormalization::InstanceNormalization(float eps, float momentum, int num_features, bool affine) : Base_Layer<norm_param>(
+    2)
 {
     m_type = "instance normalization";
     m_param.eps = eps;

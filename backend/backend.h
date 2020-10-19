@@ -27,7 +27,7 @@ bool isAvailable();
 //TODO need work on deallocations
 //TODO work on static members
 //TODO worker threads for first hand latency
-extern void init_tensor(py::module& m);
+extern void init_tensor(py::module & m);
 
 #include "tensor.h"
 #include "buffer.h"

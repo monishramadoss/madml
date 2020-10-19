@@ -86,22 +86,22 @@ void PrintMatrix(T* data, std::vector<int> shape)
 void test_memory()
 {
     std::cout << "\ntesting memory" << std::endl;
-    const std::vector<int> shape_x{ 512,512,512,4 };
+    const std::vector<int> shape_x{512, 512, 512, 4};
     auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
     std::vector<double> toHost, toDevice;
     for (int i = 0; i < 1; ++i)
     {
         std::cout << '\r' << i << " toHost ";
-        auto start = std::chrono::system_clock::now();
+        auto start = system_clock::now();
         char* data = t1->toHost();
-        auto end = std::chrono::system_clock::now();
-        std::chrono::duration<double> seconds = end - start;
+        auto end = system_clock::now();
+        duration<double> seconds = end - start;
         toHost.push_back(seconds.count());
         std::cout << seconds.count() << " toDevice ";
         std::this_thread::sleep_for(5s);
-        start = std::chrono::system_clock::now();
+        start = system_clock::now();
         t1->toDevice(data);
-        end = std::chrono::system_clock::now();
+        end = system_clock::now();
         seconds = end - start;
         toDevice.push_back(seconds.count());
         std::cout << seconds.count();

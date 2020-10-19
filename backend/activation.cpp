@@ -86,7 +86,7 @@ hardtanh::hardtanh(float min_val, float max_val, bool in_place) : Base_Layer<two
     m_type = "hardtanh";
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
-    m_param = { 0, min_val, max_val };
+    m_param = {0, min_val, max_val};
 }
 
 std::shared_ptr<tensor>& hardtanh::operator()(const std::shared_ptr<tensor>& x)
@@ -149,7 +149,7 @@ std::shared_ptr<tensor>& relu::operator()(const std::shared_ptr<tensor>& x)
     return layer_construct_forward(kernel::shaders::relu_spv, sizeof(kernel::shaders::relu_spv), x);
 }
 
-rrelu::rrelu(float lower, float upper, bool in_place) : min(lower), max(upper), Base_Layer<activation_param>(3, in_place)
+rrelu::rrelu(float lower, float upper, bool in_place) : Base_Layer<activation_param>(3, in_place), min(lower), max(upper)
 {
     m_type = "rrelu";
     m_param.alpha = 0;
@@ -244,28 +244,25 @@ std::shared_ptr<tensor>& tanhshrink::operator()(const std::shared_ptr<tensor>& x
 void init_celu(py::module& m)
 {
     py::class_<celu>(m, "celu")
-        .def(py::init<float&, bool&>())
-        ;
+        .def(py::init<float&, bool&>());
 }
+
 void init_elu(py::module& m)
 {
     py::class_<elu>(m, "elu")
-        .def(py::init<float&, bool&>())
-        ;
+        .def(py::init<float&, bool&>());
 }
 
 void init_gelu(py::module& m)
 {
     py::class_<gelu>(m, "gelu")
-        .def(py::init<float&, bool&>())
-        ;
+        .def(py::init<float&, bool&>());
 }
 
 void init_hardshrink(py::module& m)
 {
     py::class_<hardshrink>(m, "hardshrink")
-        .def(py::init<float&, bool&>())
-        ;
+        .def(py::init<float&, bool&>());
 }
 
 void init_hardsigmoid(py::module& m)
@@ -285,16 +282,19 @@ void init_hardtanh(py::module& m)
     py::class_<hardtanh>(m, "hardtanh")
         .def(py::init<float&, float&, bool&>());
 }
+
 void init_leakyrelu(py::module& m)
 {
     py::class_<leakyrelu>(m, "leakyrelu")
         .def(py::init<float&, bool&>());
 }
+
 void init_logsigmoid(py::module& m)
 {
     py::class_<logsigmoid>(m, "logsigmoid")
         .def(py::init<float&, bool&>());
 }
+
 void init_prelu(py::module& m)
 {
     py::class_<prelu>(m, "prelu")
@@ -331,16 +331,19 @@ void init_softplus(py::module& m)
     py::class_<softplus>(m, "softplus")
         .def(py::init<float&, bool&>());
 }
+
 void init_softshrink(py::module& m)
 {
     py::class_<softshrink>(m, "softshrink")
         .def(py::init<float&, bool&>());
 }
+
 void init_softsign(py::module& m)
 {
     py::class_<softsign>(m, "softsign")
         .def(py::init<bool&>());
 }
+
 void init_tanshrink(py::module& m)
 {
     py::class_<tanhshrink>(m, "tanhshrink")

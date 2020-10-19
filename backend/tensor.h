@@ -75,6 +75,7 @@ namespace init
             ret[i] = reinterpret_cast<dType&>(c);
         return reinterpret_cast<char*>(ret);
     }
+
     char* fill_memory_iter(std::vector<int> shape);
     char* normal_distribution_init(std::vector<int> shape, float mean, float std);
     char* uniform_distribution_init(std::vector<int> shape, float min, float max);

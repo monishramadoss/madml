@@ -91,15 +91,16 @@ protected:
 
 public:
     std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
-        const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
-        std::vector<int> output_shape = {});
+                                                     const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
+                                                     std::vector<int> output_shape = {});
     std::shared_ptr<tensor>& layer_construct_forward(const uint32_t* shader, size_t codeSize,
-        const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
-        Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+                                                     const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
+                                                     Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
 };
 
 template <typename T>
-Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : m_in_place(in_place), m_param({ 0 }), bck_shader(nullptr), bck_codeSize(0), derivative(nullptr)
+Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : bck_shader(nullptr), bck_codeSize(0), derivative(nullptr),
+                                                                m_in_place(in_place), m_param({0})
 {
     initVulkanThing(forward_buffers);
 }
@@ -159,7 +160,9 @@ int Base_Layer<T>::set_backward()
 }
 
 template <typename T>
-std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x, Format fmt, std::vector<int> output_shape)
+std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
+                                                                const std::shared_ptr<tensor>& _x, Format fmt,
+                                                                std::vector<int> output_shape)
 {
     x = _x;
     float* t = (float*)x->toHost();
@@ -197,9 +200,9 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* 
 
 template <typename T>
 std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(const uint32_t* shader, size_t codeSize,
-    const std::shared_ptr<tensor>& _x,
-    const std::shared_ptr<tensor>& _w, Format fmt,
-    std::vector<int> output_shape)
+                                                                const std::shared_ptr<tensor>& _x,
+                                                                const std::shared_ptr<tensor>& _w, Format fmt,
+                                                                std::vector<int> output_shape)
 {
     x = _x;
     w = _w;

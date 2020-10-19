@@ -32,7 +32,7 @@ namespace math
     clip::clip(float min, float max, bool in_place) : Base_Layer<clip_operator_param>(2, in_place)
     {
         m_type = "clip";
-        m_param = { 0, min, max };
+        m_param = {0, min, max};
         bck_shader = kernel::shaders::unary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::unary_operator_spv);
     }
@@ -352,7 +352,7 @@ namespace math
     std::shared_ptr<tensor>& eq::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
         return layer_construct_forward(kernel::shaders::equal_spv, sizeof(kernel::shaders::equal_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 
     ne::ne(bool in_place) : Base_Layer<>(3, in_place)
@@ -365,7 +365,7 @@ namespace math
     std::shared_ptr<tensor>& ne::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
         return layer_construct_forward(kernel::shaders::nequal_spv, sizeof(kernel::shaders::nequal_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 
     lt::lt(bool in_place) : Base_Layer<>(3, in_place)
@@ -378,7 +378,7 @@ namespace math
     std::shared_ptr<tensor>& lt::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
         return layer_construct_forward(kernel::shaders::less_than_spv, sizeof(kernel::shaders::less_than_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 
     le::le(bool in_place) : Base_Layer<>(3, in_place)
@@ -391,7 +391,7 @@ namespace math
     std::shared_ptr<tensor>& le::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
         return layer_construct_forward(kernel::shaders::less_eq_spv, sizeof(kernel::shaders::less_eq_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 
     gt::gt(bool in_place) : Base_Layer<>(3, in_place)
@@ -404,7 +404,7 @@ namespace math
     std::shared_ptr<tensor>& gt::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
         return layer_construct_forward(kernel::shaders::greater_than_spv, sizeof(kernel::shaders::greater_than_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 
     ge::ge(bool in_place) : Base_Layer<>(3, in_place)
@@ -417,7 +417,7 @@ namespace math
     std::shared_ptr<tensor>& ge::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
         return layer_construct_forward(kernel::shaders::greater_eq_spv, sizeof(kernel::shaders::greater_eq_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 
     xr::xr(bool in_place) : Base_Layer<>(3, in_place)
@@ -434,9 +434,10 @@ namespace math
             std::cerr << "XOR KERNEL REQUIRES BOTH INPUTS BE BOOLEAN VALUES" << std::endl;
         }
         return layer_construct_forward(kernel::shaders::xor_spv, sizeof(kernel::shaders::xor_spv), x, w,
-            Format::kFormatBool);
+                                       Format::kFormatBool);
     }
 }
+
 void init_abs(py::module& m)
 {
     py::class_<math::abs>(m, "abs")
@@ -448,31 +449,37 @@ void init_ceil(py::module& m)
     py::class_<math::ceil>(m, "ceil")
         .def(py::init<bool&>());
 }
+
 void init_clip(py::module& m)
 {
     py::class_<math::clip>(m, "clip")
         .def(py::init<bool&>());
 }
+
 void init_exp(py::module& m)
 {
     py::class_<math::exp>(m, "exp")
         .def(py::init<bool&>());
 }
+
 void init_floor(py::module& m)
 {
     py::class_<math::floor>(m, "floor")
         .def(py::init<bool&>());
 }
+
 void init_ln(py::module& m)
 {
     py::class_<math::ln>(m, "ln")
         .def(py::init<bool&>());
 }
+
 void init_round(py::module& m)
 {
     py::class_<math::round>(m, "round")
         .def(py::init<bool&>());
 }
+
 void init_sqrt(py::module& m)
 {
     py::class_<math::sqrt>(m, "sqrt")
@@ -484,56 +491,67 @@ void init_acos(py::module& m)
     py::class_<math::acos>(m, "acos")
         .def(py::init<bool&>());
 }
+
 void init_acosh(py::module& m)
 {
     py::class_<math::acosh>(m, "acosh")
         .def(py::init<bool&>());
 }
+
 void init_asin(py::module& m)
 {
     py::class_<math::asin>(m, "asin")
         .def(py::init<bool&>());
 }
+
 void init_asinh(py::module& m)
 {
     py::class_<math::asinh>(m, "asinh")
         .def(py::init<bool&>());
 }
+
 void init_atan(py::module& m)
 {
     py::class_<math::atan>(m, "atan")
         .def(py::init<bool&>());
 }
+
 void init_atanh(py::module& m)
 {
     py::class_<math::atanh>(m, "atanh")
         .def(py::init<bool&>());
 }
+
 void init_cos(py::module& m)
 {
     py::class_<math::cos>(m, "cos")
         .def(py::init<bool&>());
 }
+
 void init_cosh(py::module& m)
 {
     py::class_<math::cosh>(m, "cosh")
         .def(py::init<bool&>());
 }
+
 void init_sin(py::module& m)
 {
     py::class_<math::sin>(m, "sin")
         .def(py::init<bool&>());
 }
+
 void init_sinh(py::module& m)
 {
     py::class_<math::sinh>(m, "sinh")
         .def(py::init<bool&>());
 }
+
 void init_tan(py::module& m)
 {
     py::class_<math::tan>(m, "tan")
         .def(py::init<bool&>());
 }
+
 void init_tanh(py::module& m)
 {
     py::class_<math::tanh>(m, "tanh")
@@ -545,16 +563,19 @@ void init_add(py::module& m)
     py::class_<math::add>(m, "add")
         .def(py::init<bool&>());
 }
+
 void init_sub(py::module& m)
 {
     py::class_<math::sub>(m, "sub")
         .def(py::init<bool&>());
 }
+
 void init_mul(py::module& m)
 {
     py::class_<math::mul>(m, "mul")
         .def(py::init<bool&>());
 }
+
 void init_div(py::module& m)
 {
     py::class_<math::div>(m, "div")
@@ -566,16 +587,19 @@ void init_mod(py::module& m)
     py::class_<math::mod>(m, "mod")
         .def(py::init<bool&>());
 }
+
 void init_pow(py::module& m)
 {
     py::class_<math::pow>(m, "pow")
         .def(py::init<bool&>());
 }
+
 void init_min(py::module& m)
 {
     py::class_<math::min>(m, "min")
         .def(py::init<bool&>());
 }
+
 void init_max(py::module& m)
 {
     py::class_<math::max>(m, "max")
@@ -587,26 +611,31 @@ void init_eq(py::module& m)
     py::class_<math::eq>(m, "eq")
         .def(py::init<bool&>());
 }
+
 void init_ne(py::module& m)
 {
     py::class_<math::ne>(m, "ne")
         .def(py::init<bool&>());
 }
+
 void init_lt(py::module& m)
 {
     py::class_<math::lt>(m, "lt")
         .def(py::init<bool&>());
 }
+
 void init_le(py::module& m)
 {
     py::class_<math::le>(m, "le")
         .def(py::init<bool&>());
 }
+
 void init_gt(py::module& m)
 {
     py::class_<math::gt>(m, "gt")
         .def(py::init<bool&>());
 }
+
 void init_ge(py::module& m)
 {
     py::class_<math::ge>(m, "ge")

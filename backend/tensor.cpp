@@ -5,7 +5,7 @@
 #include "common.h"
 #include "utils.h"
 
-tensor::tensor(Format fmt) : size_in_byte(0), format(fmt)
+tensor::tensor(Format fmt) : format(fmt), size_in_byte(0)
 {
     id = -1;
     createContext();
@@ -17,7 +17,7 @@ tensor::tensor(Format fmt) : size_in_byte(0), format(fmt)
     m_device = kDevice;
 }
 
-tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt)
+tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : format(fmt), size_in_byte(0)
 {
     createContext();
     if (!counted)
@@ -30,7 +30,7 @@ tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : size_in_
     reshape(data, shape);
 }
 
-tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byte(0), format(fmt)
+tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : format(fmt), size_in_byte(0)
 {
     createContext();
     if (!counted)
@@ -48,7 +48,7 @@ tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : size_in_byt
     reshape(m_data.get(), shape);
 }
 
-tensor::tensor(double c, const std::vector<int>& shape) : size_in_byte(0), format(Format::kFormatFp32)
+tensor::tensor(double c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
 {
     createContext();
     if (!counted)
@@ -63,7 +63,7 @@ tensor::tensor(double c, const std::vector<int>& shape) : size_in_byte(0), forma
     reshape(m_data.get(), shape);
 }
 
-tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : size_in_byte(0), format(Format::kFormatFp32)
+tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
 {
     createContext();
     if (!counted)
@@ -155,7 +155,7 @@ void tensor::copyTo(tensor dst) const
 
 char* tensor::toHost()
 {
-    char* p = (char*)map();
+    char* p = static_cast<char*>(map());
     char* d = new char[size_in_byte];
     std::copy(p, p + size_in_byte, d);
     unMap();
@@ -177,7 +177,8 @@ void tensor::update_id()
     id = objId++;
 }
 
-std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int> shape, size_t offset, std::string step, size_t stage)
+std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int> shape, size_t offset, std::string step,
+                                 size_t stage)
 {
     if (shape.size() == 2)
     {
@@ -195,22 +196,19 @@ std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int>
         }
         return os;
     }
-    else
-    {
-        std::vector<int>new_shape;
+    std::vector<int> new_shape;
 
-        size_t new_offset = 1;
-        for (int i = 1; i < shape.size(); ++i)
-        {
-            new_shape.push_back(shape[i]);
-            new_offset *= shape[i];
-        }
-        os << "[";
-        for (int i = 0; i < shape[0]; ++i)
-            printMatrix_helper(os, data, new_shape, offset + i * new_offset, step + " ", stage);
-        os << "]";
-        return os;
+    size_t new_offset = 1;
+    for (int i = 1; i < shape.size(); ++i)
+    {
+        new_shape.push_back(shape[i]);
+        new_offset *= shape[i];
     }
+    os << "[";
+    for (int i = 0; i < shape[0]; ++i)
+        printMatrix_helper(os, data, new_shape, offset + i * new_offset, step + " ", stage);
+    os << "]";
+    return os;
 }
 
 std::ostream& operator<<(std::ostream& os, tensor& t)
@@ -300,8 +298,7 @@ void init_tensor(py::module& m)
         .def_readonly("shape", &tensor::m_shape)
         .def("size", &tensor::count)
         .def("copy", &tensor::copyTo)
-        .def("toHost", &tensor::toHost)
-        ;
+        .def("toHost", &tensor::toHost);
 }
 
 //PYBIND11_MODULE(backend, m)

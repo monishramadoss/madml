@@ -14,7 +14,7 @@
 gemm::gemm(float alpha, float beta, bool use_bias) : Base_Layer<gemm_param>(3)
 {
     m_type = "gemm";
-    m_param = { 0, 0, alpha, beta, use_bias, 0, 0 };
+    m_param = {0, 0, alpha, beta, use_bias, 0, 0};
     bck_codeSize = sizeof(kernel::shaders::d_gemm_spv);
     bck_shader = kernel::shaders::d_gemm_spv;
     bck_shader = kernel::shaders::d_gemm_spv;
@@ -36,7 +36,8 @@ void gemm::computeGroupCount()
         m_group_z = max_compute_work_group_count - 1;
 }
 
-std::shared_ptr<tensor>& gemm::operator()(const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w, const std::shared_ptr<tensor>& _b)
+std::shared_ptr<tensor>& gemm::operator()(const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w,
+                                          const std::shared_ptr<tensor>& _b)
 {
     if (x->getShape().size() == w->getShape().size() + 1)
     {
@@ -79,6 +80,7 @@ std::shared_ptr<tensor>& gemm::operator()(const std::shared_ptr<tensor>& _x, con
     runCommandBuffer();
     return y;
 }
+
 int gemm::set_backward()
 {
     // dx = dy * w.T  // MxK = MxN NxK
