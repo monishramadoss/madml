@@ -55,9 +55,6 @@
     <ClCompile Include="transform.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6B0875F4-A651-4318-AABA-E48BF5505EF9}</ProjectGuid>
     <RootNamespace>backend</RootNamespace>
