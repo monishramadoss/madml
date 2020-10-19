@@ -86,7 +86,7 @@ void PrintMatrix(T* data, std::vector<int> shape)
 void test_memory()
 {
     std::cout << "\ntesting memory" << std::endl;
-    const std::vector<int> shape_x{512, 512, 512, 4};
+    const std::vector<int> shape_x{ 512, 512, 512, 4 };
     auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
     std::vector<double> toHost, toDevice;
     for (int i = 0; i < 1; ++i)

@@ -85,7 +85,7 @@ namespace nn
     {
     public:
         convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                      bool use_bias);
+            bool use_bias);
         std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
         int set_backward() override;
         void update_weight() override;

@@ -24,7 +24,7 @@ private:
 public:
     explicit gemm(float alpha, float beta, bool use_bias);
     std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
-                                        const std::shared_ptr<tensor>& b = nullptr);
+        const std::shared_ptr<tensor>& b = nullptr);
 
     int set_backward() override;
 };
@@ -48,5 +48,5 @@ namespace nn
     };
 }
 
-void init_gemm(py::module & m);
+void init_gemm(py::module& m);
 #endif

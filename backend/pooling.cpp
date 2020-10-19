@@ -6,8 +6,8 @@ constexpr int local_sz_x_conv = 16;
 constexpr int local_sz_y_conv = 64;
 
 maxPooling::maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                       bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                        m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
     m_type = "maxPooling";
 
@@ -46,8 +46,8 @@ void maxPooling::update_weight()
 }
 
 maxUnPooling::maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                           bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                            m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
     m_type = "maxUnPooling";
 
@@ -86,8 +86,8 @@ void maxUnPooling::update_weight()
 }
 
 avgPooling::avgPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                       bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                        m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
     m_type = "avgPooling";
 

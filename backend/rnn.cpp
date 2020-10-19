@@ -4,7 +4,7 @@
 
 RNNCell::RNNCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9), m_param({
                                                                          0, vocab_size, hidden_size, output_size, 0, 0
-                                                                     })
+    })
 {
     if (output_size == 0)
         m_param.output_size = vocab_size;
@@ -24,9 +24,9 @@ void RNNCell::computeGroupCount()
 }
 
 void RNNCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& y,
-                         std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
-                         std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
-                         std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
+    std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
+    std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
+    std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
 {
     const auto input_shape = x->getShape(); //seq_len, input_size
     const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -57,7 +57,7 @@ void RNNCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h,
 }
 
 LSTMCell::LSTMCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(11),
-                                                                       m_param({0, vocab_size, hidden_size, output_size, 0, 0})
+m_param({ 0, vocab_size, hidden_size, output_size, 0, 0 })
 {
     if (output_size == 0)
         m_param.output_size = vocab_size;
@@ -77,10 +77,10 @@ void LSTMCell::computeGroupCount()
 }
 
 void LSTMCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& c,
-                          std::shared_ptr<tensor>& y, std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& cn,
-                          std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
-                          std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1, std::shared_ptr<tensor>& b2,
-                          int input_offset, int weight_offset, int output_offset)
+    std::shared_ptr<tensor>& y, std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& cn,
+    std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
+    std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1, std::shared_ptr<tensor>& b2,
+    int input_offset, int weight_offset, int output_offset)
 {
     const auto input_shape = x->getShape(); //seq_len, input_size
     const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -114,7 +114,7 @@ void LSTMCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h
 }
 
 GRUCell::GRUCell(int vocab_size, int hidden_size, int output_size) : Base_Layer(9),
-                                                                     m_param({0, vocab_size, hidden_size, output_size, 0, 0})
+m_param({ 0, vocab_size, hidden_size, output_size, 0, 0 })
 {
     if (output_size == 0)
         m_param.output_size = vocab_size;
@@ -134,9 +134,9 @@ void GRUCell::computeGroupCount()
 }
 
 void GRUCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h, std::shared_ptr<tensor>& y,
-                         std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
-                         std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
-                         std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
+    std::shared_ptr<tensor>& hn, std::shared_ptr<tensor>& U, std::shared_ptr<tensor>& W,
+    std::shared_ptr<tensor>& V, std::shared_ptr<tensor>& b1,
+    std::shared_ptr<tensor>& b2, int input_offset, int weight_offset, int output_offset)
 {
     const auto input_shape = x->getShape(); //seq_len, input_size
     const auto hidden_shape = h->getShape(); //num_layers * num_directions, hidden_size
@@ -171,7 +171,7 @@ namespace nn
     //TODO rnn needs dynamic graph
 
     RNN::RNN(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-             float dropout, bool bias, std::string nonlinearity) :
+        float dropout, bool bias, std::string nonlinearity) :
         m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
         m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
     {
@@ -269,7 +269,7 @@ namespace nn
                         weights_biases[3 + weight_bias_idx],
                         weights_biases[4 + weight_bias_idx],
                         static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-                    );
+                        );
                 }
             }
         }
@@ -294,7 +294,7 @@ namespace nn
     }
 
     LSTM::LSTM(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-               float dropout, bool bias, std::string nonlinearity) :
+        float dropout, bool bias, std::string nonlinearity) :
         m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
         m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
     {
@@ -401,7 +401,7 @@ namespace nn
                         weights_biases[3 + weight_bias_idx],
                         weights_biases[4 + weight_bias_idx],
                         static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-                    );
+                        );
                 }
             }
         }
@@ -426,7 +426,7 @@ namespace nn
     }
 
     GRU::GRU(int vocab_size, int hidden_size, int num_layers, int seq_length, bool bidirectional, int output_size,
-             float dropout, bool bias, std::string nonlinearity) :
+        float dropout, bool bias, std::string nonlinearity) :
         m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
         m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
     {
@@ -526,7 +526,7 @@ namespace nn
                         weights_biases[3 + weight_bias_idx],
                         weights_biases[4 + weight_bias_idx],
                         static_cast<int>(input_offset), static_cast<int>(weight_offset), static_cast<int>(output_offset)
-                    );
+                        );
                 }
             }
         }

@@ -62,10 +62,10 @@ std::shared_ptr<tensor>& transpose::operator()(const std::shared_ptr<tensor>& _x
         old_shape = _x->getShape();
         stride = prepareStrides(old_shape, new_shape, stride);
         w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3},
-                                            Format::kFormatInt32));
+            Format::kFormatInt32));
     }
     layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w, Format::kFormatFp32,
-                            new_shape);
+        new_shape);
     return y;
 }
 
@@ -75,7 +75,7 @@ int transpose::set_backward()
     {
         d_stride = prepareStrides(new_shape, old_shape, d_stride);
         dw = std::make_shared<tensor>(tensor((char*)d_stride.data(), std::vector<int>{m_param.num_axes * 3},
-                                             Format::kFormatInt32));
+            Format::kFormatInt32));
     }
     dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, old_shape);
     return dy->getId();

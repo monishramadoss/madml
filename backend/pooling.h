@@ -9,13 +9,9 @@
 class maxPooling : Module
 {
 public:
-    class maxPooling (
-    
-    int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-    
-    int padding_type,
-    
-    bool use_bias
+    class maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
+        int padding_type,
+        bool use_bias
     );
     std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
     int set_backward() override;
@@ -34,13 +30,9 @@ private:
 class maxUnPooling : Module
 {
 public:
-    class maxUnPooling (
-    
-    int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-    
-    int padding_type,
-    
-    bool use_bias
+    class maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
+        int padding_type,
+        bool use_bias
     );
     std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
     int set_backward() override;
@@ -59,13 +51,9 @@ private:
 class avgPooling : Module
 {
 public:
-    class avgPooling (
-    
-    int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-    
-    int padding_type,
-    
-    bool use_bias
+    class avgPooling( int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
+        int padding_type,
+        bool use_bias
     );
     std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
     int set_backward() override;

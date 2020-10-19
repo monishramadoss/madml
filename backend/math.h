@@ -264,47 +264,47 @@ namespace math
 }
 
 //unary op
-void init_abs(py::module & m);
-void init_ceil(py::module & m);
-void init_clip(py::module & m);
-void init_exp(py::module & m);
-void init_floor(py::module & m);
-void init_ln(py::module & m);
-void init_round(py::module & m);
-void init_sqrt(py::module & m);
+void init_abs(py::module& m);
+void init_ceil(py::module& m);
+void init_clip(py::module& m);
+void init_exp(py::module& m);
+void init_floor(py::module& m);
+void init_ln(py::module& m);
+void init_round(py::module& m);
+void init_sqrt(py::module& m);
 
 //unary trig
-void init_acos(py::module & m);
-void init_acosh(py::module & m);
-void init_asin(py::module & m);
-void init_asinh(py::module & m);
-void init_atan(py::module & m);
-void init_atanh(py::module & m);
-void init_cos(py::module & m);
-void init_cosh(py::module & m);
-void init_sin(py::module & m);
-void init_sinh(py::module & m);
-void init_tan(py::module & m);
-void init_tanh(py::module & m);
+void init_acos(py::module& m);
+void init_acosh(py::module& m);
+void init_asin(py::module& m);
+void init_asinh(py::module& m);
+void init_atan(py::module& m);
+void init_atanh(py::module& m);
+void init_cos(py::module& m);
+void init_cosh(py::module& m);
+void init_sin(py::module& m);
+void init_sinh(py::module& m);
+void init_tan(py::module& m);
+void init_tanh(py::module& m);
 
 //binary
-void init_add(py::module & m);
-void init_sub(py::module & m);
-void init_mul(py::module & m);
-void init_div(py::module & m);
+void init_add(py::module& m);
+void init_sub(py::module& m);
+void init_mul(py::module& m);
+void init_div(py::module& m);
 
 //binary misc
-void init_mod(py::module & m);
-void init_pow(py::module & m);
-void init_min(py::module & m);
-void init_max(py::module & m);
+void init_mod(py::module& m);
+void init_pow(py::module& m);
+void init_min(py::module& m);
+void init_max(py::module& m);
 
 //binary boolean
-void init_eq(py::module & m);
-void init_ne(py::module & m);
-void init_lt(py::module & m);
-void init_le(py::module & m);
-void init_gt(py::module & m);
-void init_ge(py::module & m);
+void init_eq(py::module& m);
+void init_ne(py::module& m);
+void init_lt(py::module& m);
+void init_le(py::module& m);
+void init_gt(py::module& m);
+void init_ge(py::module& m);
 
 #endif //MATH_H

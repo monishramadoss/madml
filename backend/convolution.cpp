@@ -53,7 +53,7 @@ std::shared_ptr<tensor>& vol2col::operator()(const std::shared_ptr<tensor>& x_)
     const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
     const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col);
     layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32,
-                            std::vector<int>{n_out_plane, output_length});
+        std::vector<int>{n_out_plane, output_length});
     return y;
 }
 
@@ -113,7 +113,7 @@ std::shared_ptr<tensor>& col2vol::operator()(const std::shared_ptr<tensor>& x_)
     const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.
         width_vol);
     layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
-                            std::vector<int>{n_out_plane, output_length});
+        std::vector<int>{n_out_plane, output_length});
 
     float* t = (float*)y->toHost();
     std::cout << std::endl;
@@ -141,8 +141,8 @@ std::vector<int> col2vol::output_shape() const
 namespace nn
 {
     conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-               bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+        bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+        m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
     {
         m_type = "conv";
         mm = std::make_shared<gemm>(gemm(1., 1., false));
@@ -219,10 +219,9 @@ namespace nn
     }
 
     convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-                                 int padding_type,
-                                 bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
-                                                  m_stride(stride), m_padding(padding), m_dilation(dilation),
-                                                  USE_BIAS(use_bias)
+        int padding_type, bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
+        m_stride(stride), m_padding(padding), m_dilation(dilation),
+        USE_BIAS(use_bias)
     {
         m_type = "convT";
 

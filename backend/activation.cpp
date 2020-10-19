@@ -86,7 +86,7 @@ hardtanh::hardtanh(float min_val, float max_val, bool in_place) : Base_Layer<two
     m_type = "hardtanh";
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
-    m_param = {0, min_val, max_val};
+    m_param = { 0, min_val, max_val };
 }
 
 std::shared_ptr<tensor>& hardtanh::operator()(const std::shared_ptr<tensor>& x)
