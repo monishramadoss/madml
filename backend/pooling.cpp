@@ -25,7 +25,7 @@ std::shared_ptr<tensor>& maxPooling::operator()(const std::shared_ptr<tensor>& x
     if (!kernel)
         kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-    t1 = kernel->operator()(x);
+    kernel->operator()(t1, x);
 
     // argmax t1 across n_output_plane
     auto out = kernel->output_shape();
@@ -65,7 +65,7 @@ std::shared_ptr<tensor>& maxUnPooling::operator()(const std::shared_ptr<tensor>&
     if (!kernel)
         kernel = std::make_shared<col2vol>(col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-    t1 = kernel->operator()(x);
+    kernel->operator()(t1, x);
 
     // argmax t1 across n_output_plane
     auto out = kernel->output_shape();
@@ -105,7 +105,7 @@ std::shared_ptr<tensor>& avgPooling::operator()(const std::shared_ptr<tensor>& x
     if (!kernel)
         kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-    t1 = kernel->operator()(x);
+    kernel->operator()(t1, x);
 
     // mean t1 across n_output_plane
     auto out = kernel->output_shape();

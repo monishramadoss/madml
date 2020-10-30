@@ -8,6 +8,7 @@ from .module import Module
 from madml import tensor
 import madml
 import random
+import numpy as np
 import backend
 
 class Threshold(Module):
@@ -28,12 +29,12 @@ class Threshold(Module):
 
     def forward_cpu(self, x: tensor) -> tensor:
         self.cache = [x]
-        #x[x <= self.threshold] = self.value
+        x[x <= self.threshold] = self.value
         return x
 
     def backward_cpu(self, dy: tensor) -> tensor:
-        dx = dy
-        #dx[self.cache[0] <= self.threshold] = 0
+        dx = dy.copy()
+        dx[self.cache[0] <= self.threshold] = 0
         return dx
 
 class ReLU(Module):
@@ -48,9 +49,9 @@ class ReLU(Module):
         inplace_str = 'inplace=True' if self.inplace else ''
         return inplace_str
 
-    def forward_cpu(self, x: tensor) -> tensor:
+    def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
-        return madml.max(x, axis=0)
+        return np.maximum(x, 0)
 
     def backward_cpu(self, dy: tensor) -> tensor:
         dx = dy.copy()
@@ -74,13 +75,14 @@ class RReLU(Module):
         inplace_str = ', inplace=True' if self.inplace else ''
         return 'lower={}, upper={}{}'.format(self.lower, self.upper, inplace_str)
 
-    def forward_cpu(self, x: tensor) -> tensor:
-        self.cache[0]
-        x[x < 0] = x * random.uniform(self.lower, self.upper)
+    def forward_cpu(self, x: np.ndarray) -> np.ndarray:
+        self.cache = [x]
+        x[x < 0] *= random.uniform(self.lower, self.upper)
         return x
-    def backward_cpu(self, dy: tensor) -> tensor:
+
+    def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         dx = dy.copy()
-        dx[self.cache[0] <= 0] = 0
+        dx[self.cache[0] <= 0] *= random.uniform(self.lower, self.upper)
         return dx
 
 class Hardtanh(Module):
@@ -215,6 +217,16 @@ class LeakyReLU(Module):
     def extra_repr(self) -> str:
         inplace_str = ', inplace=True' if self.inplace else ''
         return 'negative_slope={}{}'.format(self.negative_slope, inplace_str)
+
+    def forward_cpu(self, x: np.ndarray) -> np.ndarray:
+        out = np.maximum(self.negative_slope * x, x)
+        self.cache = [x]
+    
+    def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
+        x = self.cache[0]
+        dx = dy.copy()
+        dx[x<0] *= self.negative_slope
+        return dx
 
 class LogSigmoid(Module):
     __constants__ = ['alpha', 'inplace']

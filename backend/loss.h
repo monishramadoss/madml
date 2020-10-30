@@ -15,7 +15,7 @@ namespace loss
     {
     public:
         Loss();
-        void hook(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
+        void hook(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w);
         void backward();
     };
 

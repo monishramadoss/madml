@@ -72,11 +72,8 @@ tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : format(Fo
     }
 
     m_device = kDevice;
-    float* data = c.data();
-
-    auto m_data = std::shared_ptr<char>(reinterpret_cast<char*>(data));
     is_onDevice = true;
-    reshape(m_data.get(), shape);
+    reshape((char*)c.data(), shape);
 }
 
 void* tensor::map() const
@@ -138,26 +135,26 @@ tensor tensor::reShape(const std::vector<int>& shape)
     return *this;
 }
 
-void tensor::toDevice(const char* data)
+void tensor::toDevice(const std::vector<char>& data)
 {
     is_onDevice = true;
-    reshape(data, m_shape, true, format);
+    reshape(data.data(), m_shape, true, format);
 }
 
 Format tensor::getFormat() const { return format; }
 
-void tensor::copyTo(tensor dst) const
+void tensor::copyTo(tensor& dst) const
 {
     void* p = map();
     dst = dst.reshape(static_cast<const char*>(p), m_shape, false, getFormat());
     unMap();
 }
 
-char* tensor::toHost()
+std::vector<char>& tensor::toHost()
 {
     char* p = static_cast<char*>(map());
-    char* d = new char[size_in_byte];
-    std::copy(p, p + size_in_byte, d);
+    std::vector<char> d(size_in_byte);
+    std::copy(p, p + size_in_byte, d.data());
     unMap();
 
     //m_buffer.reset();
@@ -222,12 +219,12 @@ std::ostream& operator<<(std::ostream& os, tensor& t)
     auto fmt = t.getFormat();
     if (fmt == Format::kFormatFp32)
     {
-        float* data = reinterpret_cast<float*>(t.toHost());
+        float* data = reinterpret_cast<float*>(t.toHost().data());
         printMatrix_helper(os, data, shape, 0, " ", shape.size());
     }
     if (fmt == Format::kFormatInt32 || fmt == Format::kFormatBool)
     {
-        int* data = reinterpret_cast<int*>(t.toHost());
+        int* data = reinterpret_cast<int*>(t.toHost().data());
     }
     os << "\n";
     return os;
@@ -296,6 +293,7 @@ void init_tensor(py::module& m)
         .def(py::init<std::vector<float>&, const std::vector<int>&>())
         .def("reshape", &tensor::reShape)
         .def_readonly("shape", &tensor::m_shape)
+        .def("byte_count", &tensor::size)
         .def("size", &tensor::count)
         .def("copy", &tensor::copyTo)
         .def("toHost", &tensor::toHost);

@@ -83,38 +83,4 @@ void PrintMatrix(T* data, std::vector<int> shape)
     }
 }
 
-void test_memory()
-{
-    std::cout << "\ntesting memory" << std::endl;
-    const std::vector<int> shape_x{ 512, 512, 512, 4 };
-    auto t1 = std::make_shared<tensor>(tensor(1.0, shape_x));
-    std::vector<double> toHost, toDevice;
-    for (int i = 0; i < 1; ++i)
-    {
-        std::cout << '\r' << i << " toHost ";
-        auto start = system_clock::now();
-        char* data = t1->toHost();
-        auto end = system_clock::now();
-        duration<double> seconds = end - start;
-        toHost.push_back(seconds.count());
-        std::cout << seconds.count() << " toDevice ";
-        std::this_thread::sleep_for(5s);
-        start = system_clock::now();
-        t1->toDevice(data);
-        end = system_clock::now();
-        seconds = end - start;
-        toDevice.push_back(seconds.count());
-        std::cout << seconds.count();
-        std::this_thread::sleep_for(5s);
-    }
-    double avg1 = 0;
-    double avg2 = 0;
-    for (int i = 0; i < toHost.size(); ++i)
-    {
-        avg1 += toHost[i];
-        avg2 += toDevice[i];
-    }
-    std::cout << "\nAvg toHost: " << avg1 / toHost.size() << " Avg toDevice: " << avg2 / toDevice.size() << std::endl;
-}
-
 #endif

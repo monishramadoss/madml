@@ -3,6 +3,69 @@
 #include "math.h"
 #include <future>
 
+std::string UNARY_SHADER_BASE(const char* params, const char* body)
+{
+    std::string unary_base = R"(
+#Version 450
+#define LOCAL_SZ_X 1024
+layout(binding = 0) readonly buffer buf1 { float X[]; };
+layout(binding = 1) writeonly buffer buf2 { float Y[]; };
+layout(local_size_x = LOCAL_SZ_X, local_size_y = 1, local_size_z = 1) in;
+)";
+    unary_base += params;
+    unary_base += R"(
+void main() {
+    for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x)){
+)";
+    unary_base += body;
+    unary_base += R"(
+    }
+}
+)";
+    return unary_base;
+}
+
+
+const char* UNARY_PARAM = R"(
+layout(push_constant) uniform pushBlock {
+      int total;
+} p;
+)";
+
+std::string BINARY_SHADER_BASE(const char* params, const char* body)
+{
+    std::string binary_base = R"(
+#Version 450
+#define LOCAL_SZ_X 1024
+layout(binding = 0) readonly buffer buf1 { float X[]; };
+layout(binding = 1) readonly buffer buf2 { float W[]; };
+layout(binding = 2) writeonly buffer buf3 { float Y[]; };
+layout(local_size_x = LOCAL_SZ_X, local_size_y = 1, local_size_z = 1) in;
+)";
+    binary_base += params;
+    binary_base += R"(
+void main() {
+    for (int i = int(gl_GlobalInvocationID.x); i < p.total / p.batch_size; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x)){
+        for (int b = 0; b < p.batch_size; ++b){
+
+)";
+    binary_base += body;
+    binary_base += R"(
+        }
+    }    
+}
+)";
+    return binary_base;
+}
+
+const char* BINARY_PARAM = R"(
+layout(push_constant) uniform pushBlock {
+      int total;
+      int batch_size;
+} p;
+)";
+
+
 namespace math
 {
     abs::abs(bool in_place) : Base_Layer<>(2, in_place)
@@ -10,11 +73,13 @@ namespace math
         m_type = "abs";
         bck_shader = kernel::shaders::d_abs_spv;
         bck_codeSize = sizeof(kernel::shaders::d_abs_spv);
+        fwd_shader = kernel::shaders::abs_spv;
+        fwd_codeSize = sizeof(kernel::shaders::abs_spv);
     }
 
     std::shared_ptr<tensor>& abs::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::abs_spv, sizeof(kernel::shaders::abs_spv), x);
+        return layer_construct_forward(x);
     }
 
     ceil::ceil(bool in_place) : Base_Layer<>(2, in_place)
@@ -22,11 +87,13 @@ namespace math
         m_type = "ceil";
         bck_shader = kernel::shaders::unary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::unary_operator_spv);
+        fwd_shader = kernel::shaders::ceil_spv;
+        fwd_codeSize = sizeof(kernel::shaders::ceil_spv);
     }
 
     std::shared_ptr<tensor>& ceil::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::ceil_spv, sizeof(kernel::shaders::ceil_spv), x);
+        return layer_construct_forward(x);
     }
 
     clip::clip(float min, float max, bool in_place) : Base_Layer<clip_operator_param>(2, in_place)
@@ -35,11 +102,13 @@ namespace math
         m_param = { 0, min, max };
         bck_shader = kernel::shaders::unary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::unary_operator_spv);
+        fwd_shader = kernel::shaders::clip_spv;
+        fwd_codeSize = sizeof(kernel::shaders::clip_spv);
     }
 
     std::shared_ptr<tensor>& clip::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::clip_spv, sizeof(kernel::shaders::clip_spv), x);
+        return layer_construct_forward(x);
     }
 
     exp::exp(bool in_place) : Base_Layer<>(2, in_place)
@@ -47,11 +116,13 @@ namespace math
         m_type = "exp";
         bck_shader = kernel::shaders::d_exp_spv;
         bck_codeSize = sizeof(kernel::shaders::d_exp_spv);
+        fwd_shader = kernel::shaders::exp_spv;
+        fwd_codeSize = sizeof(kernel::shaders::exp_spv);
     }
 
     std::shared_ptr<tensor>& exp::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::exp_spv, sizeof(kernel::shaders::exp_spv), x);
+        return layer_construct_forward(x); 
     }
 
     floor::floor(bool in_place) : Base_Layer<>(2, in_place)
@@ -59,11 +130,13 @@ namespace math
         m_type = "floor";
         bck_shader = kernel::shaders::unary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::unary_operator_spv);
+        fwd_shader = kernel::shaders::floor_spv;
+        fwd_codeSize = sizeof(kernel::shaders::floor_spv);
     }
 
     std::shared_ptr<tensor>& floor::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::floor_spv, sizeof(kernel::shaders::floor_spv), x);
+        return layer_construct_forward(x);
     }
 
     ln::ln(bool in_place) : Base_Layer<>(2, in_place)
@@ -71,11 +144,13 @@ namespace math
         m_type = "ln";
         bck_shader = kernel::shaders::d_ln_spv;
         bck_codeSize = sizeof(kernel::shaders::d_ln_spv);
+        fwd_shader = kernel::shaders::ln_spv;
+        fwd_codeSize = sizeof(kernel::shaders::ln_spv);
     }
 
     std::shared_ptr<tensor>& ln::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::ln_spv, sizeof(kernel::shaders::ln_spv), x);
+        return layer_construct_forward(x);
     }
 
     round::round(bool in_place) : Base_Layer<>(2, in_place)
@@ -83,11 +158,13 @@ namespace math
         m_type = "round";
         bck_shader = kernel::shaders::unary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::unary_operator_spv);
+        fwd_shader = kernel::shaders::round_spv;
+        fwd_codeSize = sizeof(kernel::shaders::round_spv);
     }
 
     std::shared_ptr<tensor>& round::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::round_spv, sizeof(kernel::shaders::round_spv), x);
+        return layer_construct_forward(x);
     }
 
     sqrt::sqrt(bool in_place) : Base_Layer<>(2, in_place)
@@ -95,11 +172,13 @@ namespace math
         m_type = "sqrt";
         bck_shader = kernel::shaders::d_sqrt_spv;
         bck_codeSize = sizeof(kernel::shaders::d_sqrt_spv);
+        fwd_shader = kernel::shaders::sqrt_spv;
+        fwd_codeSize = sizeof(kernel::shaders::sqrt_spv);
     }
 
     std::shared_ptr<tensor>& sqrt::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::sqrt_spv, sizeof(kernel::shaders::sqrt_spv), x);
+        return layer_construct_forward(x);
     }
 
     acos::acos(bool in_place) : Base_Layer<>(2, in_place)
@@ -107,11 +186,13 @@ namespace math
         m_type = "acos";
         bck_shader = kernel::shaders::d_acos_spv;
         bck_codeSize = sizeof(kernel::shaders::d_acos_spv);
+        fwd_shader = kernel::shaders::acos_spv;
+        fwd_codeSize = sizeof(kernel::shaders::acos_spv);
     }
 
     std::shared_ptr<tensor>& acos::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::acos_spv, sizeof(kernel::shaders::acos_spv), x);
+        return layer_construct_forward(x);
     }
 
     acosh::acosh(bool in_place) : Base_Layer<>(2, in_place)
@@ -119,11 +200,13 @@ namespace math
         m_type = "acosh";
         bck_shader = kernel::shaders::d_acosh_spv;
         bck_codeSize = sizeof(kernel::shaders::d_acosh_spv);
+        fwd_shader = kernel::shaders::acosh_spv;
+        fwd_codeSize = sizeof(kernel::shaders::acosh_spv);
     }
 
     std::shared_ptr<tensor>& acosh::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::acosh_spv, sizeof(kernel::shaders::acosh_spv), x);
+        return layer_construct_forward(x);
     }
 
     asin::asin(bool in_place) : Base_Layer<>(2, in_place)
@@ -131,11 +214,13 @@ namespace math
         m_type = "asin";
         bck_shader = kernel::shaders::d_asin_spv;
         bck_codeSize = sizeof(kernel::shaders::d_asin_spv);
+        fwd_shader = kernel::shaders::asin_spv;
+        fwd_codeSize = sizeof(kernel::shaders::asin_spv);
     }
 
     std::shared_ptr<tensor>& asin::operator()(const std::shared_ptr<tensor>&)
     {
-        return layer_construct_forward(kernel::shaders::asin_spv, sizeof(kernel::shaders::asin_spv), x);
+        return layer_construct_forward(x);
     }
 
     asinh::asinh(bool in_place) : Base_Layer<>(2, in_place)
@@ -143,11 +228,13 @@ namespace math
         m_type = "asinh";
         bck_shader = kernel::shaders::d_asinh_spv;
         bck_codeSize = sizeof(kernel::shaders::d_asinh_spv);
+        fwd_shader = kernel::shaders::asinh_spv;
+        fwd_codeSize = sizeof(kernel::shaders::asinh_spv);
     }
 
     std::shared_ptr<tensor>& asinh::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::asinh_spv, sizeof(kernel::shaders::asinh_spv), x);
+        return layer_construct_forward(x);
     }
 
     atan::atan(bool in_place) : Base_Layer<>(2, in_place)
@@ -155,11 +242,13 @@ namespace math
         m_type = "atan";
         bck_shader = kernel::shaders::d_atan_spv;
         bck_codeSize = sizeof(kernel::shaders::d_atan_spv);
+        fwd_shader = kernel::shaders::atan_spv;
+        fwd_codeSize = sizeof(kernel::shaders::atan_spv);
     }
 
     std::shared_ptr<tensor>& atan::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::atan_spv, sizeof(kernel::shaders::atan_spv), x);
+        return layer_construct_forward(x);
     }
 
     atanh::atanh(bool in_place) : Base_Layer<>(2, in_place)
@@ -167,11 +256,13 @@ namespace math
         m_type = "atan";
         bck_shader = kernel::shaders::d_atanh_spv;
         bck_codeSize = sizeof(kernel::shaders::d_atanh_spv);
+        fwd_shader = kernel::shaders::atanh_spv;
+        fwd_codeSize = sizeof(kernel::shaders::atanh_spv);
     }
 
     std::shared_ptr<tensor>& atanh::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::atanh_spv, sizeof(kernel::shaders::atanh_spv), x);
+        return layer_construct_forward(x);
     }
 
     cos::cos(bool in_place) : Base_Layer<>(2, in_place)
@@ -179,11 +270,13 @@ namespace math
         m_type = "cos";
         bck_shader = kernel::shaders::d_cos_spv;
         bck_codeSize = sizeof(kernel::shaders::d_cos_spv);
+        fwd_shader = kernel::shaders::cos_spv;
+        fwd_codeSize = sizeof(kernel::shaders::cos_spv);
     }
 
     std::shared_ptr<tensor>& cos::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::cos_spv, sizeof(kernel::shaders::cos_spv), x);
+        return layer_construct_forward(x);
     }
 
     cosh::cosh(bool in_place) : Base_Layer<>(2, in_place)
@@ -191,11 +284,13 @@ namespace math
         m_type = "cosh";
         bck_shader = kernel::shaders::d_cosh_spv;
         bck_codeSize = sizeof(kernel::shaders::d_cosh_spv);
+        fwd_shader = kernel::shaders::cosh_spv;
+        fwd_codeSize = sizeof(kernel::shaders::cosh_spv);
     }
 
     std::shared_ptr<tensor>& cosh::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::cosh_spv, sizeof(kernel::shaders::cosh_spv), x);
+        return layer_construct_forward(x);
     }
 
     sin::sin(bool in_place) : Base_Layer<>(2, in_place)
@@ -203,11 +298,13 @@ namespace math
         m_type = "sin";
         bck_shader = kernel::shaders::d_sin_spv;
         bck_codeSize = sizeof(kernel::shaders::d_sin_spv);
+        fwd_shader = kernel::shaders::sin_spv;
+        fwd_codeSize = sizeof(kernel::shaders::sin_spv);
     }
 
     std::shared_ptr<tensor>& sin::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::sin_spv, sizeof(kernel::shaders::sin_spv), x);
+        return layer_construct_forward(x);
     }
 
     sinh::sinh(bool in_place) : Base_Layer<>(2, in_place)
@@ -215,11 +312,13 @@ namespace math
         m_type = "sinh";
         bck_shader = kernel::shaders::d_sinh_spv;
         bck_codeSize = sizeof(kernel::shaders::d_sinh_spv);
+        fwd_shader = kernel::shaders::sinh_spv;
+        fwd_codeSize = sizeof(kernel::shaders::sinh_spv);
     }
 
     std::shared_ptr<tensor>& sinh::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::sinh_spv, sizeof(kernel::shaders::sinh_spv), x);
+        return layer_construct_forward(x);
     }
 
     tan::tan(bool in_place) : Base_Layer<>(2, in_place)
@@ -227,11 +326,13 @@ namespace math
         m_type = "tan";
         bck_shader = kernel::shaders::d_tan_spv;
         bck_codeSize = sizeof(kernel::shaders::d_tan_spv);
+        fwd_shader = kernel::shaders::tan_spv;
+        fwd_codeSize = sizeof(kernel::shaders::tan_spv);
     }
 
     std::shared_ptr<tensor>& tan::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::tan_spv, sizeof(kernel::shaders::tan_spv), x);
+        return layer_construct_forward(x);
     }
 
     tanh::tanh(bool in_place) : Base_Layer<>(2, in_place)
@@ -239,11 +340,13 @@ namespace math
         m_type = "tanh";
         bck_shader = kernel::shaders::d_tanh_spv;
         bck_codeSize = sizeof(kernel::shaders::d_tanh_spv);
+        fwd_shader = kernel::shaders::tanh_spv;
+        fwd_codeSize = sizeof(kernel::shaders::tanh_spv);
     }
 
     std::shared_ptr<tensor>& tanh::operator()(const std::shared_ptr<tensor>& x)
     {
-        return layer_construct_forward(kernel::shaders::tanh_spv, sizeof(kernel::shaders::tanh_spv), x);
+        return layer_construct_forward(x);
     }
 
     add::add(bool in_place) : Base_Layer<>(3, in_place)
@@ -251,11 +354,13 @@ namespace math
         m_type = "add";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::abs_spv;
+        fwd_codeSize = sizeof(kernel::shaders::add_spv);
     }
 
     std::shared_ptr<tensor>& add::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::add_spv, sizeof(kernel::shaders::add_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     sub::sub(bool in_place) : Base_Layer<>(3, in_place)
@@ -263,11 +368,13 @@ namespace math
         m_type = "sub";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::sub_spv;
+        fwd_codeSize = sizeof(kernel::shaders::sub_spv);
     }
 
     std::shared_ptr<tensor>& sub::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::sub_spv, sizeof(kernel::shaders::sub_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     mul::mul(bool in_place) : Base_Layer<>(3, in_place)
@@ -275,11 +382,13 @@ namespace math
         m_type = "mul";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::mul_spv;
+        fwd_codeSize = sizeof(kernel::shaders::mul_spv);
     }
 
     std::shared_ptr<tensor>& mul::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::mul_spv, sizeof(kernel::shaders::mul_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     div::div(bool in_place) : Base_Layer<>(3, in_place)
@@ -287,11 +396,13 @@ namespace math
         m_type = "div";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::div_spv;
+        fwd_codeSize = sizeof(kernel::shaders::div_spv);
     }
 
     std::shared_ptr<tensor>& div::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::div_spv, sizeof(kernel::shaders::div_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     mod::mod(bool in_place) : Base_Layer<>(3, in_place)
@@ -299,11 +410,13 @@ namespace math
         m_type = "mod";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::mod_spv;
+        fwd_codeSize = sizeof(kernel::shaders::mod_spv);
     }
 
     std::shared_ptr<tensor>& mod::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::mod_spv, sizeof(kernel::shaders::mod_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     pow::pow(bool in_place) : Base_Layer<>(3, in_place)
@@ -311,11 +424,13 @@ namespace math
         m_type = "pow";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::pow_spv;
+        fwd_codeSize = sizeof(kernel::shaders::pow_spv);
     }
 
     std::shared_ptr<tensor>& pow::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::pow_spv, sizeof(kernel::shaders::pow_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     max::max(bool in_place) : Base_Layer<>(3, in_place)
@@ -323,11 +438,13 @@ namespace math
         m_type = "max";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::max_spv;
+        fwd_codeSize = sizeof(kernel::shaders::max_spv);
     }
 
     std::shared_ptr<tensor>& max::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::max_spv, sizeof(kernel::shaders::max_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     min::min(bool in_place) : Base_Layer<>(3, in_place)
@@ -335,11 +452,13 @@ namespace math
         m_type = "min";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::min_spv;
+        fwd_codeSize = sizeof(kernel::shaders::min_spv);
     }
 
     std::shared_ptr<tensor>& min::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::min_spv, sizeof(kernel::shaders::min_spv), x, w);
+        return layer_construct_forward(x, w);
     }
 
     eq::eq(bool in_place) : Base_Layer<>(3, in_place)
@@ -347,12 +466,13 @@ namespace math
         m_type = "eq";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::equal_spv;
+        fwd_codeSize = sizeof(kernel::shaders::equal_spv);
     }
 
     std::shared_ptr<tensor>& eq::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::equal_spv, sizeof(kernel::shaders::equal_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 
     ne::ne(bool in_place) : Base_Layer<>(3, in_place)
@@ -360,12 +480,13 @@ namespace math
         m_type = "ne";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::nequal_spv;
+        fwd_codeSize = sizeof(kernel::shaders::nequal_spv);
     }
 
     std::shared_ptr<tensor>& ne::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::nequal_spv, sizeof(kernel::shaders::nequal_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 
     lt::lt(bool in_place) : Base_Layer<>(3, in_place)
@@ -373,12 +494,13 @@ namespace math
         m_type = "lt";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::less_than_spv;
+        fwd_codeSize = sizeof(kernel::shaders::less_than_spv);
     }
 
     std::shared_ptr<tensor>& lt::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::less_than_spv, sizeof(kernel::shaders::less_than_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 
     le::le(bool in_place) : Base_Layer<>(3, in_place)
@@ -386,12 +508,13 @@ namespace math
         m_type = "le";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::less_eq_spv;
+        fwd_codeSize = sizeof(kernel::shaders::less_eq_spv);
     }
 
     std::shared_ptr<tensor>& le::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::less_eq_spv, sizeof(kernel::shaders::less_eq_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 
     gt::gt(bool in_place) : Base_Layer<>(3, in_place)
@@ -399,12 +522,13 @@ namespace math
         m_type = "gt";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::greater_than_spv;
+        fwd_codeSize = sizeof(kernel::shaders::greater_than_spv);
     }
 
     std::shared_ptr<tensor>& gt::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::greater_than_spv, sizeof(kernel::shaders::greater_than_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 
     ge::ge(bool in_place) : Base_Layer<>(3, in_place)
@@ -412,12 +536,13 @@ namespace math
         m_type = "ge";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::greater_eq_spv;
+        fwd_codeSize = sizeof(kernel::shaders::greater_eq_spv);
     }
 
     std::shared_ptr<tensor>& ge::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
     {
-        return layer_construct_forward(kernel::shaders::greater_eq_spv, sizeof(kernel::shaders::greater_eq_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 
     xr::xr(bool in_place) : Base_Layer<>(3, in_place)
@@ -425,6 +550,8 @@ namespace math
         m_type = "xor";
         bck_shader = kernel::shaders::binary_operator_spv;
         bck_codeSize = sizeof(kernel::shaders::binary_operator_spv);
+        fwd_shader = kernel::shaders::xor_spv;
+        fwd_codeSize = sizeof(kernel::shaders::xor_spv);
     }
 
     std::shared_ptr<tensor>& xr::operator()(const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
@@ -433,8 +560,7 @@ namespace math
         {
             std::cerr << "XOR KERNEL REQUIRES BOTH INPUTS BE BOOLEAN VALUES" << std::endl;
         }
-        return layer_construct_forward(kernel::shaders::xor_spv, sizeof(kernel::shaders::xor_spv), x, w,
-            Format::kFormatBool);
+        return layer_construct_forward(x, w, Format::kFormatBool);
     }
 }
 

@@ -5,16 +5,40 @@ from __future__ import unicode_literals
 
 from typing import List
 
-class Module:
+_modules = list()
 
+
+class Module:
     def __init__(self, backend=None):
         self.cache = []
         self.backend = backend
+        self._parameters = []
+        self._use_gpu = False #backend == None
+
     def forward(self, *args):
+        if self.backend != None and self._use_gpu:
+            return self.forward_gpu(*args)
         return self.forward_cpu(*args)
 
-    def forward_cpu(self, args):
+    def forward_gpu(self, *args):
+        if self.backend != None:
+            return self.backend(*args)
+        raise NotImplementedError("forward_gpu not implemented")
+    
+    def backward_gpu(self, *args):
+        raise NotImplementedError("backward_gpu not implemented")
+       
+
+    def backward_cpu(self, *args):
+        raise NotImplementedError("backward_cpu not implemented")
+
+    def forward_cpu(self, *args):
         raise NotImplementedError("{} forward_cpu for layer not Implemented".format(self))
+    
+    def parameters(self):
+        return self._parameters
 
     def __call__(self, *args):
         return self.forward(*args)
+
+   

@@ -7,7 +7,7 @@ from typing import List
 from .module import Module
 import madml
 from madml import tensor
-
+import numpy as np
 class RNNBase(Module):
     __constants__ = ['mode', 'input_size', 'hidden_size', 'num_layers', 'bias',
                      'batch_first', 'dropout', 'bidirectional']
@@ -51,15 +51,26 @@ class RNNBase(Module):
         for layer in range(num_layers):
             for direction in range(num_directions):
                 layer_input_size = input_size if layer == 0 else hidden_size * num_directions
-
-                w_ih = madml.zeros((gate_size, hidden_size, layer_input_size))
-                w_hh = madml.zeros((gate_size, hidden_size, hidden_size))
-                if self.bias:
-                    b_ih = madml.zeros((gate_size, hidden_size))
-                    b_hh = madml.zeros((gate_size, hidden_size))
-                    layer_params = (w_ih, w_hh, b_ih, b_hh)
+                if self._use_gpu:
+                    w_ih = madml.zeros((gate_size, hidden_size, layer_input_size))
+                    w_hh = madml.zeros((gate_size, hidden_size, hidden_size))
+                    if self.bias:
+                        b_ih = madml.zeros((gate_size, hidden_size))
+                        b_hh = madml.zeros((gate_size, hidden_size))
+                        layer_params = (w_ih, w_hh, b_ih, b_hh)
+                    else:
+                        layer_params = (w_ih, w_hh)
+                
                 else:
-                    layers_params = (w_ih, w_hh)
+                    w_ih = np.zeros((gate_size, hidden_size, layer_input_size))
+                    w_hh = np.zeros((gate_size, hidden_size, hidden_size))
+                    if self.bias:
+                        b_ih = np.zeros((gate_size, hidden_size))
+                        b_hh = np.zeros((gate_size, hidden_size))
+                        layer_params = (w_ih, w_hh, b_ih, b_hh)
+                    else:
+                        layer_params = (w_ih, w_hh)
+                        
                 suffix = '_reverse' if direction == 1 else ''
                 param_names = ['weight_ih_l{}{}', 'weight_hh_l{}{}']
                 if bias:
@@ -72,7 +83,7 @@ class RNNBase(Module):
                 self._all_weights.append(param_names)
         self._flat_weights = [(lambda wn: getattr(self, wn) if hasattr(self, wn) else None)(wn) for wn in self._flat_weights_names]
 
-    def forward_cpu(self, x: tensor, hx: tensor=None, cx: tensor=None) -> List[tensor]:
+    def forward_gpu(self, x: tensor, hx: tensor=None, cx: tensor=None) -> List[tensor]:
         max_batch_size = x.shape[0] if self.batch_first else x.shape[1]
         num_directions = 2 if self.bidirectional else 1
 

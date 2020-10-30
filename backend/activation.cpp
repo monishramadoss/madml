@@ -2,31 +2,71 @@
 #include "utils.h"
 #include "activation.h"
 
+std::string ACTIVATION_SHADER_BASE(const char* params, const char* body)
+{
+    std::string activation_base = R"(
+#Version 450
+#define LOCAL_SZ_X 1024
+layout(binding = 0) readonly buffer buf1 { float X[]; };
+layout(binding = 1) writeonly buffer buf2 { float Y[]; };
+layout(local_size_x = LOCAL_SZ_X, local_size_y = 1, local_size_z = 1) in;
+)";
+    activation_base += params;
+    activation_base += R"(
+void main() {
+    for (int i = int(gl_GlobalInvocationID.x); i < p.total; i += int(gl_NumWorkGroups.x * gl_WorkGroupSize.x)){
+)";
+    activation_base += body;
+    activation_base += R"(
+    }
+}
+)";
+    return activation_base;
+}
+
+const char* ACTIVATION_PARAM = R"(
+layout(push_constant) uniform pushBlock {
+      int total;
+      float alpha;
+} p;
+)";
+
+
 celu::celu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
     m_type = "celu";
     m_param.alpha = alpha;
-    bck_shader = kernel::shaders::d_celu_spv;
+    
+    bck_shader = kernel::shaders::celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::celu_spv;
+    fwd_codeSize = sizeof(kernel::shaders::celu_spv);
 }
 
 std::shared_ptr<tensor>& celu::operator()(const std::shared_ptr<tensor>& x)
 {
     alpha = std::make_shared<tensor>(tensor(1.0, x->getShape(), Format::kFormatFp32));
-    return layer_construct_forward(kernel::shaders::celu_spv, sizeof(kernel::shaders::celu_spv), x, alpha);
+    return layer_construct_forward(x, alpha);
 }
 
 elu::elu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
     m_type = "elu";
     m_param.alpha = alpha;
+ 
     bck_shader = kernel::shaders::d_elu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_elu_spv);
+    auto code = compile(m_type, ACTIVATION_SHADER_BASE(ACTIVATION_PARAM, R"(
+        if(X[i] >= 0) Y[i] = X[i];
+        else Y[i] = p.alpha * (exp(X[i] - 1));
+)"));
+    fwd_shader = code.data();
+    fwd_codeSize = code.size();
 }
 
 std::shared_ptr<tensor>& elu::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::elu_spv, sizeof(kernel::shaders::elu_spv), x);
+    return layer_construct_forward(x);
 }
 
 gelu::gelu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
@@ -35,11 +75,13 @@ gelu::gelu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_plac
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_elu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_elu_spv);
+    fwd_shader = kernel::shaders::gelu_spv;
+    fwd_codeSize = sizeof(kernel::shaders::gelu_spv);
 }
 
 std::shared_ptr<tensor>& gelu::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::gelu_spv, sizeof(kernel::shaders::gelu_spv), x);
+    return layer_construct_forward(x);
 }
 
 hardshrink::hardshrink(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
@@ -48,12 +90,15 @@ hardshrink::hardshrink(float alpha, bool in_place) : Base_Layer<activation_param
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::hardshrink_spv;
+    fwd_codeSize = sizeof(kernel::shaders::hardshrink_spv);
 }
 
 std::shared_ptr<tensor>& hardshrink::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::hardshrink_spv, sizeof(kernel::shaders::hardshrink_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 hardsigmoid::hardsigmoid(bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
@@ -61,11 +106,13 @@ hardsigmoid::hardsigmoid(bool in_place) : Base_Layer<activation_param>(2, in_pla
     m_param.alpha = 0.;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::hardsigmoid_spv;
+    fwd_codeSize = sizeof(kernel::shaders::hardsigmoid_spv);
 }
 
 std::shared_ptr<tensor>& hardsigmoid::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::hardsigmoid_spv, sizeof(kernel::shaders::hardsigmoid_spv), x);
+    return layer_construct_forward(x);
 }
 
 hardswish::hardswish(bool in_place) : Base_Layer<activation_param>(2, in_place)
@@ -74,25 +121,29 @@ hardswish::hardswish(bool in_place) : Base_Layer<activation_param>(2, in_place)
     m_param.alpha = 0.;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::hardswish_spv;
+    fwd_codeSize = sizeof(kernel::shaders::hardswish_spv);
 }
 
 std::shared_ptr<tensor>& hardswish::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::hardswish_spv, sizeof(kernel::shaders::hardswish_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 hardtanh::hardtanh(float min_val, float max_val, bool in_place) : Base_Layer<two_param>(2, in_place)
 {
     m_type = "hardtanh";
+    m_param = { 0, min_val, max_val };
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
-    m_param = { 0, min_val, max_val };
+    fwd_shader = kernel::shaders::hardshrink_spv;
+    fwd_codeSize = sizeof(kernel::shaders::hardshrink_spv);
 }
 
 std::shared_ptr<tensor>& hardtanh::operator()(const std::shared_ptr<tensor>& x)
 {
-    m_param.total = x->count();
-    return layer_construct_forward(kernel::shaders::hardshrink_spv, sizeof(kernel::shaders::hardshrink_spv), x);
+    return layer_construct_forward(x);
 }
 
 leakyrelu::leakyrelu(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
@@ -101,11 +152,13 @@ leakyrelu::leakyrelu(float alpha, bool in_place) : Base_Layer<activation_param>(
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::leakyrelu_spv;
+    fwd_codeSize = sizeof(kernel::shaders::leakyrelu_spv);
 }
 
 std::shared_ptr<tensor>& leakyrelu::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::leakyrelu_spv, sizeof(kernel::shaders::leakyrelu_spv), x);
+    return layer_construct_forward(x);
 }
 
 logsigmoid::logsigmoid(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
@@ -114,12 +167,15 @@ logsigmoid::logsigmoid(float alpha, bool in_place) : Base_Layer<activation_param
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::logsigmoid_spv;
+    fwd_codeSize = sizeof(kernel::shaders::logsigmoid_spv);
 }
 
 std::shared_ptr<tensor>& logsigmoid::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::logsigmoid_spv, sizeof(kernel::shaders::logsigmoid_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 prelu::prelu(float alpha, bool in_place) : Base_Layer<two_param>(2, in_place)
 {
@@ -127,27 +183,31 @@ prelu::prelu(float alpha, bool in_place) : Base_Layer<two_param>(2, in_place)
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::relu_spv;
+    fwd_codeSize = sizeof(kernel::shaders::relu_spv);
 }
 
 std::shared_ptr<tensor>& prelu::operator()(const std::shared_ptr<tensor>& x)
 {
     m_param.beta = x->count() / m_param.alpha;
 
-    return layer_construct_forward(kernel::shaders::prelu_spv, sizeof(kernel::shaders::prelu_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 relu::relu(bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
     m_type = "relu";
     m_param.alpha = 0;
-    bck_shader = kernel::shaders::d_relu_spv;
-    bck_codeSize = sizeof(kernel::shaders::d_relu_spv);
+    bck_shader = kernel::shaders::relu_spv;
+    bck_codeSize = sizeof(kernel::shaders::relu_spv);
 }
 
 std::shared_ptr<tensor>& relu::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::relu_spv, sizeof(kernel::shaders::relu_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 rrelu::rrelu(float lower, float upper, bool in_place) : Base_Layer<activation_param>(3, in_place), min(lower), max(upper)
 {
@@ -155,12 +215,14 @@ rrelu::rrelu(float lower, float upper, bool in_place) : Base_Layer<activation_pa
     m_param.alpha = 0;
     bck_shader = kernel::shaders::d_relu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_relu_spv);
+    fwd_shader = kernel::shaders::rrelu_spv;
+    fwd_codeSize = sizeof(kernel::shaders::rrelu_spv);
 }
 
 std::shared_ptr<tensor>& rrelu::operator()(const std::shared_ptr<tensor>& x)
 {
     w = std::make_shared<tensor>(tensor(init::uniform_distribution_init(x->getShape(), min, max), x->getShape()));
-    return layer_construct_forward(kernel::shaders::rrelu_spv, sizeof(kernel::shaders::rrelu_spv), x, w);
+    return layer_construct_forward(x, w);
 }
 
 selu::selu(bool in_place) : Base_Layer<activation_param>(2, in_place)
@@ -169,12 +231,15 @@ selu::selu(bool in_place) : Base_Layer<activation_param>(2, in_place)
     m_param.alpha = 0;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::selu_spv;
+    fwd_codeSize = sizeof(kernel::shaders::selu_spv);
 }
 
 std::shared_ptr<tensor>& selu::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::selu_spv, sizeof(kernel::shaders::selu_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 sigmoid::sigmoid(bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
@@ -182,12 +247,15 @@ sigmoid::sigmoid(bool in_place) : Base_Layer<activation_param>(2, in_place)
     m_param.alpha = 0;
     bck_shader = kernel::shaders::d_sigmoid_spv;
     bck_codeSize = sizeof(kernel::shaders::d_sigmoid_spv);
+    fwd_shader = kernel::shaders::sigmoid_spv;
+    fwd_codeSize = sizeof(kernel::shaders::sigmoid_spv);
 }
 
 std::shared_ptr<tensor>& sigmoid::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::sigmoid_spv, sizeof(kernel::shaders::sigmoid_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 softplus::softplus(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
@@ -195,12 +263,15 @@ softplus::softplus(float alpha, bool in_place) : Base_Layer<activation_param>(2,
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::softplus_spv;
+    fwd_codeSize = sizeof(kernel::shaders::softplus_spv);
 }
 
 std::shared_ptr<tensor>& softplus::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::softplus_spv, sizeof(kernel::shaders::softplus_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 softshrink::softshrink(float alpha, bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
@@ -208,12 +279,15 @@ softshrink::softshrink(float alpha, bool in_place) : Base_Layer<activation_param
     m_param.alpha = alpha;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::softshrink_spv;
+    fwd_codeSize = sizeof(kernel::shaders::softshrink_spv);
 }
 
 std::shared_ptr<tensor>& softshrink::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::softshrink_spv, sizeof(kernel::shaders::softshrink_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 softsign::softsign(bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
@@ -221,12 +295,15 @@ softsign::softsign(bool in_place) : Base_Layer<activation_param>(2, in_place)
     m_param.alpha = 0;
     bck_shader = kernel::shaders::d_celu_spv;
     bck_codeSize = sizeof(kernel::shaders::d_celu_spv);
+    fwd_shader = kernel::shaders::softsign_spv;
+    fwd_codeSize = sizeof(kernel::shaders::softsign_spv);
 }
 
 std::shared_ptr<tensor>& softsign::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::softsign_spv, sizeof(kernel::shaders::softsign_spv), x);
+    return layer_construct_forward(x);
 }
+
 
 tanhshrink::tanhshrink(bool in_place) : Base_Layer<activation_param>(2, in_place)
 {
@@ -234,11 +311,13 @@ tanhshrink::tanhshrink(bool in_place) : Base_Layer<activation_param>(2, in_place
     m_param.alpha = 0;
     bck_shader = kernel::shaders::d_tanh_spv;
     bck_codeSize = sizeof(kernel::shaders::d_tanh_spv);
+    fwd_shader = kernel::shaders::tanhshrink_spv;
+    fwd_codeSize = sizeof(kernel::shaders::tanhshrink_spv);
 }
 
 std::shared_ptr<tensor>& tanhshrink::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::tanhshrink_spv, sizeof(kernel::shaders::tanhshrink_spv), x);
+    return layer_construct_forward(x);
 }
 
 void init_celu(py::module& m)

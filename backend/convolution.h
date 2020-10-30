@@ -46,9 +46,13 @@ private:
     void computeGroupCount() override;
 public:
     vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
-    std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
+    vol2col(int in_channel, std::vector<float>& params);
+    void operator()(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x);
     std::vector<int> output_shape() const;
 };
+
+void init_vol2col(py::module& m);
+
 
 class col2vol : public Base_Layer<vol2col_param>
 {
@@ -56,9 +60,13 @@ private:
     void computeGroupCount() override;
 public:
     col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation);
-    std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
+    col2vol(int in_channel, std::vector<float>& params);
+    void operator()(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x);
     std::vector<int> output_shape() const;
 };
+
+void init_col2vol(py::module& m);
+
 
 namespace nn
 {

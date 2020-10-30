@@ -26,11 +26,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="madml\errors.py" />
-    <Compile Include="madml\loss.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="madml\nn\convolution.py" />
     <Compile Include="madml\nn\linear.py" />
+    <Compile Include="madml\nn\loss.py" />
     <Compile Include="madml\nn\math.py">
       <SubType>Code</SubType>
     </Compile>
@@ -43,8 +41,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="madml\nn\rnn.py" />
+    <Compile Include="madml\nn\transform.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="madml\nn\__init__.py" />
     <Compile Include="madml\regularization.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="madml\tensor.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="madml\tensor_ops.py">

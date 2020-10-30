@@ -30,7 +30,7 @@ layer::~layer()
 void layer::initVulkanThing(int buffer_num_forward)
 {
     createDescriptorSetLayout(buffer_num_forward);
-    createDescriptorSet(buffer_num_forward);
+    createDescriptorSet(buffer_num_forward);  
     createCommandBuffer();
 }
 
@@ -85,10 +85,12 @@ void layer::createShaderModule(const uint32_t* spv, size_t size, const std::stri
     }
     else
     {
-        //std::vector<uint32_t> code;
-        //code = compile("shader", shaderc_compute_shader, source);
-        //create_info.pCode = code.data();
-        //create_info.codeSize = sizeof(uint32_t) * code.size();
+#ifdef USE_SHADERC
+        std::vector<uint32_t> code;
+        code = compile("shader",  source);
+        create_info.pCode = code.data();
+        create_info.codeSize = sizeof(uint32_t) * code.size();
+#endif
     }
     VK_CHECK_RESULT(vkCreateShaderModule(m_device, &create_info, 0, &m_module));
 }

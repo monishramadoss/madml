@@ -3,7 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from typing import  Optional
+from typing import  Optional, List
 from collections import defaultdict
 from copy import deepcopy
 from itertools import chain
@@ -12,7 +12,7 @@ import math
 import madml
 
 class Optimizer(object):
-    def __init__(self, params, defaults):
+    def __init__(self, params: List[madml.tensor], defaults):
         self.defaults = defaults
         self.state = defaultdict(dict)
         self.param_groups = []

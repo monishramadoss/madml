@@ -15,10 +15,10 @@ gemm::gemm(float alpha, float beta, bool use_bias) : Base_Layer<gemm_param>(3)
 {
     m_type = "gemm";
     m_param = { 0, 0, alpha, beta, use_bias, 0, 0 };
+    bck_shader = kernel::shaders::d_gemm_spv;
     bck_codeSize = sizeof(kernel::shaders::d_gemm_spv);
-    bck_shader = kernel::shaders::d_gemm_spv;
-    bck_shader = kernel::shaders::d_gemm_spv;
-
+    fwd_shader = kernel::shaders::gemm_1_spv;
+    fwd_codeSize = sizeof(kernel::shaders::gemm_1_spv);
     t = std::make_shared<transpose>(transpose(std::vector<int>{1, 0}));
 }
 
@@ -36,7 +36,7 @@ void gemm::computeGroupCount()
         m_group_z = max_compute_work_group_count - 1;
 }
 
-std::shared_ptr<tensor>& gemm::operator()(const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w,
+void gemm::operator()(std::shared_ptr<tensor>& _y, const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w,
     const std::shared_ptr<tensor>& _b)
 {
     if (x->getShape().size() == w->getShape().size() + 1)
@@ -61,13 +61,15 @@ std::shared_ptr<tensor>& gemm::operator()(const std::shared_ptr<tensor>& _x, con
     if (_b == nullptr)
         b = std::make_shared<tensor>(tensor(0., std::vector<int>{1}));
     if (!_b && m_param.use_bias)
+    {
         b = std::make_shared<tensor>(tensor(1., std::vector<int>{m_param.m, m_param.n}));
+    }
 
     if (m_pipeline == nullptr)
     {
         m_param.total = w->count();
         computeGroupCount();
-        createShaderModule(kernel::shaders::gemm_1_spv, sizeof(kernel::shaders::gemm_1_spv));
+        createShaderModule(fwd_shader, fwd_codeSize);
         createPipeline(sizeof(gemm_param));
     }
 
@@ -78,7 +80,7 @@ std::shared_ptr<tensor>& gemm::operator()(const std::shared_ptr<tensor>& _x, con
 
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(gemm_param));
     runCommandBuffer();
-    return y;
+    _y = y;
 }
 
 int gemm::set_backward()
@@ -96,7 +98,7 @@ int gemm::set_backward()
     if (derivative->m_pipeline == nullptr)
     {
         m_param.total = x->count();
-        derivative->createShaderModule(kernel::shaders::d_gemm_spv, sizeof(kernel::shaders::d_gemm_spv));
+        derivative->createShaderModule(bck_shader, bck_codeSize);
         derivative->createPipeline(sizeof(gemm_param));
     }
 
@@ -109,47 +111,6 @@ int gemm::set_backward()
     derivative->recordCommandBuffer(static_cast<void*>(&m_param), sizeof(gemm_param));
     derivative->runCommandBuffer();
     return dy->getId();
-}
-
-namespace nn
-{
-    dense::dense(int size, bool use_bias) : m_size(size), USE_BIAS(use_bias)
-    {
-        m_type = "dense";
-
-        mm = std::make_shared<gemm>(gemm(1.0, 1.0, USE_BIAS));
-    }
-
-    std::shared_ptr<tensor>& dense::operator()(const std::shared_ptr<tensor>& _x)
-    {
-        this->x = _x;
-
-        auto input_shape = x->getShape();
-        if (!w)
-            w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{input_shape[input_shape.size() - 1], m_size}));
-
-        y = mm->operator()(x, w, b);
-
-        return y;
-
-        // MxK KxN = MxN
-        // dw =  dy * x.T
-        // db = mean(dy)
-        // dx = W.T * dy
-    }
-
-    int dense::set_backward()
-    {
-        mm->dy = bias->dx;
-        mm->set_backward();
-        dx = mm->dx;
-        dw = mm->dw;
-        return 1;
-    }
-
-    void dense::update_weight()
-    {
-    }
 }
 
 void init_gemm(py::module& m)

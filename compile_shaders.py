@@ -50,7 +50,7 @@ for i in range(0, len(lst)):
     if(prefix not in bin_dict.keys()):
         bin_dict[prefix] = {'time':0, 'bin':[], 'header':''}
     modified = bin_dict[prefix]['time'] != os.path.getmtime(path)
-
+    print(prefix, modified)
     if(modified or dir_change):
         bin_dict[prefix]['time'] = os.path.getmtime(path)
         bin_file = prefix + '.tmp'
