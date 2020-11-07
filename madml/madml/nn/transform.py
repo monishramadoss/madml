@@ -10,25 +10,24 @@ import madml
 import numpy as np
 import backend
 
-
-class transpose(Module):
+class Transpose(Module):
     __constants__ = ['axes']
-    axes: List[int]
+    axes : List[int]
 
     def __init__(self, axes: List[int]=None) -> None:
         self.axes = axes
-        super(transpose, self).__init__(backend.transpose(axes))
+        #super(transpose, self).__init__(backend.transpose(axes))
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         assert(len(x.shape) == len(self.axes))
         return np.transpose(x, axes=self.axes)
 
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
-        return np.transpose(dy, axes=self.axes)        
+        return np.transpose(dy, axes=self.axes)
 
 class flatten(Module):
     __constants__ = ['old_shape']
-    old_shape: List[int]
+    old_shape : List[int]
 
     def __init__(self) -> None:
         super(flatten, self).__init__()

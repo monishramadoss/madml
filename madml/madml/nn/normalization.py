@@ -41,7 +41,7 @@ class _NormBase(Module):
             if self.track_running_stats:
                 self.running_mean = np.zeros((num_features))
                 self.running_var = np.zeros((num_features))
-
+        self._parameters['weights'] = [self.weight, self.bias]
         self.num_batches_tracked = 0
 
     def extra_repr(self):
@@ -72,8 +72,11 @@ class BatchNorm(_NormBase):
         dmu = np.sum(dx_norm * -std_inv, axis=0) + dvar * np.mean(-2. * x_mu, axis=0)
 
         dx = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
-        self.d_weight = np.sum(dy * x_norm, axis=0)
-        self.d_bias = np.sum(dy, axis=0)
+        self.dw = np.sum(dy * x_norm, axis=0)
+        self.db = np.sum(dy, axis=0)
+
+        self._parameters['grads'] = [self.dw, self.db, dvar, dmu]
+
         return dx
 
 class BatchNorm1d(BatchNorm):
@@ -117,8 +120,11 @@ class InstanceNorm(_NormBase):
         dmu = np.reduce_sum(dx_norm * -std_inv, axis=0) + dvar * np.mean(-2. * x_mu, axis=0)
 
         dx = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
-        self.d_weight = np.reduce_sum(dy * x_norm, axis=0)
-        self.d_bias = np.reduce_sum(dy, axis=0)
+        self.dw = np.reduce_sum(dy * x_norm, axis=0)
+        self.db = np.reduce_sum(dy, axis=0)
+
+        self._parameters['grads'] = [self.dw, self.db, dvar, dmu]
+
         return dx
 
 class InstanceNorm1d(InstanceNorm):

@@ -3,16 +3,17 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from typing import  Optional, List
+from typing import  Optional, List, Union
 from collections import defaultdict
 from copy import deepcopy
 from itertools import chain
-import math
+import numpy as np
 
+import math
 import madml
 
 class Optimizer(object):
-    def __init__(self, params: List[madml.tensor], defaults):
+    def __init__(self, params: List[Union[np.ndarray, madml.tensor]], defaults):
         self.defaults = defaults
         self.state = defaultdict(dict)
         self.param_groups = []
@@ -42,6 +43,7 @@ class Optimizer(object):
                     format_string += '    {0}: {1}\n'.format(key, group[key])
         format_string += ')'
         return format_string
+
     def state_dict(self):
         param_mappings = {}
         start_index = 0

@@ -18,5 +18,3 @@ def l1_reg(W, lam=1e-3):
 
 def dl1_reg(W, lam=1e-3, eps=0.1):
     return lam * W / (np.abs(W) + eps)
-
-    

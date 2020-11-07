@@ -172,7 +172,7 @@ namespace nn
         bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
         m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
     {
-        m_type = "conv";
+        
         mm = std::make_shared<gemm>(gemm(1., 1., false));
         if (USE_BIAS)
             bias = std::make_shared<math::add>(math::add());
@@ -251,7 +251,7 @@ namespace nn
         m_stride(stride), m_padding(padding), m_dilation(dilation),
         USE_BIAS(use_bias)
     {
-        m_type = "convT";
+        
 
         mm = std::make_shared<gemm>(gemm(1., 1., false));
         if (USE_BIAS)

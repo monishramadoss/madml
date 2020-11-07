@@ -49,7 +49,7 @@ class _ConvNd(Module):
                  groups: int,
                  bias: bool,
                  padding_mode: str) -> None:
-        super(_ConvNd, self).__init__(None, )
+        super(_ConvNd, self).__init__(None,)
 
         if groups != 1:
             raise NotImplementedError("dilation not implemented in conv")
@@ -72,7 +72,7 @@ class _ConvNd(Module):
         self.groups = groups
         self.padding_mode = padding_mode
         self._col = [1,1,1]
-        self._im = [1,1,1]
+        self._vol = [1,1,1]
         self.params = []
         #self._reversed_padding_repeated_twice =
         #_reverse_repeat_tuple(self.padding, 2)
@@ -84,7 +84,7 @@ class _ConvNd(Module):
             self._use_bias = bias
             self._vol2col = backend.vol2col(in_channels, [*self.kernel_size, *self.padding, *self.stride,  *self.dilation])
             self._matmul = backend.gemm(1.0, 1.0, bias)
-            self._T = backend.transpose((1,0,2,3,4))
+            self._T = backend.transpose([1,0,2,3,4])
             self._n_output_plane = out_channels * self.kernel_size[0] * self.kernel_size[1] * self.kernel_size[2]
             self._temp = None
         else:
@@ -93,26 +93,26 @@ class _ConvNd(Module):
             else:
                 self.weight = np.ones((out_channels, in_channels // groups, *self.kernel_size))
         self.bias = None
+        self._parameters['weights'] = [self.weight, self.bias]
 
     def forward_gpu(self, x: tensor) -> tensor:
         if(len(x.shape) >= 3):
             self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
-            self._im[2] = x.shape[-1]
+            self._vol[2] = x.shape[-1]
         if (len(x.shape) >= 4):
             self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
-            self._im[1] = x.shape[-2]
+            self._vol[1] = x.shape[-2]
         if(len(x.shape) >= 5):
             self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
-            self._im[0] = x.shape[-3]
+            self._vol[0] = x.shape[-3]
 
         self.batch_size = x.shape[0]
         if self._temp is None:
             self._temp = madml.zeros([1])
 
-        self._vol2col(self._temp, x)        
-        self.weight.reshape(-1, self._n_output_plane)        
-
-        if self.bias  is None:
+        self._vol2col(self._temp, x)
+        self.weight.reshape(-1, self._n_output_plane) 
+        if self.bias is None:
             self.bias = madml.zeros([self.weight.shape[0], self._temp.shape[1]])
 
         y = self._matmul(self.weight, self._temp, self.bias)
@@ -124,34 +124,43 @@ class _ConvNd(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         if(len(x.shape) >= 3):
             self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
-            self._im[2] = x.shape[-1]
+            self._vol[2] = x.shape[-1]
         if (len(x.shape) >= 4):
             self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
-            self._im[1] = x.shape[-2]
+            self._vol[1] = x.shape[-2]
         if(len(x.shape) >= 5):
             self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
-            self._im[0] = x.shape[-3]
+            self._vol[0] = x.shape[-3]
+
         self.batch_size = x.shape[0]
-        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         y = np.matmul(self.weight.reshape(-1, n_output_plane), B)
         y = y.reshape((self.out_channels, self.batch_size, *self._col))
         y = np.transpose(y, (1,0,2,3,4))
+
+        if self.bias is not None:
+            self.bias = np.zeros(y.shape[1:])
+            for b in range(self.batch_size):
+                y[b] += self.bias
+
         self.cache = [x, B]
         return y
 
-
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, B = self.cache
-        self.d_bias = np.sum(dy, axis=(0, 2, 3, 4))
+        if self.backend:
+            self.db = np.sum(dy, axis=(0, 2, 3, 4))
+        else:
+            self.db = None
+
         n_filter, c_filter, d_filter, h_filter, w_filter = self.weight.shape
-
         dy_reshaped = dy.transpose([1, 2, 3, 4, 0]).reshape(n_filter, -1)
-        self.d_weight = dy_reshaped @ B.T
-        self.d_weight = self.d_weight.reshape(self.weight.shape)
+        self.dw = dy_reshaped @ B.T
+        self.dw = self.dw.reshape(self.weight.shape)
         w_reshape = self.weight.reshape(n_filter, -1)
-
+        self._parameters['grads'] = [self.dw, self.db]
         dx_col = w_reshape.T @ dy_reshaped
-        dx = col2im_cpu(dx_col, self.batch_size, n_filter, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        dx = col2im_cpu(dx_col, self.batch_size, n_filter, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         return dx
 
     def extra_repr(self):
@@ -170,11 +179,6 @@ class _ConvNd(Module):
         if self.padding_mode != 'zeros':
             s += ', padding_mode={padding_mode}'
         return s.format(**self.__dict__)
-
-    def __setstate__(self, state):
-        #super(_ConvNd, self).__setstate__(state)
-        if not hasattr(self, 'padding_mode'):
-            self.padding_mode = 'zeros'
 
 class Conv1d(_ConvNd):
     def __init__(self,
@@ -271,17 +275,16 @@ class _ConvTransposeNd(_ConvNd):
     def forward_cpu(self, x: tensor) -> tensor:
         if(len(x.shape) >= 3):
             self._col[2] = int(x.shape[-1] + 2 * self.padding[2] - (self.dilation[2] * (self.kernel_size[2] - 1) + 1) // self.stride[2] + 1)
-            self._im[2] = x.shape[-1]
+            self._vol[2] = x.shape[-1]
         if (len(x.shape) >= 4):
             self._col[1] = int(x.shape[-2] + 2 * self.padding[1] - (self.dilation[1] * (self.kernel_size[1] - 1) + 1) // self.stride[1] + 1)
-            self._im[1] = x.shape[-2]
+            self._vol[1] = x.shape[-2]
         if(len(x.shape) == 5):
             self._col[0] = int(x.shape[-3] + 2 * self.padding[0] - (self.dilation[0] * (self.kernel_size[0] - 1) + 1) // self.stride[0] + 1)
-            self._im[0] = x.shape[-3]
+            self._vol[0] = x.shape[-3]
 
         #output_padding = self._output_padding(x, self._col, self.stride,
         #self.padding, self.kernel_size)
-
 class ConvTranspose1d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,

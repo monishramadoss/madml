@@ -16,12 +16,19 @@ class Identity(Module):
 
     def forward_cpu(self, input):
         return input
+    def forward_gpu(self, input):
+        return input
+    def backward_cpu(self, input):
+        return input
+    def backward_gpu(self, input):
+        return input
+
 
 class Linear(Module):
     __constants__ = ['in_features', 'out_features']
     in_features : int
     out_features : int
-    
+
     def __init__(self, in_features: int, out_features: int, bias: bool=True) -> None:
         super(Linear, self).__init__(backend.gemm(1.0, 1.0, bias))
         self.in_features = in_features
@@ -34,13 +41,14 @@ class Linear(Module):
             self.weight = np.zeros((out_features, in_features))
             if bias:
                 self.bias = np.zeros((out_features))
+        self._parameters['weights'] = [self.weight, self.bias]
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         y = np.zeros((x.shape[0], self.out_features))
         for i in range(x.shape[0]):
             y[i] = self.weight @ x[i]
             if self.bias is not None:
-                y[i] = y[i] + self.bias
+                y[i] = y[i] + self.bias                
         return y
 
     def forward_gpu(self, x: tensor) -> tensor:
@@ -57,10 +65,13 @@ class Linear(Module):
         for i in range(x.shape[0]):
             dw[i] += x[i].T @ dy[i] / x.shape[0]
             dx[i] = dy[i] @ self.weight.T
-        return dx, dw
+        self._parameters['grads'] = [dw, db]
+        return dx
+
     def backward_gpu(self, dy: tensor) -> tensor:
-        x = self.cache[0]        
+        x = self.cache[0]
         return dy
+
 
 class Bilinear(Module):
     __constants__ = ['in1_features', 'in2_features', 'out_features']

@@ -21,11 +21,15 @@ layer::layer()
 
 layer::~layer()
 {
-    vkDestroyShaderModule(m_device, m_module, nullptr);
-    vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
-    vkDestroyPipeline(m_device, m_pipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
-}
+    if (m_module != nullptr)
+        vkDestroyShaderModule(m_device, m_module, nullptr);
+    if (m_descriptor_pool != nullptr)
+        vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
+    if(m_pipeline != nullptr)
+        vkDestroyPipeline(m_device, m_pipeline, nullptr);
+    if(m_pipeline_layout != nullptr)
+        vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
+} 
 
 void layer::initVulkanThing(int buffer_num_forward)
 {

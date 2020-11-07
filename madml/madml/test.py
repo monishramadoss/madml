@@ -74,6 +74,12 @@ class mnist_model(nn.Module):
         x = self.fc3(x)
         return x
 
-def train_loop(x, y, model):
+def train_loop(X, Y, model=mnist_model()):
     criterion = nn.CrossEntropyLoss()
     optim = optimizer.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    for x, y in zip(X, Y):
+        optim.zero_grad()
+        logits = model(X)
+        loss = criterion(logits, y)
+        loss.backward()
+        optim.step()

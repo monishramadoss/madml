@@ -175,8 +175,7 @@ namespace nn
         m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
         m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias)
     {
-        m_type = "RNN";
-
+        
         if (bidirectional)
             m_directions = 2;
         if (output_size == 0)
@@ -298,8 +297,7 @@ namespace nn
         m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
         m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
     {
-        m_type = "LSTM";
-
+        
         if (bidirectional)
             m_directions = 2;
         if (output_size == 0)
@@ -430,8 +428,7 @@ namespace nn
         m_vocab_size(vocab_size), m_hidden_size(hidden_size), m_num_layers(num_layers), m_directions(1),
         m_output_size(output_size), m_seq_length(seq_length), USE_BIAS(bias), nonlinearity_(std::move(nonlinearity))
     {
-        m_type = "GRU";
-
+        
         if (bidirectional)
             m_directions = 2;
         if (output_size == 0)

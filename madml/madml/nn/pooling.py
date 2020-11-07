@@ -31,12 +31,12 @@ class _MaxPoolNd(Module):
         self.dilation = dim_fix([1,1,1], dilation)
         self.return_indices = return_indices
         self.ceil_mode = ceil_mode
-        self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
-        self._T = backend.transpose((1, 0, 2, 3, 4))
 
         self._col = [1,1,1]
         self._im = [1,1,1]
-
+        if self._use_gpu:
+            self._kernel = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            #self._trans = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={kernel_size}, stride={stride}, padding={padding}, dilation={dilation}, ceil_mode={ceil_mode}'.format(**self.__dict__)
 
@@ -128,11 +128,13 @@ class _MaxUnpoolNd(Module):
         self.stride = dim_fix([1,1,1], stride)
         self.padding = dim_fix([0,0,0], padding)
         self.dilation = [1,1,1]
-
+        if self._use_gpu:
+            self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            #self._T = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={}, stride={}, padding={}'.format(self.kernel_size, self.stride, self.padding)
 
-    def forward_cpu(self, x: np.ndarray) ->  np.ndarray:
+    def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         t = np.transpose(x, (1, 0, 2, 3, 4))
 
 class MaxUnpool1d(_MaxUnpoolNd):
@@ -179,7 +181,9 @@ class _AvgPoolNd(Module):
         self.dilation = [1,1,1]
         self._col = [1,1,1]
         self._im = [1,1,1]
-
+        if self._use_gpu:
+            self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            #self._T = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={}, stride={}, padding={}'.format(self.kernel_size, self.stride, self.padding)
 
@@ -204,10 +208,10 @@ class _AvgPoolNd(Module):
         self.cache = [x, mean, B]
         return y
 
-    def backward_cpu(self, dy:  np.ndarray) ->  np.ndarray:
+    def backward_cpu(self, dy:  np.ndarray) -> np.ndarray:
         x, max_idx, B = self.cache
         n, c, d, h, w = x.shape
-        
+
         dx_col = np.zero(B.shape)
         dy_col = np.transpose(dy, (2,3,4,0,1)).ravel()
         dx_col = dx_col[:, range(dy_col.size)] = 1. / B.shape[0] * dy_col

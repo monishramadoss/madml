@@ -73,4 +73,3 @@ def var(T1: tensor, axis: int=None) -> tensor:
     m = pow(m, 2.)
     m /= m.size
     return m
-

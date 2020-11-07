@@ -53,6 +53,8 @@ public:
     int m_group_x;
     int m_group_y;
     int m_group_z;
+
+    std::string m_type;
 };
 
 class Module
@@ -68,7 +70,7 @@ public:
     //std::vector<std::future<int>>& get_futures();
 
 protected:
-    std::string m_type;
+    
 };
 
 template <class T = operator_param>
@@ -85,7 +87,7 @@ public:
 
 protected:
 
-    Base_Layer* derivative;
+    std::shared_ptr<Base_Layer<T>> derivative;
 
     bool m_in_place;
     T m_param;
@@ -95,15 +97,32 @@ protected:
 
 public:
     std::shared_ptr<tensor>& layer_construct_forward(
-        const std::shared_ptr<tensor>& x, Format fmt = Format::kFormatFp32,
-        std::vector<int> output_shape = {});
+        const std::shared_ptr<tensor>& x, 
+        Format fmt = Format::kFormatFp32,
+        std::vector<int> output_shape = {}
+    );
     std::shared_ptr<tensor>& layer_construct_forward(
-        const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w,
-        Format fmt = Format::kFormatFp32, std::vector<int> output_shape = {});
+        const std::shared_ptr<tensor>& x, 
+        const std::shared_ptr<tensor>& w,
+        Format fmt = Format::kFormatFp32, 
+        std::vector<int> output_shape = {}
+    );
+    ~Base_Layer();
+
 };
 
+template<typename T>
+Base_Layer<T>::~Base_Layer()
+{
+    if(fwd_shader != nullptr)
+        delete[] fwd_shader;
+
+    if(bck_shader != nullptr)
+        delete[] bck_shader;
+}
+
 template <typename T>
-Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : bck_shader(nullptr), bck_codeSize(0), fwd_shader(nullptr), fwd_codeSize(0), derivative(nullptr),
+Base_Layer<T>::Base_Layer(int forward_buffers, bool in_place) : bck_shader(nullptr), bck_codeSize(0), fwd_shader(nullptr), fwd_codeSize(0),
 m_in_place(in_place), m_param({ 0 })
 {
     initVulkanThing(forward_buffers);
@@ -176,7 +195,7 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(
 
     if (bck_codeSize && !derivative)
     {
-        derivative = new Base_Layer<T>(2, false);
+        derivative = std::make_shared<Base_Layer>(Base_Layer<T>(2, false));
         derivative->m_param = m_param;
         derivative->set_group(m_group_x, m_group_y, m_group_z);
         derivative->fwd_shader = bck_shader;
@@ -220,7 +239,7 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(
 
     if (bck_codeSize && !derivative)
     {
-        derivative = new Base_Layer<T>(3, false);
+        derivative = std::make_shared<Base_Layer>(Base_Layer<T>(3, false));
         derivative->m_param = m_param;
         derivative->set_group(m_group_x, m_group_y, m_group_z);
     }

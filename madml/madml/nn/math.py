@@ -22,7 +22,7 @@ class abs(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.abs(x)
-        
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return x / np.abs(x)
@@ -34,15 +34,15 @@ class ceil(Module):
     def __init__(self, inplace: bool=False) -> None:
         super(ceil, self).__init__(backend.ceil(inplace))
         self.inplace = inplace
-    
+
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.ceil(x)
-        
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.zeros_like(x, dtype=dy.dtype)
-        
+
 class clip(Module):
     __constants__ = ['min_val', 'max_val', 'inplace']
     inplace : bool
@@ -53,11 +53,11 @@ class clip(Module):
         self.min_val = min_val
         self.max_val = max_val
         self.inplace = inplace
-    
+
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.clip(x, self.min_val , self.max_val)
-        
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.zeros_like(x, dtype=dy.dtype)
@@ -69,11 +69,11 @@ class exp(Module):
     def __init__(self, inplace: bool=False) -> None:
         super(exp, self).__init__(backend.exp(inplace))
         self.inplace = inplace
-    
+
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.exp(x)
-        
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.exp(x)
@@ -89,11 +89,10 @@ class floor(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.floor(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.zeros_like(x, x.dtype)
-
 
 class ln(Module):
     __constants__ = ['inplace']
@@ -106,11 +105,10 @@ class ln(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.ln(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return 1 / x
-
 
 class round(Module):
     __constants__ = ['inplace']
@@ -123,11 +121,10 @@ class round(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.round(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.zeros_like(x, dy.dtype)
-
 
 class sqrt(Module):
     __constants__ = ['inplace']
@@ -140,11 +137,10 @@ class sqrt(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.sqrt(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return 0.5 / np.sqrt(x)
-
 
 class acos(Module):
     __constants__ = ['inplace']
@@ -157,7 +153,7 @@ class acos(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.arccos(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return -1. / np.sqrt(1. - x ** 2)
@@ -173,11 +169,10 @@ class acosh(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.arccosh(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return -1. / np.sqrt(x ** 2 - 1.)
-
 
 class asin(Module):
     __constants__ = ['inplace']
@@ -190,7 +185,7 @@ class asin(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.arcsin(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return 1. / np.sqrt(1 - x ** 2)
@@ -206,7 +201,7 @@ class asinh(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.arcsinh(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return -1. / np.sqrt(x ** 2 + 1)
@@ -222,7 +217,7 @@ class atan(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.arctan(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return -1. / np.sqrt(1 + x ** 2)
@@ -238,11 +233,10 @@ class atanh(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.arctanh(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return -1. / (1 - x ** 2)
-
 
 class cos(Module):
     __constants__ = ['inplace']
@@ -255,7 +249,7 @@ class cos(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.cos(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return -np.sin(x)
@@ -271,7 +265,7 @@ class cosh(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.cosh(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.sinh(x)
@@ -287,7 +281,7 @@ class sin(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.sin(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.cos(x)
@@ -303,7 +297,7 @@ class sinh(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.sinh(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return np.cosh(x)
@@ -319,7 +313,7 @@ class tan(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.tan(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return (1 / np.cos(x)) ** 2
@@ -335,7 +329,7 @@ class tanh(Module):
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         self.cache = [x]
         return np.tanh(x)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         return (1 / np.cosh(x)) ** 2
@@ -351,7 +345,7 @@ class add(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x + w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -367,7 +361,7 @@ class sub(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x - w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), -1. * np.ones_like(dy)
@@ -383,7 +377,7 @@ class mul(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return np.multiply(x,  w)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return w,  x
@@ -396,14 +390,13 @@ class div(Module):
         super(div, self).__init__(backend.div(inplace))
         self.inplace = inplace
 
-
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return np.divide(x, w)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
-        return w, np.multiply(x, -(1/(w)**2))
+        return w, np.multiply(x, -(1 / (w) ** 2))
 
 class mod(Module):
     __constants__ = ['inplace']
@@ -416,7 +409,7 @@ class mod(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return np.mod(x, w)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -433,10 +426,10 @@ class pow(Module):
         y = np.power(x, w)
         self.cache = [x, w, y]
         return y
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w, y = self.cache
-        return np.multiply(w, np.power(x, w-1)),  (np.multiply(y, np.ln(x)))
+        return np.multiply(w, np.power(x, w - 1)),  (np.multiply(y, np.ln(x)))
 
 class max(Module):
     __constants__ = ['inplace']
@@ -449,7 +442,7 @@ class max(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return np.max(x, w)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -465,7 +458,7 @@ class min(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return np.min(x, w)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -497,7 +490,7 @@ class ne(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x != w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -513,7 +506,7 @@ class lt(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x < w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -529,7 +522,7 @@ class le(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x <= w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -545,7 +538,7 @@ class gt(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x > w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -561,7 +554,7 @@ class ge(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return x >= w
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)
@@ -577,7 +570,7 @@ class xr(Module):
     def forward_cpu(self, x: np.ndarray, w: np.ndarray) -> np.ndarray:
         self.cache = [x, w]
         return np.logical_xor(x, w)
-    
+
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, w = self.cache
         return np.ones_like(dy), np.ones_like(dy)

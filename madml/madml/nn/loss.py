@@ -8,15 +8,12 @@ import madml
 from madml import tensor
 from .module import Module
 from .activation import Softmax
-from .. import regularization as reg 
+from .. import regularization as reg
 import numpy as np
 
-
 def Regularization(model, reg_type='l2', lam=1e-3):
-    reg_types = dict(
-        l1=reg.l1_reg,
-        l2=reg.l2_reg
-    )
+    reg_types = dict(l1=reg.l1_reg,
+        l2=reg.l2_reg)
 
     if reg_type not in reg_types.keys():
         raise Exception('Regularization type must be either "l1" or "l2"!')
@@ -30,9 +27,9 @@ def Regularization(model, reg_type='l2', lam=1e-3):
     return reg_loss
 
 class _Loss(Module):
-    reduction: str
+    reduction : str
 
-    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(_Loss, self).__init__()
         if size_average is not None or reduce is not None:
             self.reduction = None #_Reduction.legacy_get_string(size_average, reduce)
@@ -40,14 +37,14 @@ class _Loss(Module):
             self.reduction = reduction
 
 class _WeightedLoss(_Loss):
-    def __init__(self, weight: Optional[Union[np.ndarray, tensor]] = None, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, weight: Optional[Union[np.ndarray, tensor]]=None, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(_WeightedLoss, self).__init__(size_average, reduce, reduction)
         self.weight = weight
 
 class L1Loss(_Loss):
     __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(L1Loss, self).__init__(size_average, reduce, reduction)
 
     def forward_cpu(self, input: np.ndarray, target: np.ndarray) -> np.ndarray:
@@ -65,12 +62,12 @@ class L1Loss(_Loss):
 class L2Loss(_Loss):
     __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(L2Loss, self).__init__(size_average, reduce, reduction)
 
     def forward_cpu(self, input: np.ndarray, target: np.ndarray) -> np.ndarray:
         m = input.shape[0]
-        data_loss = 0.5 * np.sum((target - input)**2) / m
+        data_loss = 0.5 * np.sum((target - input) ** 2) / m
         self.cache = [input, target, m]
         return data_loss
 
@@ -79,23 +76,23 @@ class L2Loss(_Loss):
         grad_y = input - target.reshape(-1, 1)
         grad_y /= m
         return grad_y
-                
+
 class NLLLoss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
-    ignore_index: int
+    ignore_index : int
 
-    def __init__(self, weight: Optional[np.ndarray] = None, size_average=None, ignore_index: int = -100,
-                 reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, weight: Optional[np.ndarray]=None, size_average=None, ignore_index: int=-100,
+                 reduce=None, reduction: str='mean') -> None:
         super(NLLLoss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
 
     def forward_cpu(self, input: np.ndarray, target: np.ndarray) -> np.ndarray:
-        return None 
+        return None
 
 class MSELoss(_Loss):
     __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(MSELoss, self).__init__(size_average, reduce, reduction)
 
     def forward_cpu(self, input: np.ndarray, target: np.ndarray) -> np.ndarray:
@@ -112,9 +109,9 @@ class MSELoss(_Loss):
 
 class HingeLoss(_Loss):
     __constants__ = ['reduction', 'delta']
-    delta: float
+    delta : float
 
-    def __init__(self, delta=1, size_average=None, ignore_index: int = -100, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, delta=1, size_average=None, ignore_index: int=-100, reduce=None, reduction: str='mean') -> None:
         super(HingeLoss, self).__init__(size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.delta = delta
@@ -138,23 +135,23 @@ class HingeLoss(_Loss):
         grad_y[range(m), target] = -np.sum(grad_y, axis=1)
         grad_y /= m
         return grad_y
-        
+
 class BCELoss(_WeightedLoss):
     __constants__ = ['reduction']
 
-    def __init__(self, weight: Optional[tensor] = None, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, weight: Optional[tensor]=None, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(BCELoss, self).__init__(weight, size_average, reduce, reduction)
 
     def forward_cpu(self, input: np.ndarray, target: np.ndarray) -> np.ndarray:
-        
-        return 
+
+        return
 
 class CrossEntropyLoss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
-    ignore_index: int
+    ignore_index : int
 
-    def __init__(self, weight: Optional[np.ndarray] = None, size_average=None, ignore_index: int = -100,
-                 reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, weight: Optional[np.ndarray]=None, size_average=None, ignore_index: int=-100,
+                 reduce=None, reduction: str='mean') -> None:
         super(CrossEntropyLoss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.softmax = Softmax(0,)

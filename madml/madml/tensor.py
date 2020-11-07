@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import backend
 from typing import List, Union
 import numpy as np
-import struct 
+import struct
 
 class tensor(backend.tensor):
     host_side = List[float]
@@ -42,7 +42,7 @@ class tensor(backend.tensor):
 
     def _convert_to_float(self, size:int, arr:List[bytes]) -> List[float]:
         ret_data = []
-        ret_data.extend([bytearray(arr[i:i+4]) for i in range(0, size, 4)])
+        ret_data.extend([bytearray(arr[i:i + 4]) for i in range(0, size, 4)])
         for i in range(len(ret_data)):
             ret_data[i] = struct.unpack("f", ret_data[i])
         return ret_data

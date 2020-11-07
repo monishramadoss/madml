@@ -8,9 +8,7 @@ constexpr int local_sz_y_conv = 64;
 maxPooling::maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
     bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
     m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
-{
-    m_type = "maxPooling";
-
+{    
     trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 }
 
@@ -49,8 +47,7 @@ maxUnPooling::maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw pad
     bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
     m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
-    m_type = "maxUnPooling";
-
+    
     trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 }
 
@@ -89,8 +86,7 @@ avgPooling::avgPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding
     bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
     m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
-    m_type = "avgPooling";
-
+    
     trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 }
 
