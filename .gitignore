@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+.vs/ml_on_vulkan/v16/.suo
+.vs/ml_on_vulkan/v16/Browse.VC.db
