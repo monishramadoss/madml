@@ -202,17 +202,3 @@ void layer::bindTensor(std::shared_ptr<tensor> tensor, int binding)
 void Module::update_weight()
 {
 }
-
-void DFS_f(size_t start, std::vector<bool>& visited, std::vector<std::vector<int>>& adj,
-    std::vector<size_t>& execution_order)
-{
-    execution_order.push_back(start);
-    visited[start] = true;
-    for (size_t i = 0; i < adj.size(); i++)
-    {
-        if (adj[start][i] == 1 && (!visited[i]))
-        {
-            DFS_f(i, visited, adj, execution_order);
-        }
-    }
-}

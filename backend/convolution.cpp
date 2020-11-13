@@ -80,7 +80,7 @@ std::vector<int> vol2col::output_shape() const
 
 void init_vol2col(py::module& m)
 {
-    py::class_<vol2col>(m, "vol2col")
+    py::class_<vol2col, std::shared_ptr<vol2col>>(m, "vol2col")
         .def(py::init<int, std::vector<float>>())
         .def("__call__", &vol2col::operator());
 
@@ -161,7 +161,7 @@ std::vector<int> col2vol::output_shape() const
 
 void init_col2vol(py::module& m)
 {
-    py::class_<col2vol>(m, "col2vol")
+    py::class_<col2vol, std::shared_ptr<col2vol>>(m, "col2vol")
         .def(py::init<int, std::vector<float>>())
         .def("__call__", &col2vol::operator());
 }

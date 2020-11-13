@@ -16,7 +16,7 @@ class Transpose(Module):
 
     def __init__(self, axes: List[int]=None) -> None:
         self.axes = axes
-        #super(transpose, self).__init__(backend.transpose(axes))
+        super(Transpose, self).__init__(backend.transpose(axes))
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         assert(len(x.shape) == len(self.axes))

@@ -64,13 +64,9 @@ public:
 
     std::shared_ptr<tensor> dx, dy, dw, db;
     std::shared_ptr<tensor> x, y, w, b, t1, t2, t3, t4;
-
     virtual int set_backward() { return -1; }
-
     //std::vector<std::future<int>>& get_futures();
-
-protected:
-    
+protected:    
 };
 
 template <class T = operator_param>
@@ -114,11 +110,11 @@ public:
 template<typename T>
 Base_Layer<T>::~Base_Layer()
 {
-    if(fwd_shader != nullptr)
-        delete[] fwd_shader;
+    //if(fwd_shader != nullptr)
+    //    delete[] fwd_shader;
 
-    if(bck_shader != nullptr)
-        delete[] bck_shader;
+    //if(bck_shader != nullptr)
+    //    delete[] bck_shader;
 }
 
 template <typename T>

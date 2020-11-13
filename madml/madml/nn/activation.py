@@ -42,7 +42,8 @@ class ReLU(Module):
     inplace : bool
 
     def __init__(self, inplace: bool=False) -> None:
-        super(ReLU, self).__init__(backend.relu(inplace))
+        #super(ReLU, self).__init__(backend.relu(inplace))
+        super(ReLU, self).__init__()
         self.inplace = inplace
 
     def extra_repr(self) -> str:

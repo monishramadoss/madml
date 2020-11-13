@@ -70,6 +70,6 @@ PYBIND11_MODULE(backend, m)
     init_gemm(m);
     init_vol2col(m);
     init_col2vol(m);
-    //init_transpose(m);
+    init_transpose(m);
 
 }

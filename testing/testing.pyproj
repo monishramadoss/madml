@@ -27,8 +27,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="conv_test.py" />
-    <Compile Include="norm_test.py" />
     <Compile Include="mnist_test.py" />
+    <Compile Include="testing.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="test_1.py">
       <SubType>Code</SubType>
     </Compile>

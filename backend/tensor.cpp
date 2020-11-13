@@ -174,8 +174,8 @@ void tensor::update_id()
     id = objId++;
 }
 
-std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int> shape, size_t offset, std::string step,
-    size_t stage)
+std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int> shape, 
+    size_t offset, std::string step, size_t stage)
 {
     if (shape.size() == 2)
     {

@@ -5,7 +5,7 @@
 #ifndef ACTIVATION_H
 #define ACTIVATION_H
 
-struct activation_param
+struct activation_param 
 {
     int total;
     float alpha;

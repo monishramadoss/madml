@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from typing import List, Optional, Union
-from .module import Module
+from .module import Module, Parameter
 from ..utils import *
 from madml import tensor
 import madml
@@ -74,14 +74,15 @@ class _ConvNd(Module):
         self._col = [1,1,1]
         self._vol = [1,1,1]
         self.params = []
+        self._use_bias = bias
         #self._reversed_padding_repeated_twice =
         #_reverse_repeat_tuple(self.padding, 2)
         if self._use_gpu:
             if transposed:
-                self.weight = madml.ones((in_channels, out_channels // groups, *self.kernel_size))
+                weight_shape = (in_channels, out_channels // groups, *self.kernel_size)
             else:
-                self.weight = madml.ones((out_channels, in_channels // groups, *self.kernel_size))
-            self._use_bias = bias
+                weight_shape = (out_channels, in_channels // groups, *self.kernel_size)
+            self.weight = Parameter(shape=weight_shape, weight=madml.ones(weight_shape), gradient=madml.ones(weight_shape))
             self._vol2col = backend.vol2col(in_channels, [*self.kernel_size, *self.padding, *self.stride,  *self.dilation])
             self._matmul = backend.gemm(1.0, 1.0, bias)
             self._T = backend.transpose([1,0,2,3,4])
@@ -89,37 +90,12 @@ class _ConvNd(Module):
             self._temp = None
         else:
             if transposed:
-                self.weight = np.ones((in_channels, out_channels // groups, *self.kernel_size))
+                weight_shape = (in_channels, out_channels // groups, *self.kernel_size)
             else:
-                self.weight = np.ones((out_channels, in_channels // groups, *self.kernel_size))
-        self.bias = None
-        self._parameters['weights'] = [self.weight, self.bias]
+                weight_shape = (out_channels, in_channels // groups, *self.kernel_size)
+            self.weight = Parameter(shape=weight_shape, weight=np.ones(weight_shape), gradient=np.ones(weight_shape)))
+        
 
-    def forward_gpu(self, x: tensor) -> tensor:
-        if(len(x.shape) >= 3):
-            self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
-            self._vol[2] = x.shape[-1]
-        if (len(x.shape) >= 4):
-            self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
-            self._vol[1] = x.shape[-2]
-        if(len(x.shape) >= 5):
-            self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
-            self._vol[0] = x.shape[-3]
-
-        self.batch_size = x.shape[0]
-        if self._temp is None:
-            self._temp = madml.zeros([1])
-
-        self._vol2col(self._temp, x)
-        self.weight.reshape(-1, self._n_output_plane) 
-        if self.bias is None:
-            self.bias = madml.zeros([self.weight.shape[0], self._temp.shape[1]])
-
-        y = self._matmul(self.weight, self._temp, self.bias)
-        y = y.reshape((self.out_channels, self.batch_size, *self._col))
-        y = self._T(y)
-        self.cache = [x]
-        return y
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         if(len(x.shape) >= 3):
@@ -148,7 +124,7 @@ class _ConvNd(Module):
 
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x, B = self.cache
-        if self.backend:
+        if self.bias:
             self.db = np.sum(dy, axis=(0, 2, 3, 4))
         else:
             self.db = None
@@ -158,8 +134,11 @@ class _ConvNd(Module):
         self.dw = dy_reshaped @ B.T
         self.dw = self.dw.reshape(self.weight.shape)
         w_reshape = self.weight.reshape(n_filter, -1)
-        self._parameters['grads'] = [self.dw, self.db]
+ 
+        self._parameters['grad'] = [self.dw, self.db]
+        
         dx_col = w_reshape.T @ dy_reshaped
+        
         dx = col2im_cpu(dx_col, self.batch_size, n_filter, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         return dx
 

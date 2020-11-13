@@ -30,7 +30,7 @@ class Linear(Module):
     out_features : int
 
     def __init__(self, in_features: int, out_features: int, bias: bool=True) -> None:
-        super(Linear, self).__init__(backend.gemm(1.0, 1.0, bias))
+        super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         if self._use_gpu:
@@ -60,8 +60,8 @@ class Linear(Module):
     def backward_cpu(self, dy: np.ndarray) -> np.ndarray:
         x = self.cache[0]
         db = np.sum(dy, axis=0)
-        dw = np.zeros((x.shape[-1], dy.shape[-1]))
-        dx = np.zeros((x.shape[0], dy.shape[1], self.in_features))
+        dw = np.zeros(self.weight.shape)
+        dx = np.zeros(x.shape)
         for i in range(x.shape[0]):
             dw[i] += x[i].T @ dy[i] / x.shape[0]
             dx[i] = dy[i] @ self.weight.T
@@ -97,4 +97,18 @@ class Bilinear(Module):
         y = x1.T @ self.weight @ x2
         if self.bias is not None:
             y += self.bias
+        self.cache = [x1, x2]
         return y
+
+    def backward_cpu(self, dy):
+        x1, x2 = self.cache
+        db = np.sum(dy, axis=0)
+        dw = np.zeros(self.weight.shape)
+        dx1 = np.zeros(x1.shape)
+        dx2 = np.zeros(x2.shape)
+        for i in range(x1.shape[0]):
+            dw[i] += x1[i].T @ dy[i] @ x2[i].T / x1.shape[0]
+            dx1[i] = dy[i] @ self.weight.T @ x2[i]
+            dx2[i] = dy[i] @ self.weight.T @ x1[i]
+        self._parameters['grads'] = [dw, db]
+        return dx1, dx2, 

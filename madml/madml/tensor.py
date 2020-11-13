@@ -8,6 +8,7 @@ from typing import List, Union
 import numpy as np
 import struct
 
+
 class tensor(backend.tensor):
     host_side = List[float]
 
@@ -49,3 +50,5 @@ class tensor(backend.tensor):
 
     def numpy(self):
         return np.array(self.host_side).reshape(self.shape)
+
+   

@@ -19,7 +19,7 @@ gemm::gemm(float alpha, float beta, bool use_bias) : Base_Layer<gemm_param>(3)
     bck_codeSize = sizeof(kernel::shaders::d_gemm_spv);
     fwd_shader = kernel::shaders::gemm_1_spv;
     fwd_codeSize = sizeof(kernel::shaders::gemm_1_spv);
-    t = std::make_shared<transpose>(transpose(std::vector<int>{1, 0}));
+    //t = std::make_shared<transpose>(transpose(std::vector<int>{1, 0}));
 }
 
 void gemm::computeGroupCount()
@@ -115,7 +115,7 @@ int gemm::set_backward()
 
 void init_gemm(py::module& m)
 {
-    py::class_<gemm>(m, "gemm")
+    py::class_<gemm, std::shared_ptr<gemm>>(m, "gemm")
         .def(py::init<float&, float&, bool&>())
         .def("__call__", &gemm::operator());
 }

@@ -98,6 +98,6 @@ void transpose::computeGroupCount()
 
 void init_transpose(py::module& m)
 {
-    py::class_<transpose>(m, "transpose")
+    py::class_<transpose, std::shared_ptr<transpose>>(m, "transpose")
         .def(py::init<const std::vector<int>&>());
 }

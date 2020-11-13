@@ -322,109 +322,109 @@ std::shared_ptr<tensor>& tanhshrink::operator()(const std::shared_ptr<tensor>& x
 
 void init_celu(py::module& m)
 {
-    py::class_<celu>(m, "celu")
+    py::class_<celu, std::shared_ptr<celu>>(m, "celu")
         .def(py::init<float&, bool&>());
 }
 
 void init_elu(py::module& m)
 {
-    py::class_<elu>(m, "elu")
+    py::class_<elu, std::shared_ptr<elu>>(m, "elu")
         .def(py::init<float&, bool&>());
 }
 
 void init_gelu(py::module& m)
 {
-    py::class_<gelu>(m, "gelu")
+    py::class_<gelu, std::shared_ptr<gelu>>(m, "gelu")
         .def(py::init<float&, bool&>());
 }
 
 void init_hardshrink(py::module& m)
 {
-    py::class_<hardshrink>(m, "hardshrink")
+    py::class_<hardshrink, std::shared_ptr<hardshrink>>(m, "hardshrink")
         .def(py::init<float&, bool&>());
 }
 
 void init_hardsigmoid(py::module& m)
 {
-    py::class_<hardsigmoid>(m, "hardsigmoid")
+    py::class_<hardsigmoid, std::shared_ptr<hardsigmoid>>(m, "hardsigmoid")
         .def(py::init<bool&>());
 }
 
 void init_hardswish(py::module& m)
 {
-    py::class_<hardswish>(m, "hardswish")
+    py::class_<hardswish, std::shared_ptr<hardswish>>(m, "hardswish")
         .def(py::init<bool&>());
 }
 
 void init_hardtanh(py::module& m)
 {
-    py::class_<hardtanh>(m, "hardtanh")
+    py::class_<hardtanh, std::shared_ptr<hardtanh>>(m, "hardtanh")
         .def(py::init<float&, float&, bool&>());
 }
 
 void init_leakyrelu(py::module& m)
 {
-    py::class_<leakyrelu>(m, "leakyrelu")
+    py::class_<leakyrelu, std::shared_ptr<leakyrelu>>(m, "leakyrelu")
         .def(py::init<float&, bool&>());
 }
 
 void init_logsigmoid(py::module& m)
 {
-    py::class_<logsigmoid>(m, "logsigmoid")
+    py::class_<logsigmoid, std::shared_ptr<logsigmoid>>(m, "logsigmoid")
         .def(py::init<float&, bool&>());
 }
 
 void init_prelu(py::module& m)
 {
-    py::class_<prelu>(m, "prelu")
+    py::class_<prelu, std::shared_ptr<prelu>>(m, "prelu")
         .def(py::init<float&, bool&>());
 }
 
 void init_relu(py::module& m)
 {
-    py::class_<relu>(m, "relu")
+    py::class_<relu, std::shared_ptr<relu>>(m, "relu")
         .def(py::init<bool&>())
         .def("__call__", &relu::operator());
 }
 
 void init_rrelu(py::module& m)
 {
-    py::class_<rrelu>(m, "rrelu")
+    py::class_<rrelu, std::shared_ptr<rrelu>>(m, "rrelu")
         .def(py::init<float&, float&, bool&>());
 }
 
 void init_selu(py::module& m)
 {
-    py::class_<selu>(m, "selu")
+    py::class_<selu, std::shared_ptr<selu>>(m, "selu")
         .def(py::init<bool&>());
 }
 
 void init_sigmoid(py::module& m)
 {
-    py::class_<sigmoid>(m, "sigmoid")
+    py::class_<sigmoid, std::shared_ptr<sigmoid>>(m, "sigmoid")
         .def(py::init<bool&>());
 }
 
 void init_softplus(py::module& m)
 {
-    py::class_<softplus>(m, "softplus")
+    py::class_<softplus, std::shared_ptr<softplus>>(m, "softplus")
         .def(py::init<float&, bool&>());
 }
 
 void init_softshrink(py::module& m)
 {
-    py::class_<softshrink>(m, "softshrink")
+    py::class_<softshrink, std::shared_ptr<softshrink>>(m, "softshrink")
         .def(py::init<float&, bool&>());
 }
 
 void init_softsign(py::module& m)
 {
-    py::class_<softsign>(m, "softsign")
+    py::class_<softsign, std::shared_ptr<softsign>>(m, "softsign")
         .def(py::init<bool&>());
 }
 
 void init_tanshrink(py::module& m)
 {
-    py::class_<tanhshrink>(m, "tanhshrink")
+    py::class_<tanhshrink, std::shared_ptr<tanhshrink>>(m, "tanhshrink")
         .def(py::init<bool&>());
 }

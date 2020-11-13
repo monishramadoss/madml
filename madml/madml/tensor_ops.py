@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 from typing import Union, List
 import math
 from madml import tensor
+from madml import nn
 
 def _size(shape: List[int]):
     size = 1

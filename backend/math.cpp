@@ -566,204 +566,204 @@ namespace math
 
 void init_abs(py::module& m)
 {
-    py::class_<math::abs>(m, "abs")
+    py::class_<math::abs, std::shared_ptr<math::abs>>(m, "abs")
         .def(py::init<bool&>());
 }
 
 void init_ceil(py::module& m)
 {
-    py::class_<math::ceil>(m, "ceil")
+    py::class_<math::ceil, std::shared_ptr<math::ceil>>(m, "ceil")
         .def(py::init<bool&>());
 }
 
 void init_clip(py::module& m)
 {
-    py::class_<math::clip>(m, "clip")
+    py::class_<math::clip, std::shared_ptr<math::clip>>(m, "clip")
         .def(py::init<bool&>());
 }
 
 void init_exp(py::module& m)
 {
-    py::class_<math::exp>(m, "exp")
+    py::class_<math::exp, std::shared_ptr<math::exp>>(m, "exp")
         .def(py::init<bool&>());
 }
 
 void init_floor(py::module& m)
 {
-    py::class_<math::floor>(m, "floor")
+    py::class_<math::floor, std::shared_ptr<math::floor>>(m, "floor")
         .def(py::init<bool&>());
 }
 
 void init_ln(py::module& m)
 {
-    py::class_<math::ln>(m, "ln")
+    py::class_<math::ln, std::shared_ptr<math::ln>>(m, "ln")
         .def(py::init<bool&>());
 }
 
 void init_round(py::module& m)
 {
-    py::class_<math::round>(m, "round")
+    py::class_<math::round, std::shared_ptr<math::round>>(m, "round")
         .def(py::init<bool&>());
 }
 
 void init_sqrt(py::module& m)
 {
-    py::class_<math::sqrt>(m, "sqrt")
+    py::class_<math::sqrt, std::shared_ptr<math::sqrt>>(m, "sqrt")
         .def(py::init<bool&>());
 }
 
 void init_acos(py::module& m)
 {
-    py::class_<math::acos>(m, "acos")
+    py::class_<math::acos, std::shared_ptr<math::acos>>(m, "acos")
         .def(py::init<bool&>());
 }
 
 void init_acosh(py::module& m)
 {
-    py::class_<math::acosh>(m, "acosh")
+    py::class_<math::acosh, std::shared_ptr<math::acosh>>(m, "acosh")
         .def(py::init<bool&>());
 }
 
 void init_asin(py::module& m)
 {
-    py::class_<math::asin>(m, "asin")
+    py::class_<math::asin, std::shared_ptr<math::asin>>(m, "asin")
         .def(py::init<bool&>());
 }
 
 void init_asinh(py::module& m)
 {
-    py::class_<math::asinh>(m, "asinh")
+    py::class_<math::asinh, std::shared_ptr<math::asinh>>(m, "asinh")
         .def(py::init<bool&>());
 }
 
 void init_atan(py::module& m)
 {
-    py::class_<math::atan>(m, "atan")
+    py::class_<math::atan, std::shared_ptr<math::atan>>(m, "atan")
         .def(py::init<bool&>());
 }
 
 void init_atanh(py::module& m)
 {
-    py::class_<math::atanh>(m, "atanh")
+    py::class_<math::atanh, std::shared_ptr<math::atanh>>(m, "atanh")
         .def(py::init<bool&>());
 }
 
 void init_cos(py::module& m)
 {
-    py::class_<math::cos>(m, "cos")
+    py::class_<math::cos, std::shared_ptr<math::cos>>(m, "cos")
         .def(py::init<bool&>());
 }
 
 void init_cosh(py::module& m)
 {
-    py::class_<math::cosh>(m, "cosh")
+    py::class_<math::cosh, std::shared_ptr<math::cosh>>(m, "cosh")
         .def(py::init<bool&>());
 }
 
 void init_sin(py::module& m)
 {
-    py::class_<math::sin>(m, "sin")
+    py::class_<math::sin, std::shared_ptr<math::sin>>(m, "sin")
         .def(py::init<bool&>());
 }
 
 void init_sinh(py::module& m)
 {
-    py::class_<math::sinh>(m, "sinh")
+    py::class_<math::sinh, std::shared_ptr<math::sinh>>(m, "sinh")
         .def(py::init<bool&>());
 }
 
 void init_tan(py::module& m)
 {
-    py::class_<math::tan>(m, "tan")
+    py::class_<math::tan, std::shared_ptr<math::tan>>(m, "tan")
         .def(py::init<bool&>());
 }
 
 void init_tanh(py::module& m)
 {
-    py::class_<math::tanh>(m, "tanh")
+    py::class_<math::tanh, std::shared_ptr<math::tanh>>(m, "tanh")
         .def(py::init<bool&>());
 }
 
 void init_add(py::module& m)
 {
-    py::class_<math::add>(m, "add")
+    py::class_<math::add, std::shared_ptr<math::add>>(m, "add")
         .def(py::init<bool&>());
 }
 
 void init_sub(py::module& m)
 {
-    py::class_<math::sub>(m, "sub")
+    py::class_<math::sub, std::shared_ptr<math::sub>>(m, "sub")
         .def(py::init<bool&>());
 }
 
 void init_mul(py::module& m)
 {
-    py::class_<math::mul>(m, "mul")
+    py::class_<math::mul, std::shared_ptr<math::mul>>(m, "mul")
         .def(py::init<bool&>());
 }
 
 void init_div(py::module& m)
 {
-    py::class_<math::div>(m, "div")
+    py::class_<math::div, std::shared_ptr<math::div>>(m, "div")
         .def(py::init<bool&>());
 }
 
 void init_mod(py::module& m)
 {
-    py::class_<math::mod>(m, "mod")
+    py::class_<math::mod, std::shared_ptr<math::mod>>(m, "mod")
         .def(py::init<bool&>());
 }
 
 void init_pow(py::module& m)
 {
-    py::class_<math::pow>(m, "pow")
+    py::class_<math::pow, std::shared_ptr<math::pow>>(m, "pow")
         .def(py::init<bool&>());
 }
 
 void init_min(py::module& m)
 {
-    py::class_<math::min>(m, "min")
+    py::class_<math::min, std::shared_ptr<math::min>>(m, "min")
         .def(py::init<bool&>());
 }
 
 void init_max(py::module& m)
 {
-    py::class_<math::max>(m, "max")
+    py::class_<math::max, std::shared_ptr<math::max>>(m, "max")
         .def(py::init<bool&>());
 }
 
 void init_eq(py::module& m)
 {
-    py::class_<math::eq>(m, "eq")
+    py::class_<math::eq, std::shared_ptr<math::eq>>(m, "eq")
         .def(py::init<bool&>());
 }
 
 void init_ne(py::module& m)
 {
-    py::class_<math::ne>(m, "ne")
+    py::class_<math::ne, std::shared_ptr<math::ne>>(m, "ne")
         .def(py::init<bool&>());
 }
 
 void init_lt(py::module& m)
 {
-    py::class_<math::lt>(m, "lt")
+    py::class_<math::lt, std::shared_ptr<math::lt>>(m, "lt")
         .def(py::init<bool&>());
 }
 
 void init_le(py::module& m)
 {
-    py::class_<math::le>(m, "le")
+    py::class_<math::le, std::shared_ptr<math::le>>(m, "le")
         .def(py::init<bool&>());
 }
 
 void init_gt(py::module& m)
 {
-    py::class_<math::gt>(m, "gt")
+    py::class_<math::gt, std::shared_ptr<math::gt>>(m, "gt")
         .def(py::init<bool&>());
 }
 
 void init_ge(py::module& m)
 {
-    py::class_<math::ge>(m, "ge")
+    py::class_<math::ge, std::shared_ptr<math::ge>>(m, "ge")
         .def(py::init<bool&>());
 }

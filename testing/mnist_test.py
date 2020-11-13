@@ -66,14 +66,14 @@ class Net(nn.Module):
 
     def forward(self, x):
         x = self.conv1(x) # 32 x 28 x 28
-        #x = self.relu1(x)
-        #x = self.pool(x) # 32 x 14 x 14
-        #x = self.conv2(x) # 46 x 12 x 12
-        #x = self.relu2(x)
-        #x = self.flat(x)
-        #x = self.relu3(self.fc1(x))
-        #x = self.relu4(self.fc2(x))
-        #x = self.fc3(x)
+        x = self.relu1(x)
+        x = self.pool(x) # 32 x 14 x 14
+        x = self.conv2(x) # 46 x 12 x 12
+        x = self.relu2(x)
+        x = self.flat(x)
+        x = self.relu3(self.fc1(x))
+        x = self.relu4(self.fc2(x))
+        x = self.fc3(x)
         return x
 
 x, y, x1, y1 = load()
