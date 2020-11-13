@@ -10,10 +10,9 @@ namespace loss
         m_type = "Loss";
     }
 
-    void Loss::hook(const uint32_t* shader, size_t codeSize, const std::shared_ptr<tensor>& _x,
-                    const std::shared_ptr<tensor>& _w)
+    void Loss::hook(const std::shared_ptr<tensor>& _x, const std::shared_ptr<tensor>& _w)
     {
-        layer_construct_forward(shader, codeSize, _x, _w);
+        layer_construct_forward(_x, _w);
     }
 
     void Loss::backward()
@@ -23,10 +22,12 @@ namespace loss
     MSE::MSE()
     {
         m_type = "MSE";
+        fwd_shader = kernel::shaders::d_MSE_spv;
+        fwd_codeSize = sizeof(kernel::shaders::d_MSE_spv);
     }
 
     void MSE::operator()(const std::shared_ptr<tensor>& y_true, const std::shared_ptr<tensor>& y_pred)
     {
-        return hook(kernel::shaders::d_MSE_spv, sizeof(kernel::shaders::d_MSE_spv), y_true, y_pred);
+        return hook(y_true, y_pred);
     }
 }

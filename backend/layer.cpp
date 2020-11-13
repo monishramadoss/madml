@@ -21,16 +21,20 @@ layer::layer()
 
 layer::~layer()
 {
-    vkDestroyShaderModule(m_device, m_module, nullptr);
-    vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
-    vkDestroyPipeline(m_device, m_pipeline, nullptr);
-    vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
-}
+    if (m_module != nullptr)
+        vkDestroyShaderModule(m_device, m_module, nullptr);
+    if (m_descriptor_pool != nullptr)
+        vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
+    if(m_pipeline != nullptr)
+        vkDestroyPipeline(m_device, m_pipeline, nullptr);
+    if(m_pipeline_layout != nullptr)
+        vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
+} 
 
 void layer::initVulkanThing(int buffer_num_forward)
 {
     createDescriptorSetLayout(buffer_num_forward);
-    createDescriptorSet(buffer_num_forward);
+    createDescriptorSet(buffer_num_forward);  
     createCommandBuffer();
 }
 
@@ -85,10 +89,12 @@ void layer::createShaderModule(const uint32_t* spv, size_t size, const std::stri
     }
     else
     {
-        //std::vector<uint32_t> code;
-        //code = compile("shader", shaderc_compute_shader, source);
-        //create_info.pCode = code.data();
-        //create_info.codeSize = sizeof(uint32_t) * code.size();
+#ifdef USE_SHADERC
+        std::vector<uint32_t> code;
+        code = compile("shader",  source);
+        create_info.pCode = code.data();
+        create_info.codeSize = sizeof(uint32_t) * code.size();
+#endif
     }
     VK_CHECK_RESULT(vkCreateShaderModule(m_device, &create_info, 0, &m_module));
 }
@@ -142,10 +148,10 @@ void layer::recordCommandBuffer(void* push_constants, size_t push_constants_size
     VK_CHECK_RESULT(vkBeginCommandBuffer(m_cmd_buffer, &beginInfo));
     if (push_constants)
         vkCmdPushConstants(m_cmd_buffer, m_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0,
-                           static_cast<uint32_t>(push_constants_size), push_constants);
+            static_cast<uint32_t>(push_constants_size), push_constants);
     vkCmdBindPipeline(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
     vkCmdBindDescriptorSets(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_layout, 0, 1,
-                            &m_descriptor_set, 0, nullptr);
+        &m_descriptor_set, 0, nullptr);
     vkCmdDispatch(m_cmd_buffer, m_group_x, m_group_y, m_group_z);
 
     VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));
@@ -198,7 +204,7 @@ void Module::update_weight()
 }
 
 void DFS_f(size_t start, std::vector<bool>& visited, std::vector<std::vector<int>>& adj,
-           std::vector<size_t>& execution_order)
+    std::vector<size_t>& execution_order)
 {
     execution_order.push_back(start);
     visited[start] = true;

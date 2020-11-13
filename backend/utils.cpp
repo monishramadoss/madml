@@ -1,7 +1,7 @@
 #include "common.h"
 #include "utils.h"
 
-std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind, const std::string& data)
+std::vector<uint32_t> compile(const std::string& name, const std::string& data)
 {
     std::vector<uint32_t> result;
 #ifdef USE_SHADERC
@@ -10,8 +10,8 @@ std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind,
     shaderc::CompileOptions options;
 
     options.SetGenerateDebugInfo();
-    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
-    shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(data.c_str(), data.size(), kind, name.c_str(), options);
+    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+    shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(data.c_str(), data.size(), shaderc_glsl_compute_shader, name.c_str(), options);
 
     if (module.GetCompilationStatus() != shaderc_compilation_status_success)
     {
@@ -20,6 +20,7 @@ std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind,
     result.assign(module.cbegin(), module.cend());
     return result;
 #else
-    return result;
+    return nullptr;
 #endif
 }
+

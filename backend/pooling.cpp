@@ -6,11 +6,9 @@ constexpr int local_sz_x_conv = 16;
 constexpr int local_sz_y_conv = 64;
 
 maxPooling::maxPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                       bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                        m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
-{
-    m_type = "maxPooling";
-
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+{    
     trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 }
 
@@ -25,7 +23,7 @@ std::shared_ptr<tensor>& maxPooling::operator()(const std::shared_ptr<tensor>& x
     if (!kernel)
         kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-    t1 = kernel->operator()(x);
+    kernel->operator()(t1, x);
 
     // argmax t1 across n_output_plane
     auto out = kernel->output_shape();
@@ -46,11 +44,10 @@ void maxPooling::update_weight()
 }
 
 maxUnPooling::maxUnPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                           bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                            m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
-    m_type = "maxUnPooling";
-
+    
     trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 }
 
@@ -65,7 +62,7 @@ std::shared_ptr<tensor>& maxUnPooling::operator()(const std::shared_ptr<tensor>&
     if (!kernel)
         kernel = std::make_shared<col2vol>(col2vol(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-    t1 = kernel->operator()(x);
+    kernel->operator()(t1, x);
 
     // argmax t1 across n_output_plane
     auto out = kernel->output_shape();
@@ -86,11 +83,10 @@ void maxUnPooling::update_weight()
 }
 
 avgPooling::avgPooling(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-                       bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                        m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+    bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+    m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
 {
-    m_type = "avgPooling";
-
+    
     trans = std::make_shared<transpose>(transpose(std::vector<int>{1, 0, 2, 3, 4}));
 }
 
@@ -105,7 +101,7 @@ std::shared_ptr<tensor>& avgPooling::operator()(const std::shared_ptr<tensor>& x
     if (!kernel)
         kernel = std::make_shared<vol2col>(vol2col(channels, m_kernel_size, m_padding, m_stride, m_dilation));
 
-    t1 = kernel->operator()(x);
+    kernel->operator()(t1, x);
 
     // mean t1 across n_output_plane
     auto out = kernel->output_shape();

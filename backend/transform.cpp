@@ -8,11 +8,14 @@ constexpr int local_sz_y_conv = 64;
 copy::copy() : Base_Layer<>(2)
 {
     m_type = "copy";
+    fwd_shader = kernel::shaders::unary_operator_spv;
+    fwd_codeSize = sizeof(kernel::shaders::unary_operator_spv);
+
 }
 
 std::shared_ptr<tensor>& copy::operator()(const std::shared_ptr<tensor>& x)
 {
-    return layer_construct_forward(kernel::shaders::unary_operator_spv, sizeof(kernel::shaders::unary_operator_spv), x);
+    return layer_construct_forward(x);
 }
 
 void copy::computeGroupCount()
@@ -50,6 +53,8 @@ transpose::transpose(const std::vector<int>& order) : Base_Layer<transpose_param
         d_stride[i] = order[i];
     bck_shader = kernel::shaders::transpose_spv;
     bck_codeSize = sizeof(kernel::shaders::transpose_spv);
+    fwd_shader = kernel::shaders::transpose_spv;
+    bck_codeSize = sizeof(kernel::shaders::transpose_spv);
 }
 
 std::shared_ptr<tensor>& transpose::operator()(const std::shared_ptr<tensor>& _x)
@@ -62,10 +67,9 @@ std::shared_ptr<tensor>& transpose::operator()(const std::shared_ptr<tensor>& _x
         old_shape = _x->getShape();
         stride = prepareStrides(old_shape, new_shape, stride);
         w = std::make_shared<tensor>(tensor((char*)stride.data(), std::vector<int>{m_param.num_axes * 3},
-                                            Format::kFormatInt32));
+            Format::kFormatInt32));
     }
-    layer_construct_forward(kernel::shaders::transpose_spv, sizeof(kernel::shaders::transpose_spv), _x, w, Format::kFormatFp32,
-                            new_shape);
+    layer_construct_forward(_x, w, Format::kFormatFp32, new_shape);
     return y;
 }
 
@@ -75,9 +79,11 @@ int transpose::set_backward()
     {
         d_stride = prepareStrides(new_shape, old_shape, d_stride);
         dw = std::make_shared<tensor>(tensor((char*)d_stride.data(), std::vector<int>{m_param.num_axes * 3},
-                                             Format::kFormatInt32));
+            Format::kFormatInt32));
     }
-    dx = derivative->layer_construct_forward(bck_shader, bck_codeSize, dy, dw, Format::kFormatFp32, old_shape);
+    derivative->fwd_shader = bck_shader;
+    derivative->fwd_codeSize = bck_codeSize;
+    dx = derivative->layer_construct_forward(dy, dw, Format::kFormatFp32, old_shape);
     return dy->getId();
 }
 
@@ -90,9 +96,8 @@ void transpose::computeGroupCount()
     m_group_z = 1;
 }
 
-//
-//PYBIND11_MODULE(backend, m)
-//{
-//	py::class_<layers::transpose>(m, "transpose")
-//		.def(py::init<const std::vector<int>&>());
-//}
+void init_transpose(py::module& m)
+{
+    py::class_<transpose>(m, "transpose")
+        .def(py::init<const std::vector<int>&>());
+}

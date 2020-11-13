@@ -1,22 +1,21 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#define USE_SHADERC
 #ifdef USE_SHADERC
-#include "shaderc/shaderc.h"
+#include <shaderc/shaderc.hpp>
 #else
 typedef int shaderc_shader_kind;
 #define SHADERC_COMPUTE_SHADER 0
 #endif
+#include <string>
 
 #include "backend.h"
 #include "context.h"
 
-inline size_t alignSize(size_t sz, int n)
-{
-    return (sz + n - 1) & -n;
-}
+inline size_t alignSize(size_t sz, int n){ return (sz + n - 1) & -n; }
 
-std::vector<uint32_t> compile(const std::string& name, shaderc_shader_kind kind, const std::string& data);
+std::vector<uint32_t> compile(const std::string& name, const std::string& data);
 
 inline bool checkFormat(Format fmt) { return fmt > Format::kFormatInvalid && fmt < Format::kFormatNum; }
 
@@ -65,4 +64,19 @@ inline int shapeCount(const Shape& shape, int start = -1, int end = -1)
     return elems;
 }
 
+
+
+/// <summary>
+/// Function to write shader code for single param shaders 
+/// </summary>
+/// <param name="op"> Ex: B[i] = A[i]; </param>
+/// <returns> shader string</returns>
+std::string& single_shader_op(const std::string& op);
+
+/// <summary>
+/// Function to write shader code for two param shaders 
+/// </summary>
+/// <param name="op"> Ex: C[i] = A[i] __ B[i]; </param>
+/// <returns> shader string</returns>
+std::string& double_shader_op(const std::string& op);
 #endif

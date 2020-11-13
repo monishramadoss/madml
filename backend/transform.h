@@ -35,4 +35,6 @@ public:
     int set_backward() override;
 };
 
+void init_transpose(py::module& m);
+
 #endif //!TRANSFORM_H

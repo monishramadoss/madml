@@ -1,3 +1,4 @@
+from madml.optimizer import Optimizer
 import numpy as np
 from urllib import request
 import gzip
@@ -7,6 +8,7 @@ from tqdm import tqdm
 
 import madml
 import madml.nn as nn
+import madml.optimizer as optimizer
 
 filename = [["training_images","train-images-idx3-ubyte.gz"],
     ["test_images","t10k-images-idx3-ubyte.gz"],
@@ -72,7 +74,12 @@ class mnist_model(nn.Module):
         x = self.fc3(x)
         return x
 
-def train_loop(x, y, model):
-    for i in tqdm(range(x.shape[0])):
-        pred = model(x[i,...].astype(np.float32))
-        break
+def train_loop(X, Y, model=mnist_model()):
+    criterion = nn.CrossEntropyLoss()
+    optim = optimizer.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    for x, y in zip(X, Y):
+        optim.zero_grad()
+        logits = model(X)
+        loss = criterion(logits, y)
+        loss.backward()
+        optim.step()

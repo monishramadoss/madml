@@ -6,8 +6,8 @@
 
 PYBIND11_MODULE(backend, m)
 {
-    m.def("test_memory", test_memory);
     m.def("im2col_cpu", &im2col_cpu);
+    m.def("col2im_cpu", &col2im_cpu);
     init_tensor(m);
     init_celu(m);
     init_elu(m);
@@ -66,4 +66,10 @@ PYBIND11_MODULE(backend, m)
     init_le(m);
     init_gt(m);
     init_ge(m);
+
+    init_gemm(m);
+    init_vol2col(m);
+    init_col2vol(m);
+    //init_transpose(m);
+
 }

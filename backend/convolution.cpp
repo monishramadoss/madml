@@ -13,6 +13,20 @@ vol2col::vol2col(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) : 
         0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
         dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
     };
+
+    fwd_shader = kernel::shaders::vol2col_spv;
+    fwd_codeSize = sizeof(kernel::shaders::vol2col_spv);
+}
+
+vol2col::vol2col(int in_channel, std::vector<float>& params) : Base_Layer<vol2col_param>(2)
+{
+    m_type = "vol2col";
+    m_param = {
+        0, 1, in_channel, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9],
+        params[10], params[11], 0, 0, 0, 0, 0, 0
+    };
+    fwd_shader = kernel::shaders::vol2col_spv;
+    fwd_codeSize = sizeof(kernel::shaders::vol2col_spv);
 }
 
 void vol2col::computeGroupCount()
@@ -31,7 +45,7 @@ void vol2col::computeGroupCount()
     m_group_z = 1;
 }
 
-std::shared_ptr<tensor>& vol2col::operator()(const std::shared_ptr<tensor>& x_)
+ void vol2col::operator()(std::shared_ptr<tensor>& _y, const std::shared_ptr<tensor>& x_)
 {
     if (m_pipeline == nullptr)
     {
@@ -52,9 +66,8 @@ std::shared_ptr<tensor>& vol2col::operator()(const std::shared_ptr<tensor>& x_)
     }
     const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
     const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_col * m_param.height_col * m_param.width_col);
-    layer_construct_forward(kernel::shaders::vol2col_spv, sizeof(kernel::shaders::vol2col_spv), x_, Format::kFormatFp32,
-                            std::vector<int>{n_out_plane, output_length});
-    return y;
+    layer_construct_forward( x_, Format::kFormatFp32, std::vector<int>{n_out_plane, output_length});
+    _y = y;
 }
 
 std::vector<int> vol2col::output_shape() const
@@ -65,6 +78,14 @@ std::vector<int> vol2col::output_shape() const
     return std::vector<int>{d, h, w};
 }
 
+void init_vol2col(py::module& m)
+{
+    py::class_<vol2col>(m, "vol2col")
+        .def(py::init<int, std::vector<float>>())
+        .def("__call__", &vol2col::operator());
+
+}
+
 col2vol::col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) : Base_Layer<vol2col_param>(2)
 {
     m_type = "col2vol";
@@ -72,6 +93,19 @@ col2vol::col2vol(int channels, dhw kernel, dhw pad, dhw stride, dhw dilation) : 
         0, 1, channels, kernel.h, kernel.w, kernel.d, pad.h, pad.w, pad.d, stride.h, stride.w, stride.d, dilation.h,
         dilation.w, dilation.d, 0, 0, 0, 0, 0, 0
     };
+    fwd_shader = kernel::shaders::col2vol_spv;
+    fwd_codeSize = sizeof(kernel::shaders::col2vol_spv);
+}
+
+col2vol::col2vol(int in_channel, std::vector<float>& params) : Base_Layer<vol2col_param>(2)
+{
+    m_type = "col2vol";
+    m_param = {
+        0, 1, in_channel, params[0], params[1], params[2], params[3], params[4], params[5], params[6], params[7], params[8], params[9],
+        params[10], params[11], 0, 0, 0, 0, 0, 0
+    };
+    fwd_shader = kernel::shaders::col2vol_spv;
+    fwd_codeSize = sizeof(kernel::shaders::col2vol_spv);
 }
 
 void col2vol::computeGroupCount()
@@ -90,14 +124,14 @@ void col2vol::computeGroupCount()
     m_group_z = 1;
 }
 
-std::shared_ptr<tensor>& col2vol::operator()(const std::shared_ptr<tensor>& x_)
+void col2vol::operator()(std::shared_ptr<tensor>& _y, const std::shared_ptr<tensor>& _x)
 {
     if (m_pipeline == nullptr)
     {
-        const float depth = static_cast<float>(x_->getShape()[x_->getShape().size() - 3]);
-        const float height = static_cast<float>(x_->getShape()[x_->getShape().size() - 2]);
-        const float width = static_cast<float>(x_->getShape()[x_->getShape().size() - 1]);
-        m_param.batchsize = x_->getShape()[0];
+        const float depth = static_cast<float>(_x->getShape()[_x->getShape().size() - 3]);
+        const float height = static_cast<float>(_x->getShape()[_x->getShape().size() - 2]);
+        const float width = static_cast<float>(_x->getShape()[_x->getShape().size() - 1]);
+        m_param.batchsize = _x->getShape()[0];
 
         m_param.depth_col = depth;
         m_param.height_col = height;
@@ -112,22 +146,9 @@ std::shared_ptr<tensor>& col2vol::operator()(const std::shared_ptr<tensor>& x_)
     const int n_out_plane = static_cast<int>(m_param.channels * m_param.kernel_d * m_param.kernel_h * m_param.kernel_w);
     const int output_length = static_cast<int>(m_param.batchsize * m_param.depth_vol * m_param.height_vol * m_param.
         width_vol);
-    layer_construct_forward(kernel::shaders::col2vol_spv, sizeof(kernel::shaders::col2vol_spv), x_, Format::kFormatFp32,
-                            std::vector<int>{n_out_plane, output_length});
+    layer_construct_forward( _x, Format::kFormatFp32, std::vector<int>{n_out_plane, output_length});
 
-    float* t = (float*)y->toHost();
-    std::cout << std::endl;
-    for (int i = 0; i < n_out_plane; ++i)
-    {
-        std::cout << "[ ";
-        for (int j = 0; j < output_length; ++j)
-        {
-            std::cout << t[i * output_length + j] << ", ";
-        }
-        std::cout << "]" << std::endl;
-    }
-
-    return y;
+    _y = y;
 }
 
 std::vector<int> col2vol::output_shape() const
@@ -138,13 +159,20 @@ std::vector<int> col2vol::output_shape() const
     return std::vector<int>{d, h, w};
 }
 
+void init_col2vol(py::module& m)
+{
+    py::class_<col2vol>(m, "col2vol")
+        .def(py::init<int, std::vector<float>>())
+        .def("__call__", &col2vol::operator());
+}
+
 namespace nn
 {
     conv::conv(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation, int padding_type,
-               bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
-                                m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
+        bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size), m_stride(stride),
+        m_padding(padding), m_dilation(dilation), USE_BIAS(use_bias)
     {
-        m_type = "conv";
+        
         mm = std::make_shared<gemm>(gemm(1., 1., false));
         if (USE_BIAS)
             bias = std::make_shared<math::add>(math::add());
@@ -168,8 +196,8 @@ namespace nn
             w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, c}));
         }
 
-        t1 = kernel->operator()(x); //27 9
-        y = mm->operator()(w, t1);
+        kernel->operator()(t1, x); //27 9
+        mm->operator()(y, w, t1); //
         auto out = kernel->output_shape();
 
         if (USE_BIAS)
@@ -219,12 +247,11 @@ namespace nn
     }
 
     convTranspose::convTranspose(int num_filters, dhw kernel_size, dhw stride, dhw padding, dhw dilation,
-                                 int padding_type,
-                                 bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
-                                                  m_stride(stride), m_padding(padding), m_dilation(dilation),
-                                                  USE_BIAS(use_bias)
+        int padding_type, bool use_bias) : m_num_filters(num_filters), m_kernel_size(kernel_size),
+        m_stride(stride), m_padding(padding), m_dilation(dilation),
+        USE_BIAS(use_bias)
     {
-        m_type = "convT";
+        
 
         mm = std::make_shared<gemm>(gemm(1., 1., false));
         if (USE_BIAS)
@@ -257,8 +284,8 @@ namespace nn
             w = std::make_shared<tensor>(tensor(1.0, std::vector<int>{m_num_filters, c}));
         }
 
-        t1 = kernel->operator()(x);
-        y = mm->operator()(w, t1);
+        kernel->operator()(t1, x);
+        mm->operator()(y, w, t1);
         auto out = kernel->output_shape();
         if (USE_BIAS)
         {
@@ -278,29 +305,7 @@ namespace nn
     }
 
     int convTranspose::set_backward()
-    {
-        if (USE_BIAS)
-        {
-            bias->dy = dy;
-            bias->is_bias = true;
-            bias->set_backward();
-            db = bias->dw;
-
-            mm->dy = bias->dx;
-            mm->set_backward();
-            dx = mm->dx;
-            dw = mm->dw;
-
-            //col2im
-        }
-        else
-        {
-            mm->dy = dy;
-            mm->set_backward();
-            dx = mm->dx;
-            dw = mm->dw;
-        }
-
+    {       
         return 1;
     }
 

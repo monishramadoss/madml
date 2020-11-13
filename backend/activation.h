@@ -146,40 +146,40 @@ public:
     std::shared_ptr<tensor>& operator()(const std::shared_ptr<tensor>& x);
 };
 
-void init_celu(py::module & m);
+void init_celu(py::module& m);
 
-void init_elu(py::module & m);
+void init_elu(py::module& m);
 
-void init_gelu(py::module & m);
+void init_gelu(py::module& m);
 
-void init_hardshrink(py::module & m);
+void init_hardshrink(py::module& m);
 
-void init_hardsigmoid(py::module & m);
+void init_hardsigmoid(py::module& m);
 
-void init_hardswish(py::module & m);
+void init_hardswish(py::module& m);
 
-void init_hardtanh(py::module & m);
+void init_hardtanh(py::module& m);
 
-void init_leakyrelu(py::module & m);
+void init_leakyrelu(py::module& m);
 
-void init_logsigmoid(py::module & m);
+void init_logsigmoid(py::module& m);
 
-void init_prelu(py::module & m);
+void init_prelu(py::module& m);
 
-void init_relu(py::module & m);
+void init_relu(py::module& m);
 
-void init_rrelu(py::module & m);
+void init_rrelu(py::module& m);
 
-void init_selu(py::module & m);
+void init_selu(py::module& m);
 
-void init_sigmoid(py::module & m);
+void init_sigmoid(py::module& m);
 
-void init_softplus(py::module & m);
+void init_softplus(py::module& m);
 
-void init_softshrink(py::module & m);
+void init_softshrink(py::module& m);
 
-void init_softsign(py::module & m);
+void init_softsign(py::module& m);
 
-void init_tanshrink(py::module & m);
+void init_tanshrink(py::module& m);
 
 #endif //!activation

@@ -5,9 +5,9 @@ from __future__ import unicode_literals
 
 from typing import List, Optional, Union
 from .module import Module
-from madml.utils import *
+from ..utils import *
 from madml import tensor
-
+import numpy as np
 def dim_fix(arr, arg_arr):
     j = 0
     for i in range(len(arg_arr) - 1, len(arr)):
@@ -31,9 +31,12 @@ class _MaxPoolNd(Module):
         self.dilation = dim_fix([1,1,1], dilation)
         self.return_indices = return_indices
         self.ceil_mode = ceil_mode
+
         self._col = [1,1,1]
         self._im = [1,1,1]
-
+        if self._use_gpu:
+            self._kernel = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            #self._trans = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={kernel_size}, stride={stride}, padding={padding}, dilation={dilation}, ceil_mode={ceil_mode}'.format(**self.__dict__)
 
@@ -50,25 +53,23 @@ class _MaxPoolNd(Module):
 
         self.batch_size = x.shape[0] * x.shape[1]
         self.in_channels = 1
-        B, n_output_plane, output_length = im2col(x, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         # 4 X 32x1x25
-        max_idx = madml.argmax(B, axis=0)
+        max_idx = np.argmax(B, axis=0)
         y = B[max_idx, range(max_idx.size)]
         y = y.reshape(x.shape[1], x.shape[0], *self._col)
-        y = madml.transpose(y, (1, 0, 2, 3, 4))
+        y = np.transpose(y, (1, 0, 2, 3, 4))
         self.cache = [x, max_idx, B]
         return y
 
     def backward_cpu(self, dy: tensor) -> tensor:
         x, max_idx, B = self.cache
         n, c, d, h, w = x.shape
-
-        dx_col = madml.zeros_like(B)
-        dy_col = dy.transpose(2,3,4,0,1).ravel()
+        dx_col = np.zeros(B.shape)
+        dy_col = np.transpose(dy, (2,3,4,0,1)).ravel()
         dx_col[max_idx, range(dy_col.size)] = dy_col
-        dx = None #col2im_indices(dx_col, (n * c, 1, d, h, w), size, size, padding=0,
-                  #stride=stride)
-        #dx = dx.reshape(x.shape)
+        dx, _, _ = col2im_cpu(dx_col, self.batch_size, n, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        dx = dx.reshape(x.shape)
         return dx
 
 class MaxPool1d(_MaxPoolNd):
@@ -127,12 +128,14 @@ class _MaxUnpoolNd(Module):
         self.stride = dim_fix([1,1,1], stride)
         self.padding = dim_fix([0,0,0], padding)
         self.dilation = [1,1,1]
-
+        if self._use_gpu:
+            self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            #self._T = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={}, stride={}, padding={}'.format(self.kernel_size, self.stride, self.padding)
 
-    def forward_cpu(self, x: tensor) -> tensor:
-        t = madml.transpose(x, (1, 0, 2, 3, 4))
+    def forward_cpu(self, x: np.ndarray) -> np.ndarray:
+        t = np.transpose(x, (1, 0, 2, 3, 4))
 
 class MaxUnpool1d(_MaxUnpoolNd):
     def __init__(self, kernel_size: int, stride: Optional[int]=None, padding: int=0) -> None:
@@ -178,10 +181,13 @@ class _AvgPoolNd(Module):
         self.dilation = [1,1,1]
         self._col = [1,1,1]
         self._im = [1,1,1]
+        if self._use_gpu:
+            self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            #self._T = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={}, stride={}, padding={}'.format(self.kernel_size, self.stride, self.padding)
 
-    def forward_cpu(self, x: tensor) -> tensor:
+    def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         if(len(x.shape) >= 3):
             self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) + 1) // self.stride[2] + 1)
             self._im[2] = x.shape[-1]
@@ -194,23 +200,23 @@ class _AvgPoolNd(Module):
 
         self.batch_size = x.shape[0] * x.shape[1]
         self.in_channels = 1
-        B, n_output_plane, output_length = im2col(x, self.batch_size, self.in_channels, self._col, self._im, self.kernel_size, self.stride, self.padding, self.dilation)
+        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._col, self._im, self.kernel_size, self.stride, self.padding, self.dilation)
 
-        mean = madml.mean(B, axis=0)
+        mean = np.mean(B, axis=0)
         y = mean.reshape(self.in_channels, self.batch_size, *self._col)
-        y = madml.transpose(y, (1, 0, 2, 3, 4))
+        y = np.transpose(y, (1, 0, 2, 3, 4))
         self.cache = [x, mean, B]
         return y
-    def backward_cpu(self, dy: tensor) -> tensor:
+
+    def backward_cpu(self, dy:  np.ndarray) -> np.ndarray:
         x, max_idx, B = self.cache
         n, c, d, h, w = x.shape
 
-        dx_col = madml.zeros_like(B)
-        dy_col = dy.transpose(2,3,4,0,1).ravel()
-        dx = dx_col[:, range(dy_col.size)] = 1. / dx_col.shape[0] * dy_col
+        dx_col = np.zero(B.shape)
+        dy_col = np.transpose(dy, (2,3,4,0,1)).ravel()
+        dx_col = dx_col[:, range(dy_col.size)] = 1. / B.shape[0] * dy_col
 
-        #dx = col2im_indices(dx_col, (n * c, 1, d, h, w), size, size,
-        #padding=0, stride=stride)
+        dx, _, _ = col2im_cpu(dx_col, self.batch_size, n, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         dx = dx.reshape(x.shape)
         return dx
 

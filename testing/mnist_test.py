@@ -58,22 +58,22 @@ class Net(nn.Module):
         self.fc1 = nn.Linear(46 * 12 * 12, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
+        self.flat = nn.flatten()
         self.relu1 = nn.ReLU()
         self.relu2 = nn.ReLU()
         self.relu3 = nn.ReLU()
         self.relu4 = nn.ReLU()
 
     def forward(self, x):
-        bs = x.shape[0]
         x = self.conv1(x) # 32 x 28 x 28
-        x = self.relu1(x)
-        x = self.pool(x) # 32 x 14 x 14
-        x = self.conv2(x) # 46 x 12 x 12
-        x = self.relu2(x)
-        x = x.reshape((bs, -1))
-        x = self.relu3(self.fc1(x))
-        x = self.relu4(self.fc2(x))
-        x = self.fc3(x)
+        #x = self.relu1(x)
+        #x = self.pool(x) # 32 x 14 x 14
+        #x = self.conv2(x) # 46 x 12 x 12
+        #x = self.relu2(x)
+        #x = self.flat(x)
+        #x = self.relu3(self.fc1(x))
+        #x = self.relu4(self.fc2(x))
+        #x = self.fc3(x)
         return x
 
 x, y, x1, y1 = load()
@@ -82,10 +82,12 @@ x1 = x1.reshape((-1, 1, 1, 1, 28, 28))
 
 print(x.shape, x1.shape)
 print(x[0,...].shape, x1[0,...].shape)
+
+tx = tensor(x, x.shape).numpy()
+ty = tensor(y, y.shape).numpy()
+print(tx.shape, ty.shape)
 n = Net()
 
-tx = tensor(x.tolist(), x.shape)
-ty = tensor(y.tolist(), y.shape)
 for i in tqdm(range(x.shape[0])):
     y = n(x[i,...].astype(np.float32))
     break
