@@ -25,43 +25,43 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="madml\errors.py" />
-    <Compile Include="madml\nn\convolution.py" />
-    <Compile Include="madml\nn\linear.py" />
-    <Compile Include="madml\nn\loss.py" />
-    <Compile Include="madml\nn\math.py">
+    <Compile Include="errors.py" />
+    <Compile Include="nn\convolution.py" />
+    <Compile Include="nn\linear.py" />
+    <Compile Include="nn\loss.py" />
+    <Compile Include="nn\math.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\nn\module.py" />
-    <Compile Include="madml\nn\activation.py">
+    <Compile Include="nn\module.py" />
+    <Compile Include="nn\activation.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\nn\normalization.py" />
-    <Compile Include="madml\nn\pooling.py">
+    <Compile Include="nn\normalization.py" />
+    <Compile Include="nn\pooling.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\nn\rnn.py" />
-    <Compile Include="madml\nn\transform.py">
+    <Compile Include="nn\rnn.py" />
+    <Compile Include="nn\transform.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\nn\__init__.py" />
-    <Compile Include="madml\regularization.py">
+    <Compile Include="nn\__init__.py" />
+    <Compile Include="regularization.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\tensor.py">
+    <Compile Include="tensor.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\tensor_ops.py">
+    <Compile Include="tensor_ops.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\test.py">
+    <Compile Include="test.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\utils.py" />
-    <Compile Include="madml\__init__.py">
+    <Compile Include="utils.py" />
+    <Compile Include="__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\optimizer.py">
+    <Compile Include="optimizer.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -73,8 +73,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="madml\" />
-    <Folder Include="madml\nn\" />
+    <Folder Include="nn\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

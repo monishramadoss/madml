@@ -93,10 +93,8 @@ class _ConvNd(Module):
                 weight_shape = (in_channels, out_channels // groups, *self.kernel_size)
             else:
                 weight_shape = (out_channels, in_channels // groups, *self.kernel_size)
-            self.weight = Parameter(shape=weight_shape, weight=np.ones(weight_shape), gradient=np.ones(weight_shape)))
-        
-
-
+            self.weight = Parameter(shape=weight_shape, weight=np.ones(weight_shape), gradient=np.ones(weight_shape))
+                
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         if(len(x.shape) >= 3):
             self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
@@ -262,8 +260,8 @@ class _ConvTransposeNd(_ConvNd):
             self._col[0] = int(x.shape[-3] + 2 * self.padding[0] - (self.dilation[0] * (self.kernel_size[0] - 1) + 1) // self.stride[0] + 1)
             self._vol[0] = x.shape[-3]
 
-        #output_padding = self._output_padding(x, self._col, self.stride,
-        #self.padding, self.kernel_size)
+        output_padding = self._output_padding(x, self._col, self.stride,
+        self.padding, self.kernel_size)
 class ConvTranspose1d(_ConvTransposeNd):
     def __init__(self,
         in_channels: int,
