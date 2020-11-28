@@ -42,15 +42,15 @@ void RNNCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h,
         createPipeline(sizeof(RNN_cell_param));
     }
 
-    bindTensor(U, 0);
-    bindTensor(V, 1);
-    bindTensor(W, 2);
-    bindTensor(x, 3);
-    bindTensor(h, 4);
-    bindTensor(b1, 5);
-    bindTensor(b2, 6);
-    bindTensor(y, 7);
-    bindTensor(hn, 8);
+    bindtensor(U, 0);
+    bindtensor(V, 1);
+    bindtensor(W, 2);
+    bindtensor(x, 3);
+    bindtensor(h, 4);
+    bindtensor(b1, 5);
+    bindtensor(b2, 6);
+    bindtensor(y, 7);
+    bindtensor(hn, 8);
 
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
     runCommandBuffer();
@@ -97,17 +97,17 @@ void LSTMCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h
         createPipeline(sizeof(RNN_cell_param));
     }
 
-    bindTensor(U, 0);
-    bindTensor(V, 1);
-    bindTensor(W, 2);
-    bindTensor(x, 3);
-    bindTensor(h, 4);
-    bindTensor(c, 5);
-    bindTensor(b1, 6);
-    bindTensor(b2, 7);
-    bindTensor(y, 8);
-    bindTensor(hn, 9);
-    bindTensor(cn, 10);
+    bindtensor(U, 0);
+    bindtensor(V, 1);
+    bindtensor(W, 2);
+    bindtensor(x, 3);
+    bindtensor(h, 4);
+    bindtensor(c, 5);
+    bindtensor(b1, 6);
+    bindtensor(b2, 7);
+    bindtensor(y, 8);
+    bindtensor(hn, 9);
+    bindtensor(cn, 10);
 
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
     runCommandBuffer();
@@ -152,15 +152,15 @@ void GRUCell::operator()(std::shared_ptr<tensor>& x, std::shared_ptr<tensor>& h,
         createPipeline(sizeof(RNN_cell_param));
     }
 
-    bindTensor(U, 0);
-    bindTensor(V, 1);
-    bindTensor(W, 2);
-    bindTensor(x, 3);
-    bindTensor(h, 4);
-    bindTensor(b1, 5);
-    bindTensor(b2, 6);
-    bindTensor(y, 7);
-    bindTensor(hn, 8);
+    bindtensor(U, 0);
+    bindtensor(V, 1);
+    bindtensor(W, 2);
+    bindtensor(x, 3);
+    bindtensor(h, 4);
+    bindtensor(b1, 5);
+    bindtensor(b2, 6);
+    bindtensor(y, 7);
+    bindtensor(hn, 8);
 
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(RNN_cell_param));
     runCommandBuffer();

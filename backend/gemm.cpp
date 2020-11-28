@@ -73,10 +73,10 @@ void gemm::operator()(std::shared_ptr<tensor>& _y, const std::shared_ptr<tensor>
         createPipeline(sizeof(gemm_param));
     }
 
-    bindTensor(x, 0);
-    bindTensor(w, 1);
-    bindTensor(b, 2);
-    bindTensor(y, 3);
+    bindtensor(x, 0);
+    bindtensor(w, 1);
+    bindtensor(b, 2);
+    bindtensor(y, 3);
 
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(gemm_param));
     runCommandBuffer();
@@ -102,12 +102,12 @@ int gemm::set_backward()
         derivative->createPipeline(sizeof(gemm_param));
     }
 
-    derivative->bindTensor(x, 0);
-    derivative->bindTensor(w, 1);
-    derivative->bindTensor(dy, 2);
-    derivative->bindTensor(dw, 3);
-    derivative->bindTensor(dx, 4);
-    derivative->bindTensor(db, 5);
+    derivative->bindtensor(x, 0);
+    derivative->bindtensor(w, 1);
+    derivative->bindtensor(dy, 2);
+    derivative->bindtensor(dw, 3);
+    derivative->bindtensor(dx, 4);
+    derivative->bindtensor(db, 5);
     derivative->recordCommandBuffer(static_cast<void*>(&m_param), sizeof(gemm_param));
     derivative->runCommandBuffer();
     return dy->getId();

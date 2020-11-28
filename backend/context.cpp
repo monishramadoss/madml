@@ -17,7 +17,6 @@ VkCommandPool kCmdPool;
 VkDebugReportCallbackEXT kDebugReportCallback;
 uint32_t kQueueFamilyIndex;
 std::vector<const char*> kEnabledLayers;
-std::map<std::string, std::vector<uint32_t>> kShaders;
 std::mutex kContextMtx;
 
 static uint32_t getComputeQueueFamilyIndex()
@@ -229,7 +228,6 @@ context::~context()
         }
     }
 
-    kShaders.clear();
     if (kInstance != nullptr)
         vkDestroyInstance(kInstance, nullptr);
 }

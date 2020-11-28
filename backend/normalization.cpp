@@ -47,11 +47,11 @@ std::shared_ptr<tensor>& BatchNormalization::operator()(const std::shared_ptr<te
         createPipeline(sizeof(norm_param));
     }
 
-    bindTensor(x, 0);
-    bindTensor(t1, 1);
-    bindTensor(t2, 2);
-    bindTensor(y, 3);
-    bindTensor(t3, 4);
+    bindtensor(x, 0);
+    bindtensor(t1, 1);
+    bindtensor(t2, 2);
+    bindtensor(y, 3);
+    bindtensor(t3, 4);
 
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(norm_param));
     runCommandBuffer();

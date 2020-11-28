@@ -421,7 +421,7 @@ py::array_t<float> col2im_cpu(py::array_t<float> input1, py::array_t<float> resu
                             int data_vol_idx = data_vol + ((c_vol * params[2] + d_vol) * params[3] + h_vol) * params[4] + w_vol;
                             int data_col_idx = data_col + ((index * params[5] + d_col) * params[6] + h_col) * params[7] + w_col;
                             if (data_col_idx < buf2.shape[0] && data_vol_idx < buf1.shape[0])
-                                ptr2[data_vol_idx] = ptr1[data_col_idx];
+                                ptr2[data_vol_idx] += ptr1[data_col_idx];
                         }
                     }
                 }

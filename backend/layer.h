@@ -35,7 +35,7 @@ public:
     void createCommandBuffer();
     void recordCommandBuffer(void* push_constants = nullptr, size_t push_constants_size = 0) const;
     int runCommandBuffer();
-    void bindTensor(std::shared_ptr<tensor> tensor, int binding);
+    void bindtensor(std::shared_ptr<tensor> tensor, int binding);
 
     virtual void computeGroupCount() = 0;
 
@@ -164,8 +164,10 @@ int Base_Layer<T>::set_backward()
 
 template <typename T>
 std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(
-    const std::shared_ptr<tensor>& _x, Format fmt,
-    std::vector<int> output_shape)
+    const std::shared_ptr<tensor>& _x,
+    Format fmt,
+    std::vector<int> output_shape
+)
 {
     x = _x;
     
@@ -186,8 +188,8 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(
         createPipeline(sizeof(T));
     }
 
-    bindTensor(x, 0);
-    bindTensor(y, 1);
+    bindtensor(x, 0);
+    bindtensor(y, 1);
 
     if (bck_codeSize && !derivative)
     {
@@ -229,9 +231,9 @@ std::shared_ptr<tensor>& Base_Layer<T>::layer_construct_forward(
         createPipeline(sizeof(T));
     }
 
-    bindTensor(x, 0);
-    bindTensor(w, 1);
-    bindTensor(y, 2);
+    bindtensor(x, 0);
+    bindtensor(w, 1);
+    bindtensor(y, 2);
 
     if (bck_codeSize && !derivative)
     {

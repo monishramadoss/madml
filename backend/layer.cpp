@@ -181,7 +181,7 @@ int layer::runCommandBuffer()
     return 1;
 }
 
-void layer::bindTensor(std::shared_ptr<tensor> tensor, int binding)
+void layer::bindtensor(std::shared_ptr<tensor> tensor, int binding)
 {
     VkDescriptorBufferInfo desc_buffer_info = {};
     desc_buffer_info.buffer = tensor->getBuffer()->getVkBuffer();

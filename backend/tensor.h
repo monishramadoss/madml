@@ -1,5 +1,5 @@
-#ifndef TENSOR_H
-#define TENSOR_H
+#ifndef tensor_H
+#define tensor_H
 #include <memory>
 #include <numeric>
 #include <random>

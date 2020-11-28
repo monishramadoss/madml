@@ -4,8 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>18dde651-13ef-4633-bde8-c6aa2f1f5eb3</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>tests\mnist_test.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -15,6 +14,9 @@
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
+    <TestFramework>unittest</TestFramework>
+    <UnitTestPattern>test_*.py</UnitTestPattern>
+    <UnitTestRootDirectory>./tests</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -25,43 +27,46 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="errors.py" />
-    <Compile Include="nn\convolution.py" />
-    <Compile Include="nn\linear.py" />
-    <Compile Include="nn\loss.py" />
-    <Compile Include="nn\math.py">
+    <Compile Include="madml\errors.py" />
+    <Compile Include="madml\nn\convolution.py" />
+    <Compile Include="madml\nn\linear.py" />
+    <Compile Include="madml\nn\loss.py" />
+    <Compile Include="madml\nn\math.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="nn\module.py" />
-    <Compile Include="nn\activation.py">
+    <Compile Include="madml\nn\module.py" />
+    <Compile Include="madml\nn\activation.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="nn\normalization.py" />
-    <Compile Include="nn\pooling.py">
+    <Compile Include="madml\nn\normalization.py" />
+    <Compile Include="madml\nn\pooling.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="nn\rnn.py" />
-    <Compile Include="nn\transform.py">
+    <Compile Include="madml\nn\rnn.py" />
+    <Compile Include="madml\nn\transform.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="nn\__init__.py" />
-    <Compile Include="regularization.py">
+    <Compile Include="madml\nn\__init__.py" />
+    <Compile Include="madml\regularization.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="tensor.py">
+    <Compile Include="madml\tensor.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="tensor_ops.py">
+    <Compile Include="madml\test.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="test.py">
+    <Compile Include="tests\conv_test.py" />
+    <Compile Include="tests\mnist_test.py" />
+    <Compile Include="tests\test_1.py" />
+    <Compile Include="tests\test_2.py" />
+    <Compile Include="tests\test_3.py" />
+    <Compile Include="tests\test_4.py" />
+    <Compile Include="madml\utils.py" />
+    <Compile Include="madml\__init__.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="utils.py" />
-    <Compile Include="__init__.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="optimizer.py">
+    <Compile Include="madml\optimizer.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
@@ -73,7 +78,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="nn\" />
+    <Folder Include="madml\" />
+    <Folder Include="tests\" />
+    <Folder Include="madml\nn\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
