@@ -13,7 +13,7 @@
     <RootNamespace>madml</RootNamespace>
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <TestFramework>unittest</TestFramework>
     <UnitTestPattern>test_*.py</UnitTestPattern>
     <UnitTestRootDirectory>./tests</UnitTestRootDirectory>

@@ -11,69 +11,29 @@ import numpy as np
 
 import math
 import madml
-
-class momentum:
-    def __init__(self, ) -> None:
-        
-        # velocity[layer] = gamma * velocity[layer] + alpha * grad[layer]
-        raise NotImplementedError
+from madml.nn import Parameter
 
 
 class Optimizer(object):
-    def __init__(self, params: List[Union[np.ndarray, madml.tensor]], defaults):
+    _use_velocity: bool
+
+    def __init__(self, params: List[Parameter], defaults) -> None:
         self.defaults = defaults
         self.state = defaultdict(dict)
-        self.param_groups = list(params)
- 
-
-    def __getstate__(self):
-        return {
-            'defaults': self.defaults,
-            'state': self.state,
-            'param_groups': self.param_groups,
-        }
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-
-    def __repr__(self):
-        format_string = self.__class__.__name__ + ' ('
-        for i, group in enumerate(self.param_groups):
-            format_string += '\n'
-            format_string += 'Parameter Group {0}\n'.format(i)
-            for key in sorted(group.keys()):
-                if key != 'params':
-                    format_string += '    {0}: {1}\n'.format(key, group[key])
-        format_string += ')'
-        return format_string
-
-    def state_dict(self):
-        param_mappings = {}
-        start_index = 0
-        def pack_group(group):
-            nonlocal start_index
-            packed = {k: v for k, v in group.items() if k != 'params'}
-            param_mappings.update({id(p): i for i, p in enumerate(group['params'], start_index) if id(p) not in param_mappings})
-            packed['params'] = [param_mappings[id(p)] for p in group['params']]
-            start_index += len(packed['params'])
-            return packed
-        param_groups = [pack_group(g) for g in self.param_groups]
-        # Remap state to use order indices as keys
-
-        return {
-            'state': None,
-            'param_groups': param_groups,
-        }
+        self.params = params
+        self._use_velocity = False
 
     def zero_grad(self) -> None:
-        for p in self.param_groups:
-            p.zero_grad()
+        for _, p in self.params.items():
+            p.zero_grad(self._use_velocity)
 
     def step(self):
         raise NotImplementedError
 
 class Adagrad(Optimizer):
-    def __init__(self, params, lr=1e-2, lr_decay=0, weight_decay=0, initial_accumulator_value=0, eps=1e-10):
+    def __init__(self, params: List[Parameter], lr: float=1e-2, lr_decay: float=0., 
+                weight_decay:float=0, initial_accumulator_value: int=0, eps: float=1e-10) -> None:
+
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= lr_decay:
@@ -88,30 +48,22 @@ class Adagrad(Optimizer):
         defaults = dict(lr=lr, lr_decay=lr_decay, eps=eps, weight_decay=weight_decay, initial_accumulator_value=initial_accumulator_value)
         super(Adagrad, self).__init__(params, defaults)
 
-        for group in self.param_groups:
-            for p in group['params']:
-                state = self.state[p]
-                state['step'] = 0
-                state['sum'] = np.full_like(p, initial_accumulator_value)
+        for param in self.params:
+           param
 
     def share_memory(self):
         for group in self.param_groups:
-            for p in group['params']:
                 state = self.state[p]
-                state['sum'].share_memory_()
 
     def step(self, closure=None):
         raise NotImplementedError
-        loss = None
 
-        for group in self.param_groups:
-            for p in group['params']:
-                pass
-
-        return loss
+      
 
 class Adam(Optimizer):
-    def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8, weight_decay=0, amsgrad=False):
+    def __init__(self, params: List[Parameter], lr: float=1e-3, betas: List[float]=(0.9, 0.999), 
+                eps: float=1e-8, weight_decay: float=0.0, amsgrad: bool=False) -> None:
+
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -122,27 +74,25 @@ class Adam(Optimizer):
             raise ValueError("Invalid beta parameter at index 1: {}".format(betas[1]))
         if not 0.0 <= weight_decay:
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
-        defaults = dict(lr=lr, betas=betas, eps=eps,
-                        weight_decay=weight_decay, amsgrad=amsgrad)
+
+        defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, amsgrad=amsgrad)
         super(Adam, self).__init__(params, defaults)
 
     def __setstate__(self, state):
         super(Adam, self).__setstate__(state)
-        for group in self.param_groups:
-            group.setdefault('amsgrad', False)
+        #for group in self.params:
+        #    group.setdefault('amsgrad', False)
 
     def step(self, closure=None):
         raise NotImplementedError
 
-        loss = None
-        for group in self.param_groups:
-            for p in group['params']:
-                pass
 
         return loss
 
 class RMSprop(Optimizer):
-    def __init__(self, params, lr=1e-2, alpha=0.99, eps=1e-8, weight_decay=0, momentum=0, centered=False):
+    def __init__(self, param : List[Parameter], lr: float=1e-2, alpha: float=0.99, eps: float=1e-8, 
+                 weight_decay: float=0, momentum: int=0, centered: bool=False) -> None:
+
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -159,34 +109,35 @@ class RMSprop(Optimizer):
 
     def __setstate__(self, state):
         super(RMSprop, self).__setstate__(state)
-        for group in self.param_groups:
-            group.setdefault('momentum', 0)
-            group.setdefault('centered', False)
+        #for group in self.param_groups:
+        #    group.setdefault('momentum', 0)
+        #    group.setdefault('centered', False)
 
     def step(self, closure=None):
         loss = None
 
 class SGD(Optimizer):
-    def __init__(self, params, lr=1e-2, momentum=0, dampening=0, weight_decay=0, nesterov=False):
+    def __init__(self, params: List[Parameter], lr: float=1e-2, momentum: int=0.9, dampening: int=0, weight_decay: float=0, nesterov: bool=False) -> None:
         if lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if momentum < 0.0:
             raise ValueError("Invalid momentum value: {}".format(momentum))
         if weight_decay < 0.0:
             raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
-
-        defaults = dict(lr=lr, momentum=momentum, dampening=dampening,
-                        weight_decay=weight_decay, nesterov=nesterov)
         if nesterov and (momentum <= 0 or dampening != 0):
             raise ValueError("Nesterov momentum requires a momentum and zero dampening")
+
+        defaults = dict(lr=lr, momentum=momentum, dampening=dampening,  weight_decay=weight_decay, nesterov=nesterov)
         super(SGD, self).__init__(params, defaults)
-
-    def __setstate__(self, state):
-        super(SGD, self).__setstate__(state)
-        for group in self.param_groups:
-            group.setdefault('nesterov', False)
-
-    def step(self, closure=None) -> nINE:
-            
         
-        return 
+    def step(self, closure=None) -> None:
+        for x, param in self.params.items():
+            param.update_weight(self._sgd, )
+        return
+   
+    def _sgd(self, p:Parameter) -> Parameter:                
+        if self.state['momentum'] < 0:
+            p.velocity = self.state['momentum'] * p.velocity + self.state['lr'] * p.gradient
+            p.weight -= p.use_velocity
+        else:
+            p.weight -= self.state['lr'] * p.gradient

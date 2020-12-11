@@ -52,8 +52,11 @@ class mnist_model(nn.Module):
     def __init__(self):
         super(mnist_model, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
+        self.branch_conv1 = nn.Conv2d(1, 32, 3, padding=1)
+        
         self.pool = nn.MaxPool2d(2, 2)
         self.conv2 = nn.Conv2d(32, 46, 3)
+        self.add = nn.add()
         self.fc1 = nn.Linear(46 * 12 * 12, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 10)
@@ -64,9 +67,11 @@ class mnist_model(nn.Module):
         self.relu4 = nn.ReLU()
 
     def forward(self, x):
-        bs = x.shape[0]
+        b = x
         x = self.conv1(x) # 32 x 28 x 28
+        #x1 = self.branch_conv1(b)
         x = self.relu1(x)
+        #x = self.add(x, x1)
         x = self.pool(x) # 32 x 14 x 14
         x = self.conv2(x) # 46 x 12 x 12
         x = self.relu2(x)

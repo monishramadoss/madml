@@ -12,7 +12,7 @@ from madml.nn.loss import L1Loss, L2Loss, NLLLoss, MSELoss, HingeLoss, BCELoss, 
 from madml.nn.math import abs, ceil, clip, ceil, clip, exp, floor, ln, round, sqrt,\
                 acos, acosh, asin, asinh, atan, atanh,\
                 cos, cosh, sin, sinh, tan, tanh,\
-                sub, mul, div, mod, pow, max, min,\
+                add, sub, mul, div, mod, pow, max, min,\
                 eq, ne, lt, le, gt, ge, xr
 
 from madml.nn.normalization import BatchNorm, BatchNorm1d, BatchNorm2d, BatchNorm3d,\

@@ -162,7 +162,7 @@ class RNNBase(Module):
                         h = self.activation2(x @ hi[0] + hx @ hh[0])        
                         y = h @ x
 
-        return [y, hx, cx]
+        return [y, hx, cx] if self.mode == 'RNN' or self.mode == 'GRU' else [y, hx]
   
     def backward_cpu(self, dy: np.ndarray) -> List[np.ndarray]:
         return dy

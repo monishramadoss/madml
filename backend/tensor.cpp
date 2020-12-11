@@ -299,8 +299,3 @@ void init_tensor(py::module& m)
         .def("toHost", &tensor::toHost);
 }
 
-//PYBIND11_MODULE(backend, m)
-//{
-//	py::class_<tensor>(m, "tensor")
-//		.def(py::init<float, const std::vector<int>&>());
-//}
