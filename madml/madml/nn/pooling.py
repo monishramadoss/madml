@@ -32,8 +32,8 @@ class _MaxPoolNd(Module):
         self.dilation = dim_fix([1,1,1], dilation)
         self.return_indices = return_indices
         self.ceil_mode = ceil_mode
-        self._col = [1,1,1]
-        self._im = [1,1,1]
+        self._col = []
+        self._vol = []
         if self._use_gpu:
             self._kernel = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
             self._trans = backend.transpose([1, 0, 2, 3, 4])
@@ -41,19 +41,22 @@ class _MaxPoolNd(Module):
         return 'kernel_size={kernel_size}, stride={stride}, padding={padding}, dilation={dilation}, ceil_mode={ceil_mode}'.format(**self.__dict__)
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
-        if(len(x.shape) >= 3):
-            self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
-            self._im[2] = x.shape[-1]
-        if (len(x.shape) >= 4):
-            self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
-            self._im[1] = x.shape[-2]
-        if(len(x.shape) == 5):
-            self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
-            self._im[0] = x.shape[-3]
+        if len(self._col) != 3 or len(self._vol) != 3:
+            self._col = [1,1,1]
+            self._vol = [1,1,1]
+            if(len(x.shape) >= 3):
+                self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
+                self._vol[2] = x.shape[-1]
+            if (len(x.shape) >= 4):
+                self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
+                self._vol[1] = x.shape[-2]
+            if(len(x.shape) == 5):
+                self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
+                self._vol[0] = x.shape[-3]
 
         self.batch_size = x.shape[0] * x.shape[1]
         self.in_channels = 1
-        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         # 4 X 32x1x25
         max_idx = np.argmax(B, axis=0)
         y = B[max_idx, range(max_idx.size)]
@@ -67,7 +70,8 @@ class _MaxPoolNd(Module):
         dx_col = np.zeros(B.shape)
         dy_col = np.transpose(dy, (2,3,4,0,1)).ravel() # (72128,)
         dx_col[max_idx, range(dy_col.size)] = dy_col
-        dx = col2im_cpu(dx_col, self.batch_size, self.in_channels, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        
+        dx = col2im_cpu(dx_col, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         dx = dx.reshape(x.shape)
         return dx
 
@@ -127,9 +131,13 @@ class _MaxUnpoolNd(Module):
         self.stride = dim_fix([1,1,1], stride)
         self.padding = dim_fix([0,0,0], padding)
         self.dilation = [1,1,1]
+        self._vol = []
+        self._col = []
+
         if self._use_gpu:
-            self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            self._vol2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
             self._T = backend.transpose([1, 0, 2, 3, 4])
+
     def extra_repr(self) -> str:
         return 'kernel_size={}, stride={}, padding={}'.format(self.kernel_size, self.stride, self.padding)
 
@@ -178,31 +186,33 @@ class _AvgPoolNd(Module):
         self.count_include_pad = count_include_pad
         self.divisor_override = divisor_override
         self.dilation = [1,1,1]
-        self._col = [1,1,1]
-        self._im = [1,1,1]
+        self._col = []
+        self._vol = []
         if self._use_gpu:
-            self._im2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
+            self._vol2col = backend.vol2col(1, [*self.kernel_size, *self.stride, *self.padding, *self.dilation])
             #self._T = backend.transpose([1, 0, 2, 3, 4])
     def extra_repr(self) -> str:
         return 'kernel_size={}, stride={}, padding={}'.format(self.kernel_size, self.stride, self.padding)
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
-        if(len(x.shape) >= 3):
-            self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) + 1) // self.stride[2] + 1)
-            self._im[2] = x.shape[-1]
-        if (len(x.shape) >= 4):
-            self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) + 1) // self.stride[1] + 1)
-            self._im[1] = x.shape[-2]
-        if(len(x.shape) == 5):
-            self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) + 1) // self.stride[0] + 1)
-            self._im[0] = x.shape[-3]
+        if len(self._col) != 3 or len(self._vol) != 3:
+            self._col = [1,1,1]
+            self._vol = [1,1,1]
+            if(len(x.shape) >= 3):
+                self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) + 1) // self.stride[2] + 1)
+                self._vol[2] = x.shape[-1]
+            if (len(x.shape) >= 4):
+                self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) + 1) // self.stride[1] + 1)
+                self._vol[1] = x.shape[-2]
+            if(len(x.shape) == 5):
+                self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) + 1) // self.stride[0] + 1)
+                self._vol[0] = x.shape[-3]
 
-        self.batch_size = x.shape[0] * x.shape[1]
-        self.in_channels = 1
-        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._col, self._im, self.kernel_size, self.stride, self.padding, self.dilation)
+        self.batch_size = x.shape[0] * x.shape[1]       
+        B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, 1, self._col, self._vol, self.kernel_size, self.stride, self.padding, self.dilation)
 
         mean = np.mean(B, axis=0)
-        y = mean.reshape(self.in_channels, self.batch_size, *self._col)
+        y = mean.reshape(x.shape[1], self.batch_size, *self._col)
         y = np.transpose(y, (1, 0, 2, 3, 4))
         self.cache = [x, mean, B]
         return y
@@ -214,8 +224,8 @@ class _AvgPoolNd(Module):
         dx_col = np.zero(B.shape)
         dy_col = np.transpose(dy, (2,3,4,0,1)).ravel()
         dx_col = dx_col[:, range(dy_col.size)] = 1. / B.shape[0] * dy_col
-
-        dx, _, _ = col2im_cpu(dx_col, self.batch_size, n, self._im, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+        
+        dx = col2im_cpu(dx_col, self.batch_size, n, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         dx = dx.reshape(x.shape)
         return dx
 

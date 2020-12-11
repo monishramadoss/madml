@@ -28,11 +28,11 @@ class _NormBase(Module):
         self.affine = affine
         self.track_running_stats = track_running_stats
         if self.affine:
-            self.weight = Parameter([num_features], self._use_gpu)
-            self.bias = Parameter([num_features], self._use_gpu)
+            self.weight = Parameter([num_features], self._use_gpu, True)
+            self.bias = Parameter([num_features], self._use_gpu, False)
         if self.track_running_stats:
-            self.running_mean = Parameter([num_features], self._use_gpu)
-            self.running_var = Parameter([num_features], self._use_gpu)
+            self.running_mean = Parameter([num_features], self._use_gpu, False)
+            self.running_var = Parameter([num_features], self._use_gpu, False)
         self.num_batches_tracked = 0
 
     def extra_repr(self):

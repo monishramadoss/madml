@@ -52,8 +52,7 @@ class Adagrad(Optimizer):
            param
 
     def share_memory(self):
-        for group in self.param_groups:
-                state = self.state[p]
+        pass
 
     def step(self, closure=None):
         raise NotImplementedError
@@ -78,19 +77,13 @@ class Adam(Optimizer):
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, amsgrad=amsgrad)
         super(Adam, self).__init__(params, defaults)
 
-    def __setstate__(self, state):
-        super(Adam, self).__setstate__(state)
-        #for group in self.params:
-        #    group.setdefault('amsgrad', False)
-
+   
     def step(self, closure=None):
         raise NotImplementedError
-
-
-        return loss
+        return 
 
 class RMSprop(Optimizer):
-    def __init__(self, param : List[Parameter], lr: float=1e-2, alpha: float=0.99, eps: float=1e-8, 
+    def __init__(self, params : List[Parameter], lr: float=1e-2, alpha: float=0.99, eps: float=1e-8, 
                  weight_decay: float=0, momentum: int=0, centered: bool=False) -> None:
 
         if not 0.0 <= lr:
@@ -106,12 +99,6 @@ class RMSprop(Optimizer):
 
         defaults = dict(lr=lr, momentum=momentum, alpha=alpha, eps=eps, centered=centered, weight_decay=weight_decay)
         super(RMSprop, self).__init__(params, defaults)
-
-    def __setstate__(self, state):
-        super(RMSprop, self).__setstate__(state)
-        #for group in self.param_groups:
-        #    group.setdefault('momentum', 0)
-        #    group.setdefault('centered', False)
 
     def step(self, closure=None):
         loss = None
@@ -131,13 +118,6 @@ class SGD(Optimizer):
         super(SGD, self).__init__(params, defaults)
         
     def step(self, closure=None) -> None:
-        for x, param in self.params.items():
-            param.update_weight(self._sgd, )
-        return
-   
-    def _sgd(self, p:Parameter) -> Parameter:                
-        if self.state['momentum'] < 0:
-            p.velocity = self.state['momentum'] * p.velocity + self.state['lr'] * p.gradient
-            p.weight -= p.use_velocity
-        else:
-            p.weight -= self.state['lr'] * p.gradient
+        for x, p in self.params.items():
+            p.velocity = self.defaults['momentum'] * p.velocity + self.defaults['lr'] * p.gradient
+            p.data -= p.velocity

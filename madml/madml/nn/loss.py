@@ -6,22 +6,22 @@ from __future__ import unicode_literals
 from typing import  Optional, Union
 import madml
 from madml import tensor
-from .module import Module
+from .module import Module, get_parameters
 from .activation import Softmax
 from .. import regularization as reg
 import numpy as np
 
-def Regularization(model, reg_type='l2', lam=1e-3):
-    reg_types = dict(l1=reg.l1_reg,  l2=reg.l2_reg)
 
-    if reg_type not in reg_types.keys():
-        raise Exception('Regularization type must be either "l1" or "l2"!')
 
-    reg_loss = np.sum([
-        reg_types[reg_type](model[k], lam)
-        for k in model.keys()
-        if k.startswith('W')
-    ])
+def regularization(reg_type='l2', lam=1e-3):
+    reg_lambda = dict(l1=reg.l1_reg,  l2=reg.l2_reg)[reg_type]
+    
+    params = get_parameters()
+    reduction_list = []
+    for p in params.keys():
+        if params[p].is_weight():
+            reduction_list.append(reg_lambda(params[p].data, lam))
+    reg_loss = np.sum(reduction_list)
 
     return reg_loss
 
@@ -123,9 +123,9 @@ class HingeLoss(_Loss):
         margins[margins < 0] = 0
         margins[range(m), target] = 0
         data_loss = np.sum(margins) / m
-        #reg_loss = regularization(model, reg_type='l2', lam=lam)
+        reg_loss = regularization(reg_type='l2', lam=1e-3)
         self.cache = [logit, target, m, margin]
-        return data_loss #+ reg_loss
+        return data_loss + reg_loss
 
     def backward_cpu(self) -> np.ndarray:
         logit, target, m, margins = self.cache
@@ -142,7 +142,7 @@ class BCELoss(_WeightedLoss):
         super(BCELoss, self).__init__(weight, size_average, reduce, reduction)
 
     def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-
+        raise NotImplementedError
         return
 
 class CrossEntropyLoss(_WeightedLoss):
@@ -160,13 +160,12 @@ class CrossEntropyLoss(_WeightedLoss):
         prob = exps / np.sum(exps, axis=0)
         log_like = -np.log(prob[range(m), target])
         data_loss = np.sum(log_like) / m
-        #reg_loss = regularization(model, reg_type='l2', lam=1e-3)
+        reg_loss = regularization(reg_type='l2', lam=1e-3)
         self.cache = [logit, target, prob, m]
-        return np.array([data_loss])  #+ reg_loss
+        return np.array([data_loss]) + reg_loss
 
     def backward_cpu(self) -> np.ndarray:
         logit, target, grad_y, m = self.cache
         grad_y[range(m), target] -= 1.
         grad_y /= m
-        print(grad_y.shape)
         return grad_y

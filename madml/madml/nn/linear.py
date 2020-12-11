@@ -33,9 +33,9 @@ class Linear(Module):
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = Parameter((out_features, in_features), self._use_gpu)
+        self.weight = Parameter((out_features, in_features), self._use_gpu, True)
         if bias:
-            self.bias = Parameter((out_features), self._use_gpu)
+            self.bias = Parameter((out_features), self._use_gpu, False)
 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
         y = np.zeros((x.shape[0], self.out_features))
@@ -76,9 +76,9 @@ class Bilinear(Module):
         self.in1_features = in1_features
         self.in2_features = in2_features
         self.out_features = out_features
-        self.weight = Parameter([out_features, in1_features, in2_features], self._use_gpu)
+        self.weight = Parameter([out_features, in1_features, in2_features], self._use_gpu, True)
         if bias:
-            self.bias = Parameter([out_features], self._use_gpu)
+            self.bias = Parameter([out_features], self._use_gpu, False)
 
     def forward_cpu(self, x1: np.ndarray, x2: np.ndarray) -> np.ndarray:
         y = x1.T @ self.weight.data @ x2

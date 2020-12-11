@@ -351,7 +351,7 @@ class PReLU(Module):
     def __init__(self, num_parameters: int=1, init: float=0.25) -> None:
         super(PReLU, self).__init__(backend.prelu(-0.01, False))
         self.num_parameters = num_parameters
-        self.weight = Parameter(num_parameters, self._use_gpu)
+        self.weight = Parameter(num_parameters, self._use_gpu, True)
 
     def extra_repr(self) -> str:
         return 'num_parameters={}'.format(self.num_parameters)

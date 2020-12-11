@@ -4,7 +4,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from typing import List
-from .module import Module
+from .module import Module, Parameter
 import madml
 import numpy as np
 from .activation import Sigmoid, ReLU, Softmax
@@ -54,25 +54,14 @@ class RNNBase(Module):
         for layer in range(num_layers):
             for direction in range(num_directions):
                 layer_input_size = input_size if layer == 0 else hidden_size * num_directions
-                if self._use_gpu:
-                    w_ih = madml.zeros((self.gate_size, hidden_size, layer_input_size))
-                    w_hh = madml.zeros((self.gate_size, hidden_size, hidden_size))
-                    if self.bias:
-                        b_ih = madml.zeros((self.gate_size, hidden_size))
-                        b_hh = madml.zeros((self.gate_size, hidden_size))
-                        layer_params = (w_ih, w_hh, b_ih, b_hh)
-                    else:
-                        layer_params = (w_ih, w_hh)
-
-                else:
-                    w_ih = np.zeros((self.gate_size, hidden_size, layer_input_size))
-                    w_hh = np.zeros((self.gate_size, hidden_size, hidden_size))
-                    if self.bias:
-                        b_ih = np.zeros((self.gate_size, hidden_size))
-                        b_hh = np.zeros((self.gate_size, hidden_size))
-                        layer_params = (w_ih, w_hh, b_ih, b_hh)
-                    else:
-                        layer_params = (w_ih, w_hh)
+                w_ih = Parameter([self.gate_size, hidden_size, layer_input_size], self._use_gpu, True)
+                w_hh = Parameter([self.gate_size, hidden_size, hidden_size], self._use_gpu, True)
+                layer_params = [w_ih, w_hh]
+                if self.bias:
+                    b_ih = Parameter([self.gate_size, hidden_size], self._use_gpu, False)
+                    b_hh = Parameter([self.gate_size, hidden_size], self._use_gpu, False)
+                    layer_params += [b_ih, b_hh]
+                    
 
                 suffix = '_reverse' if direction == 1 else ''
                 param_names = ['weight_ih_l{}{}', 'weight_hh_l{}{}']

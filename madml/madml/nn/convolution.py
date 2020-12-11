@@ -71,8 +71,8 @@ class _ConvNd(Module):
         self.output_padding = dim_fix([0,0,0], output_padding)
         self.groups = groups
         self.padding_mode = padding_mode
-        self._col = [1,1,1]
-        self._vol = [1,1,1]
+        self._col = []
+        self._vol = []
         self.params = []
         self._use_bias = bias
         #self._reversed_padding_repeated_twice =
@@ -92,18 +92,21 @@ class _ConvNd(Module):
                 weight_shape = (in_channels, out_channels // groups, *self.kernel_size)
             else:
                 weight_shape = (out_channels, in_channels // groups, *self.kernel_size)
-        self.weight = Parameter(weight_shape, self._use_gpu)
+        self.weight = Parameter(weight_shape, self._use_gpu, True)
                 
     def forward_cpu(self, x: np.ndarray) -> np.ndarray:
-        if(len(x.shape) >= 3):
-            self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
-            self._vol[2] = x.shape[-1]
-        if (len(x.shape) >= 4):
-            self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
-            self._vol[1] = x.shape[-2]
-        if(len(x.shape) >= 5):
-            self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
-            self._vol[0] = x.shape[-3]
+        if len(self._col) == 0 or len(self._vol) == 0:
+            self._col = [1,1,1]
+            self._vol = [1,1,1]
+            if(len(x.shape) >= 3):
+                self._col[2] = int((x.shape[-1] + 2 * self.padding[2] - self.dilation[2] * (self.kernel_size[2] - 1) - 1) // self.stride[2]) + 1
+                self._vol[2] = x.shape[-1]
+            if (len(x.shape) >= 4):
+                self._col[1] = int((x.shape[-2] + 2 * self.padding[1] - self.dilation[1] * (self.kernel_size[1] - 1) - 1) // self.stride[1]) + 1
+                self._vol[1] = x.shape[-2]
+            if(len(x.shape) >= 5):
+                self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
+                self._vol[0] = x.shape[-3]
 
         self.batch_size = x.shape[0]
         B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
@@ -112,10 +115,9 @@ class _ConvNd(Module):
         y = np.transpose(y, (1,0,2,3,4))
 
         if self._use_bias:
-            self.bias = Parameter(y.shape[1:], self._use_gpu)
+            self.bias = Parameter(y.shape[1:], self._use_gpu, False)
             for b in range(self.batch_size):
                 y[b] += self.bias.data
-
         self.cache = [x, B]
         return y
 
@@ -129,7 +131,7 @@ class _ConvNd(Module):
         self.weight.gradient = self.weight.gradient.reshape(self.weight.shape)
         w_reshape = self.weight.data.reshape(self.out_channels, -1)
         dx_col = w_reshape.T @ dy_reshaped # (32,3,3), (8,1,12,12)        
-
+        
         dx = col2im_cpu(dx_col, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         return dx
 

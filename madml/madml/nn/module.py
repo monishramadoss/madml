@@ -21,25 +21,28 @@ _prev_id = None
 def get_modules():
     return _modules if len(_modules) != 0 else []
 
-
+def get_parameters():
+    return _parameters
 
 class Parameter(object): 
     __constants__ = ['shape']
     shape: List[int]
     _use_gpu: bool
-
-    def __init__(self, shape: List[int], use_gpu: bool) -> None:
+    _is_weight: bool
+    def __init__(self, shape: List[int], use_gpu: bool, is_weight: bool) -> None:
         self.shape = shape
         self._use_gpu = use_gpu
+        self._is_weight = is_weight
         _parameters[id(self)] = self
         if use_gpu:
             self.gradient = madml.zeros(shape)
-            self.data = madml.zeros(shape)
+            self.data = madml.ones(shape)
             self.velocity = madml.zeros(shape)
         else:
             self.gradient = np.zeros(shape)
             self.data = np.zeros(shape)
             self.velocity = np.zeros(shape)
+        
 
     def init(self, shape: List[int], data: List, gradients: List) -> None:
         self.shape = shape
@@ -59,12 +62,9 @@ class Parameter(object):
         else:
             self.gradient = np.zeros(self.shape)
         
-    def update_grad(self, lam, *args) -> None:
-        if self._use_velocity:
-            self.weight = lam(self.weight, self.gradient, self.velocity, *args)
-        else:
-            self.weight = lam(self.weight, self.gradient, *args)
-    
+    def is_weight(self) -> bool:
+        return self.is_weight
+
 class Module(object):
     def __init__(self, backend=None):
         self.cache = []
@@ -74,9 +74,8 @@ class Module(object):
         self._hash = random.getrandbits(128)
         global module_count
         module_count += 1
-        
+        self.route = None
 
-      
     def _setup(self, X, Y):
         if not self._registered:
             _modules[id(self)] = self
@@ -114,24 +113,24 @@ class Module(object):
         raise NotImplementedError("{} forward_cpu for layer not Implemented".format(self))
 
     def backward(self, weight=None, *args):
+        
         root, t = next(reversed(_modules.items()))
         print("=== Backward call ===", root)
-        G1 = nx.relabel_nodes(graph, lambda x: str(type(_modules[x])) + " " +  str(x))
-        G2 = nx.relabel_nodes(graph.reverse(), lambda x: str(type(_modules[x])) + " " +  str(x))
-        route = list(nx.edge_dfs(graph, source=root, orientation='reverse'))
-
-        plt.subplot(121)       
-        nx.draw(G1, pos=nx.spiral_layout(G1), with_labels=True)
-        plt.subplot(122)       
-        nx.draw(G2, pos=nx.spiral_layout(G2), with_labels=True)
-        plt.show()
+        #G1 = nx.relabel_nodes(graph, lambda x: str(type(_modules[x])) + " " +  str(x))
+        #G2 = nx.relabel_nodes(graph.reverse(), lambda x: str(type(_modules[x])) + " " +  str(x))
+        if self.route is None:
+            self.route = list(nx.edge_dfs(graph, source=root, orientation='reverse'))
 
         grad_owners = {}
         grad_owners[root] = t.backward_hook(*args)
         
-        for r in route:
+        for r in self.route:
             print(type(_modules[r[1]]), type(_modules[r[0]]))
             dy = grad_owners[r[1]]
+            if isinstance(dy, tuple) or isinstance(dy, list):
+                idx = 0
+                dy = dy[0]
+
             dx = _modules[r[0]].backward_hook(dy)
             grad_owners[r[0]] = dx
 

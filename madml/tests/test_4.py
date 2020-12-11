@@ -1,12 +1,12 @@
 import unittest
 import madml
 import madml.nn as nn
-from madml.test import load, mnist_model, train_loop
+from madml.test import load, train_loop
 
 
 class Test_models(unittest.TestCase):
     def test_mnist(self):
-        train_loop(mnist_model())
+        train_loop()
         self.assertTrue("mnist works")
     
     def test_rnn(self):
