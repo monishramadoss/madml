@@ -1,4 +1,4 @@
-from madml.optimizer import Optimizer
+
 import numpy as np
 from urllib import request
 import gzip

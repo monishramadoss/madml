@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "activation.h"
 
+
 std::string ACTIVATION_SHADER_BASE(const char* params, const char* body)
 {
     std::string activation_base = R"(

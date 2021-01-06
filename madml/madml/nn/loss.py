@@ -157,8 +157,10 @@ class CrossEntropyLoss(_WeightedLoss):
     def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
         m = logit.shape[0]
         exps = np.exp(logit - np.max(logit))
+        mu = np.sum(exps, axis=0)
         prob = exps / np.sum(exps, axis=0)
-        log_like = -np.log(prob[range(m), target])
+        gamma = prob[range(m), target]
+        log_like = -np.log(gamma)
         data_loss = np.sum(log_like) / m
         reg_loss = regularization(reg_type='l2', lam=1e-3)
         self.cache = [logit, target, prob, m]

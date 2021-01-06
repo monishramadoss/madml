@@ -107,8 +107,8 @@ class _ConvNd(Module):
             if(len(x.shape) >= 5):
                 self._col[0] = int((x.shape[-3] + 2 * self.padding[0] - self.dilation[0] * (self.kernel_size[0] - 1) - 1) // self.stride[0]) + 1
                 self._vol[0] = x.shape[-3]
-
-        self.batch_size = x.shape[0]
+            self.batch_size = x.shape[0]
+        
         B, n_output_plane, output_length = im2col_cpu(x, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
         y = np.matmul(self.weight.data.reshape(-1, n_output_plane), B)
         y = y.reshape((self.out_channels, self.batch_size, *self._col))

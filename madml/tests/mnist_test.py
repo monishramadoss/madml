@@ -6,8 +6,6 @@ from tqdm import tqdm
 import os
 
 from madml.test import train_loop
-
-
 train_loop()
 
 

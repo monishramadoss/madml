@@ -20,8 +20,10 @@ def _size(shape: List[int]):
 
 class tensor(object):
     shape: List[int]
+    size: int
     host_data: List[Union[float, int, bytes, bool]]
     device_data: backend.tensor
+    grad_data: [Union[backend.tensor, List[float]]]
     __module__ = 'madml'
     _use_gpu = 0
 
@@ -31,12 +33,13 @@ class tensor(object):
         else:
             self.host_side = data
 
-        '''
+        self.size = _size(shape)
+        self.shape = shape
+
         if type(self.host_side[0]) == int:
             for i in range(len(data)):
                 self.host_side[i] = float(self.host_side[i])        
-        backend.tensor(self.host_side, self.shape)
-        '''
+        
 
     def __len__(self) -> int:
         return self.shape[0]
@@ -51,7 +54,7 @@ class tensor(object):
         new_size = _size(new_shape)
         new_data = list()
 
-        #_data = self._convert_to_float(self.byte_size,self.tnsr.toHost())
+        #_data = self._convert_to_float(self.byte_size, self.toHost())
         #for i in range(new_size):
         #    new_data.append(self._data[idx * new_size + i])
         #return tensor(new_data, new_shape)
