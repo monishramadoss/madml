@@ -1,12 +1,13 @@
 #ifndef CONV_H
 #define CONV_H
 
-#include <vector>
 #include <utility>
-#include "backend.h"
-#include "layer.h"
+#include <vector>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
+
+#include "backend.h"
+#include "layer.h"
 
 struct dhw
 {
