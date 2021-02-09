@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>18dde651-13ef-4633-bde8-c6aa2f1f5eb3</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>tests\mnist_test.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -15,8 +16,9 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <TestFramework>unittest</TestFramework>
-    <UnitTestPattern>test_*.py</UnitTestPattern>
-    <UnitTestRootDirectory>./tests</UnitTestRootDirectory>
+    <UnitTestPattern>test.py</UnitTestPattern>
+    <UnitTestRootDirectory>
+    </UnitTestRootDirectory>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -28,7 +30,17 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="madml\errors.py" />
+    <Compile Include="hipsternet\hipsternet\constant.py" />
+    <Compile Include="hipsternet\hipsternet\im2col.py" />
+    <Compile Include="hipsternet\hipsternet\input_data.py" />
+    <Compile Include="hipsternet\hipsternet\layer.py" />
+    <Compile Include="hipsternet\hipsternet\loss.py" />
+    <Compile Include="hipsternet\hipsternet\neuralnet.py" />
+    <Compile Include="hipsternet\hipsternet\regularization.py" />
+    <Compile Include="hipsternet\hipsternet\solver.py" />
+    <Compile Include="hipsternet\hipsternet\utils.py" />
+    <Compile Include="hipsternet\run_mnist.py" />
+    <Compile Include="hipsternet\run_rnn.py" />
     <Compile Include="madml\nn\convolution.py" />
     <Compile Include="madml\nn\linear.py" />
     <Compile Include="madml\nn\loss.py" />
@@ -48,28 +60,17 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="madml\nn\__init__.py" />
-    <Compile Include="madml\regularization.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="madml\tensor.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="madml\test.py">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="tests\conv_test.py" />
-    <Compile Include="tests\mnist_test.py" />
-    <Compile Include="tests\test_1.py" />
-    <Compile Include="tests\test_2.py" />
-    <Compile Include="tests\test_3.py" />
-    <Compile Include="tests\test_4.py" />
-    <Compile Include="madml\utils.py" />
     <Compile Include="madml\__init__.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="madml\optimizer.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="mnist_test.py" />
+    <Compile Include="test.py" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\backend\backend.vcxproj">
@@ -79,9 +80,23 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="hipsternet\" />
+    <Folder Include="hipsternet\data\" />
+    <Folder Include="hipsternet\data\MNIST_data\" />
+    <Folder Include="hipsternet\data\text_data\" />
+    <Folder Include="hipsternet\hipsternet\" />
     <Folder Include="madml\" />
-    <Folder Include="tests\" />
     <Folder Include="madml\nn\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="hipsternet\.gitignore" />
+    <Content Include="hipsternet\data\MNIST_data\t10k-images-idx3-ubyte.gz" />
+    <Content Include="hipsternet\data\MNIST_data\t10k-labels-idx1-ubyte.gz" />
+    <Content Include="hipsternet\data\MNIST_data\train-images-idx3-ubyte.gz" />
+    <Content Include="hipsternet\data\MNIST_data\train-labels-idx1-ubyte.gz" />
+    <Content Include="hipsternet\data\text_data\japan.txt" />
+    <Content Include="hipsternet\data\text_data\shakespeare.txt" />
+    <Content Include="hipsternet\README.md" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
