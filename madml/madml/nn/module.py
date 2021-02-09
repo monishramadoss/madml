@@ -3,156 +3,99 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import random
-from typing import List
-from collections import OrderedDict
-import numpy as np
-import madml
-import networkx as nx
-import matplotlib.pyplot as plt
+from typing import List, Optional
 
-_tensors = dict()
-_modules = OrderedDict()
-_parameters = dict()
-module_count = 0
-graph = nx.DiGraph()
-_prev_id = None
+from madml import tensor
 
-def get_modules():
-    return _modules if len(_modules) != 0 else []
+global parameter_cache
 
-def get_parameters():
-    return _parameters
+parameter_cache = []
 
-class Parameter(object): 
-    __constants__ = ['shape']
-    shape: List[int]
-    _use_gpu: bool
-    _is_weight: bool
-    def __init__(self, shape: List[int], use_gpu: bool, is_weight: bool) -> None:
-        self.shape = shape
-        self._use_gpu = use_gpu
-        self._is_weight = is_weight
-        _parameters[id(self)] = self
-        if use_gpu:
-            self.gradient = madml.zeros(shape)
-            self.data = madml.ones(shape)
-            self.velocity = madml.zeros(shape)
-        else:
-            self.gradient = np.zeros(shape)
-            self.data = np.zeros(shape)
-            self.velocity = np.zeros(shape)
-        
+DEBUG = False
 
-    def init(self, shape: List[int], data: List, gradients: List) -> None:
-        self.shape = shape
-        self.data = data
-        self.gradient = gradients
-       
+
+class Parameter(object):
+    param: tensor
+    optimizer_stuff: Optional[List[tensor]]
+    device: str
+    shared_devices: bool
+
+    def __init__(self, init_fn, shape: List[int], on_gpu: bool = False, shared_devices: bool = False) -> None:
+        self.param = init_fn(shape)
+        self.optimizer_stuff = []
+        self.device = 'gpu' if on_gpu else 'cpu'
+        self.shared_devices = shared_devices
+        parameter_cache.append(self)
+
+    def zero_grad(self, ) -> None:
+        for i in range(self.param.size):
+            self.param.grad_data[i] = 0
 
     def reshape(self, shape: List[int]) -> None:
-        self.shape = shape
-        self.data.reshape(shape)
-        self.gradient.reshape(shape)
-        
+        self.param.reshape(shape)
 
-    def zero_grad(self, use_velocity: bool=False) -> None:
-        if self._use_gpu:
-            self.gradient = madml.zeros(self.shape)
-        else:
-            self.gradient = np.zeros(self.shape)
-        
-    def is_weight(self) -> bool:
-        return self.is_weight
 
 class Module(object):
     def __init__(self, backend=None):
         self.cache = []
         self.backend = backend
-        self._registered = False
-        self._use_gpu = False #backend == None
-        self._hash = random.getrandbits(128)
-        global module_count
-        module_count += 1
-        self.route = None
+        self.registered = False
+        self.visited = {}
+        self.id = id(self)
+        self.y = None
+        self.print_out_flag = False
 
-    def _setup(self, X, Y):
-        if not self._registered:
-            _modules[id(self)] = self
-            for y in Y:
-                if isinstance(Y, tuple) or isinstance(Y, list):
-                    for y in Y:
-                        _tensors[id(y)] = id(self)
-                else:
-                    _tensors[id(Y)] = id(self)
-            for x in X:
-                if id(x) in _tensors.keys():
-                    graph.add_edge(_tensors[id(x)], id(self), )
-                else:
-                    graph.add_node(id(self))
-            self._registered = True
+    def forward(self, *args, **kwargs) -> tensor:
+        return self.forward_cpu(*args, **kwargs)
 
-    def forward(self, *args):
-        if self.backend is not None and self._use_gpu:
-            out =  self.forward_gpu(*args)
+    def backward(self):
+        x = self.backward_cpu()
+        if DEBUG:
+            self.print_l()
+        if isinstance(x, tensor):
+            x.reset_shape()
+        return x
+
+    def forward_cpu(self, *args, **kwargs) -> tensor:
+        pass
+
+    def backward_cpu(self) -> tensor:
+        pass
+
+    def __call__(self, *args, **kwargs):
+        # print(type(self), 'forward')
+        y = self.forward(*args, **kwargs)
+        if isinstance(y, tuple) or isinstance(y, list):
+            for x in y:
+                self.visited[x.id] = False
+                if self not in x.parent:
+                    x.parent += [self]
+                x.zero_grad()
         else:
-            out = self.forward_cpu(*args)
+            self.visited[y.id] = False
+            if self not in y.parent:
+                y.parent += [self]
+            y.zero_grad()
+        for x in args:
+            self.visited[x.id] = False
+            if self not in x.children:
+                x.children += [self]
+            x.zero_grad()
 
-        self._setup(args, out)
-        _last_module = id(self)
-        
-        print(self, type(out), str(id(self)))
-        return out
+        if not self.registered:
+            self.registered = True
+        # if isinstance(y, tensor):
+        #      print('\t', y.shape, y.host_data.max(), y.host_data.min())
+        return y
 
-    def forward_gpu(self, *args):
-        if self.backend is not None:
-            return self.backend(*args)
-        raise NotImplementedError("forward_gpu not implemented")
+    @staticmethod
+    def parameters() -> List[Parameter]:
+        return parameter_cache
 
-    def forward_cpu(self, *args):
-        raise NotImplementedError("{} forward_cpu for layer not Implemented".format(self))
-
-    def backward(self, weight=None, *args):
-        
-        root, t = next(reversed(_modules.items()))
-        print("=== Backward call ===", root)
-        #G1 = nx.relabel_nodes(graph, lambda x: str(type(_modules[x])) + " " +  str(x))
-        #G2 = nx.relabel_nodes(graph.reverse(), lambda x: str(type(_modules[x])) + " " +  str(x))
-        if self.route is None:
-            self.route = list(nx.edge_dfs(graph, source=root, orientation='reverse'))
-
-        grad_owners = {}
-        grad_owners[root] = t.backward_hook(*args)
-        
-        for r in self.route:
-            print(type(_modules[r[1]]), type(_modules[r[0]]))
-            dy = grad_owners[r[1]]
-            if isinstance(dy, tuple) or isinstance(dy, list):
-                idx = 0
-                dy = dy[0]
-
-            dx = _modules[r[0]].backward_hook(dy)
-            grad_owners[r[0]] = dx
-
-        return
-        
-    def backward_hook(self, *args):
-        if self._use_gpu:
-            return self.backward_gpu(*args)
-        return self.backward_cpu(*args)
-
-    def backward_gpu(self, *args):
-        raise NotImplementedError("backward_gpu not implemented")
-
-    def backward_cpu(self, *args):
-        raise NotImplementedError("backward_cpu not implemented")
-
-    def parameters(self):
-        return _parameters
-
-    def __call__(self, *args):
-        return self.forward(*args)
-
-    
-
-# TODO fix branching problems
+    def print_l(self):
+        print(type(self), end=': ')
+        for t in self.cache:
+            if isinstance(t, tensor):
+                print(t.shape, end=' ')
+        print()
+        pass

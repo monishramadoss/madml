@@ -3,171 +3,186 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from typing import  Optional, Union
-import madml
-from madml import tensor
-from .module import Module, get_parameters
-from .activation import Softmax
-from .. import regularization as reg
+from abc import ABC
+from typing import List, Optional
+
 import numpy as np
 
+from madml import tensor
+from .module import Module
 
 
-def regularization(reg_type='l2', lam=1e-3):
-    reg_lambda = dict(l1=reg.l1_reg,  l2=reg.l2_reg)[reg_type]
-    
-    params = get_parameters()
-    reduction_list = []
-    for p in params.keys():
-        if params[p].is_weight():
-            reduction_list.append(reg_lambda(params[p].data, lam))
-    reg_loss = np.sum(reduction_list)
+def _size(shape: List[int]) -> int:
+    size = 1
+    for s in shape:
+        size *= s
+    return size
 
-    return reg_loss
 
-class _Loss(Module):
-    reduction : str
-    def __init__(self, size_average=None, reduce=None, reduction: str='mean', backend=None) -> None:
+def softmax_util_cpu(x: tensor, y: tensor) -> tensor:
+    eX = np.exp((x.host_data.T - np.max(x.host_data, axis=1)).T)
+    y.host_data = (eX.T / eX.sum(axis=1)).T
+    return y
+
+
+def l1_reg(w: tensor, lam: float = 1e-3) -> float:
+    return lam * np.sum(np.abs(w.host_data))
+
+
+def l2_reg(w: tensor, lam: float = 1e-3) -> float:
+    return .5 * lam * np.sum(w.host_data * w.host_data)
+
+
+class _Loss(Module, ABC):
+    reduction: Optional[str]
+
+    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean', backend=None) -> None:
         super(_Loss, self).__init__(backend)
         if size_average is not None or reduce is not None:
-            self.reduction = None #_Reduction.legacy_get_string(size_average, reduce)
+            self.reduction = None  # _Reduction.legacy_get_string(size_average, reduce)
         else:
             self.reduction = reduction
-    
-   
-class _WeightedLoss(_Loss):
-    def __init__(self, weight=None, size_average=None, reduce=None, reduction: str='mean') -> None:
+        self.loss = tensor([0], [1])
+        self.losses = []
+
+    def regularize(self) -> float:
+        reg_loss = 0.0
+        params = self.parameters()
+        for p in params:
+            if self.reduction == 'mean' or self.reduction == 'l2':
+                reg_loss += l2_reg(p.param)
+            elif self.reduction == 'sum' or self.reduction == 'l1':
+                reg_loss += l1_reg(p.param)
+        return reg_loss
+
+    def print_l(self):
+        super(_Loss, self).print_l()
+        print('l', self.losses[-1][0].max(), 'r', self.losses[-1][1])
+        self.test()
+
+    def test(self):
+        pass
+
+    def accuracy(self):
+        raise NotImplementedError
+
+
+class _WeightedLoss(_Loss, ABC):
+    def __init__(self, weight=None, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super(_WeightedLoss, self).__init__(size_average, reduce, reduction)
         self.weight = weight
 
-class L1Loss(_Loss):
-    __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
-        super(L1Loss, self).__init__(size_average, reduce, reduction)
-
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-        m = logit.shape[0]
-        data_loss = np.sum(np.abs(target - logit)) / m
-        self.cache = [logit, target, m]
-        return data_loss
-
-    def backward_cpu(self) -> np.ndarray:
-        logit, target, m = self.cache
-        grad_y = np.sign(logit - target.reshape(-1, 1))
-        grad_y /= m
-        return grad_y
-
-class L2Loss(_Loss):
-    __constants__ = ['reduction']
-
-    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
-        super(L2Loss, self).__init__(size_average, reduce, reduction)
-
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-        m = logit.shape[0]
-        data_loss = 0.5 * np.sum((target - logit) ** 2) / m
-        self.cache = [logit, target, m]
-        return data_loss
-
-    def backward_cpu(self) -> np.ndarray:
-        logit, target, m = self.cache
-        grad_y = logit - target.reshape(-1, 1)
-        grad_y /= m
-        return grad_y
-
-class NLLLoss(_WeightedLoss):
+class CrossEntropyLoss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
-    ignore_index : int
+    ignore_index: int
 
-    def __init__(self, weight: Optional[np.ndarray]=None, size_average=None, ignore_index: int=-100,
-                 reduce=None, reduction: str='mean') -> None:
-        super(NLLLoss, self).__init__(weight, size_average, reduce, reduction)
+    def __init__(self, weight=None, size_average=None, ignore_index: int = None,
+                 reduce=None, reduction: str = 'mean', with_logit: bool = False) -> None:
+        super(CrossEntropyLoss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
+        self.with_logit = with_logit
+        self.batchsize = 1
 
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-        return None
+    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
+        assert (len(logit.shape) != 1)
+        self.batchsize = logit.shape[0]
+        N = self.batchsize
+        C = logit.shape[1]
+        x = logit.host_data
+        t = target.host_data
+        if not self.with_logit:
+            target = target.onehot(label_count=C)
+            t = target.host_data
+
+        max_x = np.max(x, axis=1, keepdims=True)
+        exp_x = np.exp(x - max_x)
+        p = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+        inp = p
+
+        # gather_weight = None
+        # if self.weight is not None:
+        #     gather_weight = np.take(self.weight, t, mode='clip')
+        #     if self.ignore_index is not None:
+        #         gather_weight = np.where(t == self.ignore_index, 0, gather_weight).astype(dtype=np.float32)
+        # elif self.ignore_index is not None:
+        #     gather_weight = np.where(t == self.ignore_index, 0, 1).astype(dtype=np.float32)
+
+        # if len(inp.shape) != 3:
+        #     inp = inp.reshape([N, C, -1])
+        #     t = t.reshape([N, C, -1])
+        # D = inp.shape[2]
+        #
+        # neg_gather_element_input = np.zeros((N, D), dtype=np.float32)
+        # for i in range(N):
+        #     for d in range(D):
+        #         if d != self.ignore_index:
+        #             idx = int(t[i][d])
+        #             neg_gather_element_input[i][d] = -inp[i][idx][d]
+
+        loss = inp
+        if self.reduction == 'mean':
+            loss = np.mean(loss)
+        elif self.reduction == 'sum':
+            loss = np.sum(loss)
+        reg = self.regularize()
+
+        self.loss.host_data = (loss + reg) / self.batchsize
+        self.cache = [logit, target, p]
+        self.losses.append((loss, reg))
+        return self.loss
+
+    def backward_cpu(self) -> tensor:
+        x, t, p = self.cache
+        self.visited[self.loss.id] = True
+        self.visited[t.id] = True
+        dx = (p - t.host_data) / self.batchsize
+        x.gradient.host_data = dx
+        return x
+
+    def test(self):
+        x, t, p = self.cache
+        # _dx = dcross_entropy(x.host_data, t.host_data)
+        # assert ((x.gradient.host_data == _dx).all())
+
+    def accuracy(self):
+        x, t, p = self.cache
+        tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
+        return 1. - np.abs(tmp.mean())
+
 
 class MSELoss(_Loss):
     __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super(MSELoss, self).__init__(size_average, reduce, reduction)
 
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
+    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
+        if logit.shape != target.shape:
+            raise ValueError("logit and target shapes must be the same got: {}, {}".format(logit.shape, target.shape))
+
         m = logit.shape[0]
-        data_loss = (np.square(logit - target)).mean(axis=0)
-        data_loss /= m
+        data_loss = 0.5 * (np.square(logit.host_data - target.host_data)).mean(axis=0)
+
+        if self.reduction == 'mean':
+            loss = np.mean(data_loss)
+        elif self.reduction == 'sum':
+            loss = np.sum(data_loss)
+
+        reg = self.regularize()
+        self.loss.host_data = loss + reg
+
         self.cache = [logit, target, m]
-        return data_loss
-    def backward_cpu(self) -> np.ndarray:
-        logit, target, m = self.cache
-        grad_y = 2 * (logit - target)
-        grad_y /= m
-        return grad_y
+        self.losses.append((loss, reg))
+        return self.loss
 
-class HingeLoss(_Loss):
-    __constants__ = ['reduction', 'delta']
-    delta : float
+    def backward_cpu(self) -> tensor:
+        x, t, m = self.cache
+        grad_y = (x.host_data - t.host_data)
+        x.gradient.host_data = grad_y
+        return x
 
-    def __init__(self, delta=1, size_average=None, ignore_index: int=-100, reduce=None, reduction: str='mean') -> None:
-        super(HingeLoss, self).__init__(size_average, reduce, reduction)
-        self.ignore_index = ignore_index
-        self.delta = delta
-
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-        m = logit.shape[0]
-
-        margin = (logit.T - logit[range(m), target]).T
-        margins = margin = self.delta
-        margins[margins < 0] = 0
-        margins[range(m), target] = 0
-        data_loss = np.sum(margins) / m
-        reg_loss = regularization(reg_type='l2', lam=1e-3)
-        self.cache = [logit, target, m, margin]
-        return data_loss + reg_loss
-
-    def backward_cpu(self) -> np.ndarray:
-        logit, target, m, margins = self.cache
-        margins[range(m), target] = 0
-        grad_y = (margins > 0).astype(float)
-        grad_y[range(m), target] = -np.sum(grad_y, axis=1)
-        grad_y /= m
-        return grad_y
-
-class BCELoss(_WeightedLoss):
-    __constants__ = ['reduction']
-
-    def __init__(self, weight: Optional[np.ndarray]=None, size_average=None, reduce=None, reduction: str='mean') -> None:
-        super(BCELoss, self).__init__(weight, size_average, reduce, reduction)
-
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-        raise NotImplementedError
-        return
-
-class CrossEntropyLoss(_WeightedLoss):
-    __constants__ = ['ignore_index', 'reduction']
-    ignore_index : int
-
-    def __init__(self, weight: Optional[np.ndarray]=None, size_average=None, ignore_index: int=-100,
-                 reduce=None, reduction: str='mean') -> None:
-        super(CrossEntropyLoss, self).__init__(weight, size_average, reduce, reduction)
-        self.ignore_index = ignore_index
-        
-    def forward_cpu(self, logit: np.ndarray, target: np.ndarray) -> np.ndarray:
-        m = logit.shape[0]
-        exps = np.exp(logit - np.max(logit))
-        mu = np.sum(exps, axis=0)
-        prob = exps / np.sum(exps, axis=0)
-        gamma = prob[range(m), target]
-        log_like = -np.log(gamma)
-        data_loss = np.sum(log_like) / m
-        reg_loss = regularization(reg_type='l2', lam=1e-3)
-        self.cache = [logit, target, prob, m]
-        return np.array([data_loss]) + reg_loss
-
-    def backward_cpu(self) -> np.ndarray:
-        logit, target, grad_y, m = self.cache
-        grad_y[range(m), target] -= 1.
-        grad_y /= m
-        return grad_y
+    def accuracy(self):
+        x, t, m = self.cache
+        tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
+        return 1. - np.abs(tmp.mean())

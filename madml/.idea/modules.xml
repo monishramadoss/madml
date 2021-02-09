@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/madml.iml" filepath="$PROJECT_DIR$/.idea/madml.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/madml_python.iml" filepath="$PROJECT_DIR$/.idea/madml_python.iml" />
     </modules>
   </component>
 </project>
