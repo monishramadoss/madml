@@ -54,7 +54,6 @@
     <Compile Include="nn\utils.py" />
     <Compile Include="nn\__init__.py" />
     <Compile Include="optimizer.py" />
-    <Compile Include="setup.py" />
     <Compile Include="tensor.py" />
     <Compile Include="worker.py" />
     <Compile Include="__init__.py" />
