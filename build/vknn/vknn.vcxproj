@@ -1,0 +1,387 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{608191E7-DBF1-3414-B2DD-D40FBFB98598}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
+    <Keyword>Win32Proj</Keyword>
+    <Platform>x64</Platform>
+    <ProjectName>vknn</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vknn.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">vknn.cp37-win_amd64</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.pyd</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vknn.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">vknn.cp37-win_amd64</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.pyd</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">vknn.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">vknn.cp37-win_amd64</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.pyd</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">vknn.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">vknn.cp37-win_amd64</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.pyd</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;CMAKE_INTDIR="Debug";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CMAKE_INTDIR=\"Debug\";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>C:\ProgramData\Anaconda3\libs\Python37.lib;vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/VulkanSDK/1.2.154.1/Bin;C:/VulkanSDK/1.2.154.1/Bin/$(Configuration);C:/VulkanSDK/1.2.154.1/Lib;C:/VulkanSDK/1.2.154.1/Lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/Debug/vknn.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/Debug/vknn.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="Release";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"Release\";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>C:\ProgramData\Anaconda3\libs\Python37.lib;-LTCG;vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/VulkanSDK/1.2.154.1/Bin;C:/VulkanSDK/1.2.154.1/Bin/$(Configuration);C:/VulkanSDK/1.2.154.1/Lib;C:/VulkanSDK/1.2.154.1/Lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/Release/vknn.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/Release/vknn.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="MinSizeRel";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"MinSizeRel\";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>C:\ProgramData\Anaconda3\libs\Python37.lib;-LTCG;vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/VulkanSDK/1.2.154.1/Bin;C:/VulkanSDK/1.2.154.1/Bin/$(Configuration);C:/VulkanSDK/1.2.154.1/Lib;C:/VulkanSDK/1.2.154.1/Lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/MinSizeRel/vknn.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/MinSizeRel/vknn.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /bigobj</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="RelWithDebInfo";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"RelWithDebInfo\";vknn_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.154.1\Include;C:\Users\MonishRamadoss\source\repos\madml\include\backend;C:\Users\MonishRamadoss\source\repos\madml\include\vknn;C:\ProgramData\Anaconda3\Library\include;C:\ProgramData\Anaconda3\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>C:\ProgramData\Anaconda3\libs\Python37.lib;-LTCG;vulkan-1.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:/VulkanSDK/1.2.154.1/Bin;C:/VulkanSDK/1.2.154.1/Bin/$(Configuration);C:/VulkanSDK/1.2.154.1/Lib;C:/VulkanSDK/1.2.154.1/Lib/$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/RelWithDebInfo/vknn.lib</ImportLibrary>
+      <ProgramDataBaseFile>C:/Users/MonishRamadoss/source/repos/madml/build/vknn/RelWithDebInfo/vknn.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\CMakeLists.txt">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/MonishRamadoss/source/repos/madml/vknn/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MonishRamadoss/source/repos/madml -BC:/Users/MonishRamadoss/source/repos/madml/build --check-stamp-file C:/Users/MonishRamadoss/source/repos/madml/build/vknn/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\CMake\share\cmake-3.17\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPythonInterp.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\FindPythonLibsNew.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Config.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11ConfigVersion.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Targets.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Tools.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/MonishRamadoss/source/repos/madml/vknn/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MonishRamadoss/source/repos/madml -BC:/Users/MonishRamadoss/source/repos/madml/build --check-stamp-file C:/Users/MonishRamadoss/source/repos/madml/build/vknn/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\CMake\share\cmake-3.17\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPythonInterp.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\FindPythonLibsNew.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Config.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11ConfigVersion.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Targets.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Tools.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/MonishRamadoss/source/repos/madml/vknn/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MonishRamadoss/source/repos/madml -BC:/Users/MonishRamadoss/source/repos/madml/build --check-stamp-file C:/Users/MonishRamadoss/source/repos/madml/build/vknn/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Program Files\CMake\share\cmake-3.17\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPythonInterp.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\FindPythonLibsNew.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Config.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11ConfigVersion.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Targets.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Tools.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/MonishRamadoss/source/repos/madml/vknn/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/MonishRamadoss/source/repos/madml -BC:/Users/MonishRamadoss/source/repos/madml/build --check-stamp-file C:/Users/MonishRamadoss/source/repos/madml/build/vknn/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Program Files\CMake\share\cmake-3.17\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-3.17\Modules\FindPythonInterp.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\FindPythonLibsNew.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Config.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11ConfigVersion.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Targets.cmake;C:\ProgramData\Anaconda3\Library\share\cmake\pybind11\pybind11Tools.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\MonishRamadoss\source\repos\madml\build\vknn\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\backend\backend.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\backend\buffer.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\backend\context.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\backend\layer.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\backend\tensor.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\backend\utils.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\build\CMakeFiles\3.17.2\CompilerIdCXX\CMakeCXXCompilerId.cpp">
+      <ObjectFileName>$(IntDir)/__/CMakeFiles/3.17.2/CompilerIdCXX/CMakeCXXCompilerId.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\cmake_madml\cmake_madml.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\out\build\x64-Debug (default)\CMakeFiles\3.18.20081302-MSVC_2\CompilerIdCXX\CMakeCXXCompilerId.cpp">
+      <ObjectFileName>$(IntDir)/__/out/build/x64-Debug_(default)/CMakeFiles/3.18.20081302-MSVC_2/CompilerIdCXX/CMakeCXXCompilerId.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\activation.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\convolution.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\gemm.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\loss.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\math.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\normalization.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\pooling.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\rnn.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\transform.cpp" />
+    <ClCompile Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\vknn.cpp" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\backend.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\buffer.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\common.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\context.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\layer.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\tensor.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\backend\utils.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\cmake_madml\cmake_madml.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\out\build\x64-Debug (default)\CMakeFiles\ShowIncludes\foo.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\activation.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\convolution.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\gemm.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\loss.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\math.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\normalization.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\pooling.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\rnn.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\transform.h" />
+    <ClInclude Include="C:\Users\MonishRamadoss\source\repos\madml\vknn\vknn.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="C:\Users\MonishRamadoss\source\repos\madml\build\ZERO_CHECK.vcxproj">
+      <Project>{6E7885A7-CC7D-3ED9-956A-7DD933454CD8}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
