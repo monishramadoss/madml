@@ -5,7 +5,6 @@ find_package(pybind11 CONFIG REQUIRED)
 
 file (GLOB_RECURSE VKNN_H ${CMAKE_SOURCE_DIR}/*.h)
 file (GLOB_RECURSE VKNN_CPP ${CMAKE_SOURCE_DIR}/*.cpp)
-message(STATUS "Using manual specified path: ${BACKEND_INCLUDE}")
 
 include_directories(${VULKAN_PATH}/Include)
 include_directories(${BACKEND_INCLUDE})
