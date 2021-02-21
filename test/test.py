@@ -7,15 +7,39 @@ from urllib import request
 import numpy as np
 import matplotlib.pyplot as plt
 
-import madml
-import madml.nn as nn
-import madml.optimizer as optimizer
-
 BATCHSIZE = 100
+
+class TestImports(unittest.TestCase):
+    def test_madml(self):
+        try:
+            import madml
+            self.assertTrue(True)
+        except:
+            self.assertTrue(False)
+
+    def test_backend(self):
+        try:
+            import backend
+            self.assertTrue(True)
+        except:
+            self.assertTrue(False)
+    
+    def test_vknn(self):
+        try:
+            import vknn
+            self.assertTrue(True)
+        except:
+            self.assertTrue(False)
+        
 
 
 class TestModules(unittest.TestCase):
     def test_tensor(self):
+        
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         x = np.array([[[[0., 1., 2., 3., 4.],  # (1, 1, 5, 5) input tensor
                         [5., 6., 7., 8., 9.],
                         [10., 11., 12., 13., 14.],
@@ -26,6 +50,11 @@ class TestModules(unittest.TestCase):
         self.assertTrue((t1.host_data == x).all())
 
     def test_conv(self):
+
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         kernel_shape = [3, 3]
         stride = [1, 1]
         padding = [1, 1]
@@ -72,6 +101,11 @@ class TestModules(unittest.TestCase):
         self.assertTrue((y3 == dx).all())
 
     def test_maxpool(self):
+
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         kernel_shape = [2, 2]
         stride = [1, 1]
         padding = [0, 0]
@@ -92,6 +126,11 @@ class TestModules(unittest.TestCase):
         self.assertTrue(True)
 
     def test_crossentropy(self):
+
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         x = np.random.rand(3, 5).astype(np.float32)
         labels = np.random.randint(0, high=5, size=(3,))
 
@@ -161,7 +200,7 @@ def train_loop(model, loss_fn, optim, t_x, t_y):
                     print(t_y[i].host_data[0][j], end=']\n' if j == 9 else ', ')
 
 
-def test_loop(model: nn.Module, t_x: madml.tensor, t_y: madml.tensor):
+def test_loop(model, t_x, t_y):
     accuracies = list()
     for i in range(t_x.shape[0]):
         logits = model(t_x[i])
@@ -173,6 +212,10 @@ def test_loop(model: nn.Module, t_x: madml.tensor, t_y: madml.tensor):
 
 class TestModels(unittest.TestCase):
     def test_cnn(self):
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         class cnn_mnist_model(nn.Module):
             def __init__(self):
                 super(cnn_mnist_model, self).__init__()
@@ -223,6 +266,10 @@ class TestModels(unittest.TestCase):
         print(sum(acc) / len(acc))
 
     def test_dnn(self):
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         class dnn_mnist_model(nn.Module):
             def __init__(self):
                 super(dnn_mnist_model, self).__init__()
@@ -259,6 +306,10 @@ class TestModels(unittest.TestCase):
         print(sum(acc) / len(acc))
 
     def test_identity(self):
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
+
         class identity_model(nn.Module):
             def __init__(self):
                 super(identity_model, self).__init__()
@@ -288,6 +339,9 @@ class TestModels(unittest.TestCase):
         self.assertTrue(loss_fn.accuracy() > 0.9)
 
     def test_spiral(self):
+        import madml
+        import madml.nn as nn
+        import madml.optimizer as optimizer
 
         from numpy import pi
         # import matplotlib.pyplot as plt
