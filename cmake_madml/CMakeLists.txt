@@ -8,7 +8,6 @@ project(cmake_madml VERSION "0.0.1")
 find_package(pybind11 CONFIG REQUIRED)
 
 include_directories(${VULKAN_PATH}/Include)
-include_directories(${BACKEND_INCLUDE})
 include_directories(AFTER ${VKNN_INCLUDE})
 link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
 

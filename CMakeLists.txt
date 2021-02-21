@@ -20,6 +20,6 @@ set(VULKAN_PATH "${VULKAN_SDK}/${VULKAN_VERSION}")
 message(STATUS "Using manual specified path: ${VULKAN_PATH}")
 
 # Include sub-projects.
-add_subdirectory("cmake_madml")
+#add_subdirectory("cmake_madml")
 add_subdirectory("backend")
 add_subdirectory("vknn")

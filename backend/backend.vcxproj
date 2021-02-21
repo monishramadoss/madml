@@ -143,7 +143,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Include;C:\ProgramData\Anaconda3\Lib\site-packages\pybind11\include;C:\VulkanSDK\1.2.154.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Include;C:\ProgramData\Anaconda3\Lib\site-packages\pybind11\include;C:\VulkanSDK\1.2.154.1\Include;$(SolutionDir)\kernel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -183,7 +183,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Include;C:\ProgramData\Anaconda3\Lib\site-packages\pybind11\include;C:\VulkanSDK\1.2.154.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Include;C:\ProgramData\Anaconda3\Lib\site-packages\pybind11\include;C:\VulkanSDK\1.2.154.1\Include;$(SolutionDir)\kernel;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -200,21 +200,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="backend.cpp" />
-    <ClCompile Include="buffer.cpp" />
-    <ClCompile Include="context.cpp" />
-    <ClCompile Include="layer.cpp" />
-    <ClCompile Include="tensor.cpp" />
-    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="backend.h" />
-    <ClInclude Include="buffer.h" />
-    <ClInclude Include="common.h" />
-    <ClInclude Include="context.h" />
-    <ClInclude Include="framework.h" />
-    <ClInclude Include="layer.h" />
-    <ClInclude Include="tensor.h" />
-    <ClInclude Include="utils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\kernel\kernel.vcxproj">
+      <Project>{12f36a4a-af3a-4315-bdbe-ffe90bdbec43}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

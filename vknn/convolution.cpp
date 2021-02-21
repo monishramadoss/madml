@@ -1,5 +1,5 @@
-#include "../backend/common.h"
-#include "../backend/utils.h"
+#include "../kernel/common.h"
+#include "../kernel/utils.h"
 #include "convolution.h"
 
 

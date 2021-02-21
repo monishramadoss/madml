@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vknn.h"
-#include "../backend/layer.h"
+#include "../kernel/layer.h"
 
 struct single_param{
     int total;

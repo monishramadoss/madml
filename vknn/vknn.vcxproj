@@ -143,7 +143,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\backend;C:\VulkanSDK\1.2.154.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\kernel;C:\VulkanSDK\1.2.154.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile />
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
@@ -182,7 +182,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>Multithreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\backend;C:\VulkanSDK\1.2.154.1\Include;$(PythonHome)\Lib\site-packages\pybind11\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\kernel;C:\VulkanSDK\1.2.154.1\Include;$(PythonHome)\Lib\site-packages\pybind11\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -210,11 +210,6 @@
     <ClCompile Include="vknn.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\backend\backend.vcxproj">
-      <Project>{09bfe37b-93e0-4eed-97cf-bc3536fdf9c1}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="activation.h" />
     <ClInclude Include="convolution.h" />
     <ClInclude Include="gemm.h" />
@@ -225,6 +220,11 @@
     <ClInclude Include="rnn.h" />
     <ClInclude Include="transform.h" />
     <ClInclude Include="vknn.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\kernel\kernel.vcxproj">
+      <Project>{12f36a4a-af3a-4315-bdbe-ffe90bdbec43}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

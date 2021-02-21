@@ -4,10 +4,17 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import struct
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Type
 
 import numpy as np
 
+try:
+    import backend
+    import vknn
+    VULKAN_DLL_LOADED = True
+
+except ImportError:
+    VULKAN_DLL_LOADED = False
 
 # from .nn.module import module_cache, execution_order
 
@@ -19,12 +26,24 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
     return ret_data
 
 
+
 class gpu_tensor(object):
-    data: np.ndarray
+    #data: Optional[backend.tensor]
 
-    def __init__(self, data: np.ndarray):
-        self.data = data
+    def __init__(self, data: np.ndarray, dtype: Type = float):
+        if dtype != float:
+            raise TypeError(" dtype: {1} is not implement.")
 
+        lst_data = data.astype(float).tolist()
+        shape = data.shape
+        self.data = backend.tensor(lst_data, shape)
+
+    def to_cpu(self, dtype: Type = float):
+        if dtype != float:
+            raise TypeError(" dtype: {1} is not implement.")
+
+        char_data = self.data.tohost()
+        _convert_to_float(self.data.size(), char_data)
 
 class tensor(object):
     shape: List[int]

@@ -11,7 +11,9 @@ The premise behind this is to create a universal platform for researchers to exp
 
 # Installation
 
-This is currently not possible
+# something interesting happens
+python setup.py build -gvn
+
 # Usage
 
 For mnist run Python madml_mnist.py

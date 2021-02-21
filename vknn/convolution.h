@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vknn.h"
-#include "../backend/layer.h"
+#include "../kernel/layer.h"
 
 struct vol2col_param {
     int total;

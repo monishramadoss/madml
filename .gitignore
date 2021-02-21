@@ -5,6 +5,8 @@
 
 # User-specific files
 out/
+dist/
+build/
 *.rsuser
 *.suo
 *.user
