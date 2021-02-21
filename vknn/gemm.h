@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vknn.h"
-#include "layer.h"
+#include "../backend/layer.h"
 
 struct gemm_param
 {

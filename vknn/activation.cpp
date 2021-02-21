@@ -1,5 +1,5 @@
-#include "common.h"
-#include "utils.h"
+#include "../backend/common.h"
+#include "../backend/utils.h"
 #include "activation.h"
 
 relu::relu(bool in_place):inplace(in_place){

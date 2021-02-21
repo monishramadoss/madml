@@ -3,7 +3,7 @@
 #include <pybind11/pybind11.h>
 namespace py = pybind11;
 
-#include "backend.h"
+#include "../backend/backend.h"
 
 #include "activation.h"
 #include "convolution.h"
