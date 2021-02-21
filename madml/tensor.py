@@ -19,11 +19,18 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
     return ret_data
 
 
+class gpu_tensor(object):
+    data: np.ndarray
+
+    def __init__(self, data: np.ndarray):
+        self.data = data
+
+
 class tensor(object):
     shape: List[int]
     init_shape: List[int]
     _host_memory: np.ndarray
-    _device_memory: List[Union[float, int, bytes, bool]]
+    _device_memory: gpu_tensor
     on_device: bool
     id: int
 
@@ -34,14 +41,14 @@ class tensor(object):
         if isinstance(data, np.ndarray):
             self._host_memory = data.astype(np.float32)
             self.shape = list(data.shape)
-            self._device_memory = [data.ravel()[i] for i in range(data.size)]
         else:
             self._host_memory = np.array(data).reshape(shape).astype(np.float32)
             self.shape = shape
-            self._device_memory = [data[i] for i in range(len(data))]
 
+        self._device_memory = gpu_tensor(self._host_memory)
         self.init_shape = self.shape
         self.size = 1
+
         for s in self.shape:
             self.size *= s
 
