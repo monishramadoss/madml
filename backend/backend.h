@@ -1,7 +1,7 @@
-#ifndef HALMAL_H
-#define HALMAL_H
-#include <pybind11/pybind11.h>
+#pragma once
+
 #include <vector>
+#include <pybind11/pybind11.h>
 namespace py = pybind11;
 
 enum class Format
@@ -19,28 +19,14 @@ enum class Format
     kFormatNum = -1
 };
 
-enum FusedActivationType { kNone, kRelu, kRelu1, kRelu6, kActivationNum };
-
 typedef std::vector<int> Shape;
 bool isAvailable();
 
 //TODO need work on deallocations
 //TODO work on static members
 //TODO worker threads for first hand latency
-extern void init_tensor(py::module& m);
 
 #include "tensor.h"
 #include "buffer.h"
 #include "layer.h"
 
-#include "math.h"
-#include "transform.h"
-#include "gemm.h"
-#include "convolution.h"
-#include "pooling.h"
-#include "activation.h"
-#include "normalization.h"
-#include "rnn.h"
-#include "loss.h"
-
-#endif

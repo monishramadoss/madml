@@ -1,3 +1,4 @@
+
 #include <functional>
 #include <algorithm>
 #include <iomanip>
@@ -7,74 +8,32 @@
 
 tensor::tensor(Format fmt) : format(fmt), size_in_byte(0)
 {
-    id = -1;
     createContext();
-    if (!counted)
-    {
-        counted = true;
-    }
-    is_onDevice = false;
     m_device = kDevice;
 }
 
 tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : format(fmt), size_in_byte(0)
 {
     createContext();
-    if (!counted)
-    {
-        counted = true;
-    }
-
     m_device = kDevice;
-    is_onDevice = true;
     reshape(data, shape);
-}
-
-tensor::tensor(float c, const std::vector<int>& shape, Format fmt) : format(fmt), size_in_byte(0)
-{
-    createContext();
-    if (!counted)
-    {
-        counted = true;
-    }
-
-    m_device = kDevice;
-    std::shared_ptr<char> m_data;
-    if (fmt == Format::kFormatBool)
-        m_data = std::shared_ptr<char>(init::fill_memory_shape<int>(shape, static_cast<int>(c)));
-    else
-        m_data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, c));
-    is_onDevice = true;
-    reshape(m_data.get(), shape);
-}
-
-tensor::tensor(double c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
-{
-    createContext();
-    if (!counted)
-    {
-        counted = true;
-    }
-
-    m_device = kDevice;
-
-    auto m_data = std::shared_ptr<char>(init::fill_memory_shape<float>(shape, static_cast<float>(c)));
-    is_onDevice = true;
-    reshape(m_data.get(), shape);
 }
 
 tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
 {
     createContext();
-    if (!counted)
-    {
-        counted = true;
-    }
-
     m_device = kDevice;
-    is_onDevice = true;
     reshape((char*)c.data(), shape);
 }
+
+tensor::tensor(float c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
+{
+    createContext();
+    m_device = kDevice;
+    char* c_arr = init::fill_memory_shape<float>(shape, c);
+    reshape(c_arr, shape);
+}
+
 
 void* tensor::map() const
 {
@@ -86,8 +45,6 @@ void* tensor::map() const
 void tensor::unMap() const { vkUnmapMemory(m_device, m_buffer->getVkMemory()); }
 
 Shape tensor::getShape() const { return m_shape; }
-
-int tensor::getId() const { return id; }
 
 int tensor::count(const int start_axis, const int end_axis) const
 {
@@ -137,7 +94,6 @@ tensor tensor::reShape(const std::vector<int>& shape)
 
 void tensor::toDevice(const std::vector<char>& data)
 {
-    is_onDevice = true;
     reshape(data.data(), m_shape, true, format);
 }
 
@@ -156,146 +112,6 @@ std::vector<char>& tensor::toHost()
     std::vector<char> d(size_in_byte);
     std::copy(p, p + size_in_byte, d.data());
     unMap();
-
-    //m_buffer.reset();
-    is_onDevice = false;
+    m_buffer.reset();
     return d;
 }
-
-int& tensor::get_object_id()
-{
-    static int objId;
-    return objId;
-}
-
-void tensor::update_id()
-{
-    auto& objId = get_object_id();
-    id = objId++;
-}
-
-std::ostream& printMatrix_helper(std::ostream& os, float* data, std::vector<int> shape, 
-    size_t offset, std::string step, size_t stage)
-{
-    if (shape.size() == 2)
-    {
-        size_t m = shape[shape.size() - 2];
-        size_t n = shape.back();
-        os << "[";
-        for (size_t x = 0; x < m; ++x)
-        {
-            os << (x != 0 ? step + " " : offset == 0 ? "" : "\n") << "[";
-            for (size_t y = 0; y < n; ++y)
-            {
-                os << data[offset + x * n + y] << ((y + 1) == n ? "]" : ", ");
-            }
-            os << ((x + 1) == m ? "]" : "\n");
-        }
-        return os;
-    }
-    std::vector<int> new_shape;
-
-    size_t new_offset = 1;
-    for (int i = 1; i < shape.size(); ++i)
-    {
-        new_shape.push_back(shape[i]);
-        new_offset *= shape[i];
-    }
-    os << "[";
-    for (int i = 0; i < shape[0]; ++i)
-        printMatrix_helper(os, data, new_shape, offset + i * new_offset, step + " ", stage);
-    os << "]";
-    return os;
-}
-
-std::ostream& operator<<(std::ostream& os, tensor& t)
-{
-    os << std::fixed << std::setprecision(2);
-
-    auto shape = t.getShape();
-    for (auto s : shape)
-        os << s << " ";
-    os << "\n";
-    auto fmt = t.getFormat();
-    if (fmt == Format::kFormatFp32)
-    {
-        float* data = reinterpret_cast<float*>(t.toHost().data());
-        printMatrix_helper(os, data, shape, 0, " ", shape.size());
-    }
-    if (fmt == Format::kFormatInt32 || fmt == Format::kFormatBool)
-    {
-        int* data = reinterpret_cast<int*>(t.toHost().data());
-    }
-    os << "\n";
-    return os;
-}
-
-namespace init
-{
-    char* fill_memory_iter(std::vector<int> shape)
-    {
-        const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-        auto ret = new float[_shape];
-#pragma omp for
-        for (int i = 0; i < _shape; ++i)
-            ret[i] = static_cast<float>(i);
-        return reinterpret_cast<char*>(ret);
-    }
-
-    char* normal_distribution_init(std::vector<int> shape, float mean, float std)
-    {
-        std::default_random_engine generator;
-        std::normal_distribution<float> distribution(mean, std);
-
-        const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-        auto ret = new float[_shape];
-#pragma omp for
-        for (int i = 0; i < _shape; ++i)
-        {
-            auto number = distribution(generator);
-            ret[i] = number;
-        }
-        return reinterpret_cast<char*>(ret);
-    }
-
-    char* uniform_distribution_init(std::vector<int> shape, float min, float max)
-    {
-        std::default_random_engine generator;
-        std::uniform_real_distribution<float> distribution(min, max);
-
-        const size_t _shape = std::accumulate(std::begin(shape), std::end(shape), 1, std::multiplies<int>());
-        auto ret = new float[_shape];
-#pragma omp for
-        for (int i = 0; i < _shape; ++i)
-        {
-            auto number = distribution(generator);
-            ret[i] = number;
-        }
-        return reinterpret_cast<char*>(ret);
-    }
-
-    char* xavier_uniform_init(std::vector<int> shape, float gain, float fan_in, float fan_out)
-    {
-        float a = gain * std::sqrtf(6 / (fan_in + fan_out));
-        return uniform_distribution_init(shape, -a, a);
-    }
-
-    char* xavier_normal_init(std::vector<int> shape, float gain, float fan_in, float fan_out)
-    {
-        float a = gain * std::sqrtf(2 / (fan_in + fan_out));
-        return normal_distribution_init(shape, 0, a * a);
-    }
-}
-
-void init_tensor(py::module& m)
-{
-    py::class_<tensor, std::shared_ptr<tensor>>(m, "tensor")
-        .def(py::init<std::vector<float>&, const std::vector<int>&>())
-        .def("reshape", &tensor::reShape)
-        .def_readonly("shape", &tensor::m_shape)
-        .def("byte_count", &tensor::size)
-        .def("size", &tensor::count)
-        .def("copy", &tensor::copyTo)
-        .def("toHost", &tensor::toHost);
-}
-

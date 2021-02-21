@@ -1,7 +1,6 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
-#define USE_SHADERC
+
 #ifdef USE_SHADERC
 #include <shaderc/shaderc.hpp>
 #else
@@ -79,4 +78,4 @@ std::string& single_shader_op(const std::string& op);
 /// <param name="op"> Ex: C[i] = A[i] __ B[i]; </param>
 /// <returns> shader string</returns>
 std::string& double_shader_op(const std::string& op);
-#endif
+

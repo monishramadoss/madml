@@ -1,5 +1,5 @@
-#ifndef CONTEXT_H
-#define CONTEXT_H
+#pragma once
+
 
 class context
 {
@@ -10,4 +10,4 @@ public:
 
 void createContext();
 
-#endif
+

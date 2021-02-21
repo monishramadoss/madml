@@ -1,3 +1,4 @@
+
 #include "common.h"
 #include "utils.h"
 #include "layer.h"
@@ -199,6 +200,3 @@ void layer::bindtensor(std::shared_ptr<tensor> tensor, int binding)
     vkUpdateDescriptorSets(m_device, 1, &write_descriptor_set, 0, nullptr);
 }
 
-void Module::update_weight()
-{
-}

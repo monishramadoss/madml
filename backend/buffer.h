@@ -1,5 +1,5 @@
-#ifndef BUFFER_H
-#define BUFFER_H
+#pragma once
+
 #include <vulkan/vulkan.h>
 
 class buffer
@@ -21,4 +21,3 @@ private:
     VkDeviceMemory m_memory;
 };
 
-#endif

@@ -6,3 +6,4 @@ from .math import tanh
 from .module import Module, Parameter
 from .pooling import MaxPool1d, MaxPool2d, MaxPool3d
 from .transform import transpose
+

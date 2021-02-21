@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#pragma once
+
 #include <math.h>
 #include <string.h>
 #include <map>
@@ -12,25 +12,13 @@
 #include <memory>
 
 #include <vulkan/vulkan.h>
-#ifndef SHADERS_H
-#define SHADERS_H
-#include "spv_shader.h"
-#endif
+
 
 extern VkPhysicalDevice kPhysicalDevice;
 extern VkDevice kDevice;
 extern VkQueue kQueue;
 extern VkCommandPool kCmdPool;
 extern std::mutex kContextMtx;
-
-/*enum ShapeIdx
-{
-	kShapeIdxBatch = 0,
-	kShapeIdxChannel,
-	kShapeIdxDepth,
-	kShapeIdxHeight,
-	kShapeIdxWidth,
-};*/
 
 #define VK_CHECK_RESULT(f) \
 { \
@@ -39,5 +27,3 @@ extern std::mutex kContextMtx;
 			std::cout << "VULKAN KERNEL ERROR: " << f; \
 		} \
 }
-
-#endif

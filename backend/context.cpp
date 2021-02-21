@@ -1,19 +1,19 @@
+
+
 #include "common.h"
 #include "context.h"
 
-struct tensorParam
-{
-    int total;
-};
 
 std::shared_ptr<context> kCtx;
 bool enableValidationLayers = false;
+
 VkInstance kInstance;
 VkPhysicalDevice kPhysicalDevice;
 VkDevice kDevice;
 std::vector<VkDevice> kDevices;
 VkQueue kQueue;
 VkCommandPool kCmdPool;
+
 VkDebugReportCallbackEXT kDebugReportCallback;
 uint32_t kQueueFamilyIndex;
 std::vector<const char*> kEnabledLayers;

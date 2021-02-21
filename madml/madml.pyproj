@@ -1,0 +1,71 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>50d248ce-ee36-4b2c-8220-0f8242eec37d</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <StartupFile>
+    </StartupFile>
+    <SearchPath>
+    </SearchPath>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <Name>madml</Name>
+    <RootNamespace>madml</RootNamespace>
+    <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>true</DebugSymbols>
+    <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\backend\backend.vcxproj">
+      <Name>backend</Name>
+      <Project>{09bfe37b-93e0-4eed-97cf-bc3536fdf9c1}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\vknn\vknn.vcxproj">
+      <Name>vknn</Name>
+      <Project>{80ac384c-ff65-4136-8bea-bf2f4b14de4d}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="nn\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="data.py" />
+    <Compile Include="init.py" />
+    <Compile Include="nn\activation.py" />
+    <Compile Include="nn\convolution.py" />
+    <Compile Include="nn\linear.py" />
+    <Compile Include="nn\loss.py" />
+    <Compile Include="nn\math.py" />
+    <Compile Include="nn\module.py" />
+    <Compile Include="nn\normalization.py" />
+    <Compile Include="nn\pooling.py" />
+    <Compile Include="nn\rnn.py" />
+    <Compile Include="nn\testing.py" />
+    <Compile Include="nn\transform.py" />
+    <Compile Include="nn\utils.py" />
+    <Compile Include="nn\__init__.py" />
+    <Compile Include="optimizer.py" />
+    <Compile Include="setup.py" />
+    <Compile Include="tensor.py" />
+    <Compile Include="worker.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+  <!-- Uncomment the CoreCompile target to enable the Build command in
+       Visual Studio and specify your pre- and post-build commands in
+       the BeforeBuild and AfterBuild targets below. -->
+  <!--<Target Name="CoreCompile" />-->
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+</Project>

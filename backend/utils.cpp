@@ -1,3 +1,4 @@
+
 #include "common.h"
 #include "utils.h"
 
@@ -20,7 +21,7 @@ std::vector<uint32_t> compile(const std::string& name, const std::string& data)
     result.assign(module.cbegin(), module.cend());
     return result;
 #else
-    return nullptr;
+    return result;
 #endif
 }
 
