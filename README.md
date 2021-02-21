@@ -3,7 +3,7 @@ Multi-Architecture design tool for ML algorithms, (MADML for short)
 The premise behind this is to create a universal platform for researchers to experiement with Ml algorithms in a familiar envionrment.
 
 # Current state: (Both Fwd & Bck Prop)
-    Training possible via CPU (numba/numpy)
+    Needs mkl/avx libraries
     needs currerent queques and async functional calls
     missing Device IDs
     Need to decide on conda or pip installations
