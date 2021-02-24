@@ -1,4 +1,4 @@
-#include "kernel.h"
+#include "../kernel/kernel.h"
 #include "backend.h"
 
 PYBIND11_MODULE(backend, m)

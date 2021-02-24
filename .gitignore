@@ -357,3 +357,7 @@ MigrationBackup/
 .ionide/
 .vs/ml_on_vulkan/v16/.suo
 .vs/ml_on_vulkan/v16/Browse.VC.db
+test/data/t10k-images-idx3-ubyte.gz
+test/data/t10k-labels-idx1-ubyte.gz
+test/data/train-images-idx3-ubyte.gz
+test/data/train-labels-idx1-ubyte.gz

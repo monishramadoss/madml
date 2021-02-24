@@ -66,5 +66,6 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp"
-    }
+    },
+    "python.pythonPath": "C:\\Users\\MonishRamadoss\\.conda\\envs\\madml_test_env\\python.exe"
 }

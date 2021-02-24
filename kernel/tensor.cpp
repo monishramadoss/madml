@@ -108,10 +108,10 @@ void tensor::copyTo(tensor& dst) const
 
 std::vector<char>& tensor::toHost()
 {
+    std::vector<char> d;
     char* p = static_cast<char*>(map());
-    std::vector<char> d(size_in_byte);
+    d.resize(size_in_byte);
     std::copy(p, p + size_in_byte, d.data());
-    unMap();
-    m_buffer.reset();
-    return d;
+    unMap(); // m_buffer.reset();
+    return std::ref(d);
 }

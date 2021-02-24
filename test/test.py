@@ -126,11 +126,9 @@ class TestModules(unittest.TestCase):
         self.assertTrue(True)
 
     def test_crossentropy(self):
-
         import madml
         import madml.nn as nn
-        import madml.optimizer as optimizer
-
+        
         x = np.random.rand(3, 5).astype(np.float32)
         labels = np.random.randint(0, high=5, size=(3,))
 
@@ -144,6 +142,9 @@ class TestModules(unittest.TestCase):
         print(loss.host_data, dx.gradient.host_data)
 
     def test_relu(self):
+        import madml
+        import madml.nn as nn
+
         x = np.random.uniform(-2, 2, size=81).reshape([9, 9])
         t1 = madml.tensor(x)
         module = nn.ReLU()
