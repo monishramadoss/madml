@@ -1,4 +1,3 @@
-
 #include "common.h"
 #include "utils.h"
 #include "layer.h"
@@ -26,16 +25,16 @@ layer::~layer()
         vkDestroyShaderModule(m_device, m_module, nullptr);
     if (m_descriptor_pool != nullptr)
         vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
-    if(m_pipeline != nullptr)
+    if (m_pipeline != nullptr)
         vkDestroyPipeline(m_device, m_pipeline, nullptr);
-    if(m_pipeline_layout != nullptr)
+    if (m_pipeline_layout != nullptr)
         vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
-} 
+}
 
 void layer::initVulkanThing(int buffer_num_forward)
 {
     createDescriptorSetLayout(buffer_num_forward);
-    createDescriptorSet(buffer_num_forward);  
+    createDescriptorSet(buffer_num_forward);
     createCommandBuffer();
 }
 
@@ -92,7 +91,7 @@ void layer::createShaderModule(const uint32_t* spv, size_t size, const std::stri
     {
 #ifdef USE_SHADERC
         std::vector<uint32_t> code;
-        code = compile("shader",  source);
+        code = compile("shader", source);
         create_info.pCode = code.data();
         create_info.codeSize = sizeof(uint32_t) * code.size();
 #endif
@@ -199,4 +198,3 @@ void layer::bindtensor(std::shared_ptr<tensor> tensor, int binding)
 
     vkUpdateDescriptorSets(m_device, 1, &write_descriptor_set, 0, nullptr);
 }
-

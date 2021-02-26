@@ -9,12 +9,11 @@ from madml import tensor, zeros_like
 from .module import Module
 from .testing import relu_forward, relu_backward, dropout_forward, dropout_backward
 
-
 class ReLU(Module):
     __constants__ = ['inplace']
-    inplace: bool
+    inplace : bool
 
-    def __init__(self, inplace: bool = False) -> None:
+    def __init__(self, inplace: bool=False) -> None:
         super(ReLU, self).__init__()
         self.inplace = inplace
         self.out = None
@@ -61,12 +60,11 @@ class ReLU(Module):
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
 
-
 class Dropout(Module):
     __constants__ = ['prob']
-    prob: float
+    prob : float
 
-    def __init__(self, probability: float = 0.1, seed: int = None) -> None:
+    def __init__(self, probability: float=0.1, seed: int=None) -> None:
         super(Dropout, self).__init__()
         if seed:
             np.random.seed(seed)
@@ -96,5 +94,3 @@ class Dropout(Module):
         _dx = dropout_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
-
-

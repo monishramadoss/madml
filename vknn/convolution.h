@@ -3,7 +3,8 @@
 #include "vknn.h"
 #include "../kernel/layer.h"
 
-struct vol2col_param {
+struct vol2col_param
+{
     int total;
     int batchsize;
     int channels;
@@ -27,15 +28,16 @@ struct vol2col_param {
     int depth_vol;
 };
 
-
-class vol2col: public layer{
+class vol2col : public layer
+{
     vol2col_param m_param;
 public:
     explicit vol2col(std::vector<int>& params);
     void forward(std::shared_ptr<tensor>& col, const std::shared_ptr<tensor>& vol);
 };
 
-class col2vol: public layer{
+class col2vol : public layer
+{
     vol2col_param m_param;
 public:
     explicit col2vol(std::vector<int>& params);

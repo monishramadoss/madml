@@ -11,32 +11,27 @@ import numpy as np
 from madml import tensor
 from .module import Module
 
-
 def _size(shape: List[int]) -> int:
     size = 1
     for s in shape:
         size *= s
     return size
 
-
 def softmax_util_cpu(x: tensor, y: tensor) -> tensor:
     eX = np.exp((x.host_data.T - np.max(x.host_data, axis=1)).T)
     y.host_data = (eX.T / eX.sum(axis=1)).T
     return y
 
-
-def l1_reg(w: tensor, lam: float = 1e-3) -> float:
+def l1_reg(w: tensor, lam: float=1e-3) -> float:
     return lam * np.sum(np.abs(w.host_data))
 
-
-def l2_reg(w: tensor, lam: float = 1e-3) -> float:
+def l2_reg(w: tensor, lam: float=1e-3) -> float:
     return .5 * lam * np.sum(w.host_data * w.host_data)
 
-
 class _Loss(Module, ABC):
-    reduction: Optional[str]
+    reduction : Optional[str]
 
-    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean', backend=None) -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str='mean', backend=None) -> None:
         super(_Loss, self).__init__(backend)
         if size_average is not None or reduce is not None:
             self.reduction = None  # _Reduction.legacy_get_string(size_average, reduce)
@@ -66,19 +61,17 @@ class _Loss(Module, ABC):
     def accuracy(self):
         raise NotImplementedError
 
-
 class _WeightedLoss(_Loss, ABC):
-    def __init__(self, weight=None, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, weight=None, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(_WeightedLoss, self).__init__(size_average, reduce, reduction)
         self.weight = weight
 
-
 class CrossEntropyLoss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
-    ignore_index: int
+    ignore_index : int
 
-    def __init__(self, weight=None, size_average=None, ignore_index: int = None,
-                 reduce=None, reduction: str = 'mean', with_logit: bool = False) -> None:
+    def __init__(self, weight=None, size_average=None, ignore_index: int=None,
+                 reduce=None, reduction: str='mean', with_logit: bool=False) -> None:
         super(CrossEntropyLoss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.with_logit = with_logit
@@ -104,9 +97,11 @@ class CrossEntropyLoss(_WeightedLoss):
         # if self.weight is not None:
         #     gather_weight = np.take(self.weight, t, mode='clip')
         #     if self.ignore_index is not None:
-        #         gather_weight = np.where(t == self.ignore_index, 0, gather_weight).astype(dtype=np.float32)
+        #         gather_weight = np.where(t == self.ignore_index, 0,
+        #         gather_weight).astype(dtype=np.float32)
         # elif self.ignore_index is not None:
-        #     gather_weight = np.where(t == self.ignore_index, 0, 1).astype(dtype=np.float32)
+        #     gather_weight = np.where(t == self.ignore_index, 0,
+        #     1).astype(dtype=np.float32)
 
         # if len(inp.shape) != 3:
         #     inp = inp.reshape([N, C, -1])
@@ -150,11 +145,10 @@ class CrossEntropyLoss(_WeightedLoss):
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())
 
-
 class MSELoss(_Loss):
     __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(MSELoss, self).__init__(size_average, reduce, reduction)
 
     def forward_cpu(self, logit: tensor, target: tensor) -> tensor:

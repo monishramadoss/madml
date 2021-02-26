@@ -14,4 +14,3 @@ namespace py = pybind11;
 #include "pooling.h"
 #include "rnn.h"
 #include "transform.h"
-

@@ -1,4 +1,3 @@
-
 #include <functional>
 #include <algorithm>
 #include <iomanip>
@@ -33,7 +32,6 @@ tensor::tensor(float c, const std::vector<int>& shape) : format(Format::kFormatF
     char* c_arr = init::fill_memory_shape<float>(shape, c);
     reshape(c_arr, shape);
 }
-
 
 void* tensor::map() const
 {

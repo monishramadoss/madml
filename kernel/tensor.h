@@ -64,6 +64,4 @@ namespace init
             ret[i] = reinterpret_cast<dType&>(i);
         return reinterpret_cast<char*>(ret);
     }
-
 }
-

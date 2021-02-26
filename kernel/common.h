@@ -13,7 +13,6 @@
 
 #include <vulkan/vulkan.h>
 
-
 extern VkPhysicalDevice kPhysicalDevice;
 extern VkDevice kDevice;
 extern VkQueue kQueue;

@@ -10,14 +10,12 @@ import numpy as np
 
 try:
     import backend
-    import vknn
     VULKAN_DLL_LOADED = True
 
 except ImportError:
     VULKAN_DLL_LOADED = False
 
 # from .nn.module import module_cache, execution_order
-
 def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
     ret_data = []
     ret_data.extend([bytearray(arr[i:i + 4]) for i in range(0, size, 4)])
@@ -25,12 +23,10 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
         ret_data[i] = struct.unpack("f", ret_data[i])
     return ret_data
 
-
-
 class gpu_tensor(object):
     #data: Optional[backend.tensor]
 
-    def __init__(self, data: np.ndarray, dtype: Type = float):
+    def __init__(self, data: np.ndarray, dtype: Type=float):
         if dtype != float:
             raise TypeError(" dtype: {1} is not implement.")
 
@@ -38,7 +34,7 @@ class gpu_tensor(object):
         shape = data.shape
         self.data = backend.tensor(lst_data, shape)
 
-    def to_cpu(self, dtype: Type = float):
+    def to_cpu(self, dtype: Type=float):
         if dtype != float:
             raise TypeError(" dtype: {1} is not implement.")
 
@@ -46,15 +42,15 @@ class gpu_tensor(object):
         _convert_to_float(self.data.size(), char_data)
 
 class tensor(object):
-    shape: List[int]
-    init_shape: List[int]
-    _host_memory: np.ndarray
-    _device_memory: gpu_tensor
-    on_device: bool
-    id: int
+    shape : List[int]
+    init_shape : List[int]
+    _host_memory : np.ndarray
+    _device_memory : gpu_tensor
+    on_device : bool
+    id : int
 
     def __init__(self, data: Union[List[Union[float, int, bytes, bool]], np.ndarray], shape=None,
-                 requires_grad: bool = True) -> None:
+                 requires_grad: bool=True) -> None:
         if shape is None:
             shape = []
         if isinstance(data, np.ndarray):
@@ -183,7 +179,7 @@ class tensor(object):
         if self._grad is not None:
             self.gradient.host_data = np.zeros_like(self.gradient.host_data)
 
-    def onehot(self, label_count: Optional[int] = -1):
+    def onehot(self, label_count: Optional[int]=-1):
         if label_count > 0:
             _max = label_count
         else:

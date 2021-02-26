@@ -1,11 +1,9 @@
 import numpy as np
 
-
 def fc_forward(X, W, b):
     out = X @ W + b
     cache = (W, X)
     return out, cache
-
 
 def fc_backward(dy, cache):
     W, h = cache
@@ -16,24 +14,20 @@ def fc_backward(dy, cache):
 
     return dX, dW, db
 
-
 def relu_forward(X):
     out = np.maximum(X, 0)
     cache = X
     return out, cache
-
 
 def relu_backward(dy, cache):
     dX = dy.copy()
     dX[cache <= 0] = 0
     return dX
 
-
 def lrelu_forward(X, a=1e-3):
     out = np.maximum(a * X, X)
     cache = (X, a)
     return out, cache
-
 
 def lrelu_backward(dy, cache):
     X, a = cache
@@ -41,31 +35,25 @@ def lrelu_backward(dy, cache):
     dX[X < 0] *= a
     return dX
 
-
 def sigmoid(X):
     return 1. / (1 + np.exp(-X))
-
 
 def sigmoid_forward(X):
     out = sigmoid(X)
     cache = out
     return out, cache
 
-
 def sigmoid_backward(dy, cache):
     return cache * (1. - cache) * dy
-
 
 def tanh_forward(X):
     out = np.tanh(X)
     cache = out
     return out, cache
 
-
 def tanh_backward(dy, cache):
     dX = (1 - cache ** 2) * dy
     return dX
-
 
 def dropout_forward(X, p_dropout):
     u = np.random.binomial(1, p_dropout, size=X.shape) / p_dropout
@@ -73,15 +61,12 @@ def dropout_forward(X, p_dropout):
     cache = u
     return out, cache
 
-
 def dropout_backward(dy, cache):
     dX = dy * cache
     return dX
 
-
 def exp_running_avg(running, new, gamma=.9):
     return gamma * running + (1. - gamma) * new
-
 
 def bn_forward(X, gamma, beta, cache, momentum=.9, train=True):
     running_mean, running_var = cache
@@ -104,14 +89,13 @@ def bn_forward(X, gamma, beta, cache, momentum=.9, train=True):
 
     return out, cache, running_mean, running_var
 
-
 def bn_backward(dy, cache):
     X, X_norm, mu, var, gamma, beta = cache
 
     N, D = X.shape
 
     X_mu = X - mu
-    std_inv = 1. / np.sqrt(var + c.eps)
+    std_inv = 1. / np.sqrt(var + 1e-8)
 
     dX_norm = dy * gamma
     dvar = np.sum(dX_norm * X_mu, axis=0) * -.5 * std_inv ** 3
@@ -122,7 +106,6 @@ def bn_backward(dy, cache):
     dbeta = np.sum(dy, axis=0)
 
     return dX, dgamma, dbeta
-
 
 def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
     # First figure out what the size of the output should be
@@ -142,7 +125,6 @@ def get_im2col_indices(x_shape, field_height, field_width, padding=1, stride=1):
     k = np.repeat(np.arange(C), field_height * field_width).reshape(-1, 1)
     return k.astype(int), i.astype(int), j.astype(int)
 
-
 def im2col_indices(x, field_height, field_width, padding=1, stride=1):
     """ An implementation of im2col based on some fancy indexing """
     # Zero-pad the input
@@ -155,7 +137,6 @@ def im2col_indices(x, field_height, field_width, padding=1, stride=1):
     C = x.shape[1]
     cols = cols.transpose(1, 2, 0).reshape(field_height * field_width * C, -1)
     return cols
-
 
 def col2im_indices(cols, x_shape, field_height=3, field_width=3, padding=1,
                    stride=1):
@@ -170,7 +151,6 @@ def col2im_indices(cols, x_shape, field_height=3, field_width=3, padding=1,
     if padding == 0:
         return x_padded
     return x_padded[:, :, padding:-padding, padding:-padding]
-
 
 def conv_forward(X, W, b, stride=1, padding=1):
     cache = W, b, stride, padding
@@ -198,7 +178,6 @@ def conv_forward(X, W, b, stride=1, padding=1):
 
     return out, cache
 
-
 def conv_backward(dy, cache):
     X, W, b, stride, padding, X_col = cache
     n_filter, d_filter, h_filter, w_filter = W.shape
@@ -216,7 +195,6 @@ def conv_backward(dy, cache):
 
     return dX, dW, db
 
-
 def maxpool_forward(X, size=2, stride=2):
     def maxpool(X_col):
         max_idx = np.argmax(X_col, axis=0)
@@ -225,14 +203,12 @@ def maxpool_forward(X, size=2, stride=2):
 
     return _pool_forward(X, maxpool, size, stride)
 
-
 def maxpool_backward(dy, cache):
     def dmaxpool(dX_col, dy_col, pool_cache):
         dX_col[pool_cache, range(dy_col.size)] = dy_col
         return dX_col
 
     return _pool_backward(dy, dmaxpool, cache)
-
 
 def avgpool_forward(X, size=2, stride=2):
     def avgpool(X_col):
@@ -242,14 +218,12 @@ def avgpool_forward(X, size=2, stride=2):
 
     return _pool_forward(X, avgpool, size, stride)
 
-
 def avgpool_backward(dy, cache):
     def davgpool(dX_col, dy_col, pool_cache):
         dX_col[:, range(dy_col.size)] = 1. / dX_col.shape[0] * dy_col
         return dX_col
 
     return _pool_backward(dy, davgpool, cache)
-
 
 def _pool_forward(X, pool_fun, size=2, stride=2):
     n, d, h, w = X.shape
@@ -273,7 +247,6 @@ def _pool_forward(X, pool_fun, size=2, stride=2):
 
     return out, cache
 
-
 def _pool_backward(dy, dpool_fun, cache):
     X, size, stride, X_col, pool_cache = cache
     n, d, w, h = X.shape
@@ -288,11 +261,9 @@ def _pool_backward(dy, dpool_fun, cache):
 
     return dX
 
-
 def softmax(X):
     eX = np.exp((X.T - np.max(X, axis=1)).T)
     return (eX.T / eX.sum(axis=1)).T
-
 
 def dcross_entropy(y_pred, y_train):
     m = y_pred.shape[0]

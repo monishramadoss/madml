@@ -30,8 +30,6 @@ public:
     int runCommandBuffer();
     void bindtensor(std::shared_ptr<tensor> tensor, int binding);
 
-
-
     VkDevice m_device;
     VkPipeline m_pipeline;
     VkCommandBuffer m_cmd_buffer;
@@ -47,5 +45,3 @@ public:
 
     std::string m_type;
 };
-
-

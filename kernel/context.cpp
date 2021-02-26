@@ -1,8 +1,5 @@
-
-
 #include "common.h"
 #include "context.h"
-
 
 std::shared_ptr<context> kCtx;
 bool enableValidationLayers = false;

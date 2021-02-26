@@ -26,4 +26,3 @@ bool isAvailable();
 #include "tensor.h"
 #include "buffer.h"
 #include "layer.h"
-

@@ -20,4 +20,3 @@ private:
     VkBuffer m_buffer;
     VkDeviceMemory m_memory;
 };
-

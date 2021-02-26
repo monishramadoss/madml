@@ -2,7 +2,7 @@
 #include "backend.h"
 
 PYBIND11_MODULE(backend, m)
-{ 
+{
     py::class_<tensor, std::shared_ptr<tensor>>(m, "tensor")
         .def(py::init<std::vector<float>&, const std::vector<int>&>())
         .def("reshape", &tensor::reShape)

@@ -16,7 +16,6 @@ from .worker import worker_loop, IterableDatasetStopIteration, python_exit_statu
 
 MP_STATUS_CHECK_INTERVAL = 5.0
 
-
 class Dataset(object):
     def __getitem__(self, index) -> tensor:
         pass
@@ -27,10 +26,9 @@ class Dataset(object):
     def __len__(self):
         pass
 
-
 class ConcatDataset(Dataset):
-    datasets: List[Dataset]
-    cumulative_sizes: List[int]
+    datasets : List[Dataset]
+    cumulative_sizes : List[int]
 
     @staticmethod
     def cumsum(sequence) -> List:
@@ -60,7 +58,6 @@ class ConcatDataset(Dataset):
                 sample_idx = idx - self.cumulative_sizes[dataset_idx - 1]
             return self.datasets[dataset_idx][sample_idx]
 
-
 class IterableDataset(Dataset):
     def __iter__(self) -> Iterator:
         raise NotImplementedError
@@ -68,9 +65,8 @@ class IterableDataset(Dataset):
     def __add__(self, other: Dataset):
         return ChainDataset([self, other])
 
-
 class TensorDataset(Dataset):
-    tensors: List[tensor, ...]
+    tensors : List[tensor, ...]
 
     def __init__(self, tensors: List[tensor]) -> None:
         assert all(tensors[0].size(0) == t.shape[0] for t in tensors)
@@ -81,7 +77,6 @@ class TensorDataset(Dataset):
 
     def __len__(self):
         return self.tensors[0].shape[0]
-
 
 class ChainDataset(IterableDataset):
     def __init__(self, datasets: Iterable[Dataset]) -> None:
@@ -102,7 +97,6 @@ class ChainDataset(IterableDataset):
             total += len(d)  # type: ignore
         return total
 
-
 class Sampler(object):
     def __init__(self):
         pass
@@ -113,9 +107,8 @@ class Sampler(object):
     def __len__(self) -> int:
         raise NotImplementedError
 
-
 class SequentialSampler(Sampler):
-    data_source: Sized
+    data_source : Sized
 
     def __init__(self, data_source):
         super(SequentialSampler, self).__init__()
@@ -127,12 +120,11 @@ class SequentialSampler(Sampler):
     def __len__(self) -> int:
         return len(self.data_source)
 
-
 class RandomSampler(Sampler):
-    data_source: Sized
-    replacement: bool
+    data_source : Sized
+    replacement : bool
 
-    def __init__(self, data_source: Sized, replacement: bool = False, num_samples: Optional[int] = None,
+    def __init__(self, data_source: Sized, replacement: bool=False, num_samples: Optional[int]=None,
                  generator=None) -> None:
         super(RandomSampler, self).__init__()
         self.data_source = data_source
@@ -174,7 +166,6 @@ class RandomSampler(Sampler):
     def __len__(self) -> int:
         return self.num_samples
 
-
 class BatchSampler(Sampler):
     def __init__(self, sampler: Sampler, batch_size: int, drop_last: bool) -> None:
         super(BatchSampler, self).__init__()
@@ -205,7 +196,6 @@ class BatchSampler(Sampler):
         else:
             return (len(self.sampler) + self.batch_size - 1) // self.batch_size
 
-
 class _InfiniteConstantSampler(Sampler):
     def __len__(self) -> int:
         pass
@@ -217,21 +207,20 @@ class _InfiniteConstantSampler(Sampler):
         while True:
             yield None
 
-
 class DataLoader(object):
-    dataset: Dataset
-    batch_size: Optional[int]
-    num_workers: int
-    persistent_workers: bool
-    prefetch_factor: int
-    timeout: int
-    drop_last: bool
-    shuffle: bool
+    dataset : Dataset
+    batch_size : Optional[int]
+    num_workers : int
+    persistent_workers : bool
+    prefetch_factor : int
+    timeout : int
+    drop_last : bool
+    shuffle : bool
 
-    def __init__(self, dataset, batch_size: int = 1, shuffle: bool = False, drop_last: bool = False,
-                 num_workers: int = -1, persistent_workers: bool = False, prefetch_factor: int = -1,
-                 timeout: int = 2000, sampler: Optional[Sampler] = None, generator=None,
-                 worker_init_fn: Callable[[int], None] = None, multiprocessing_context=None) -> None:
+    def __init__(self, dataset, batch_size: int=1, shuffle: bool=False, drop_last: bool=False,
+                 num_workers: int=-1, persistent_workers: bool=False, prefetch_factor: int=-1,
+                 timeout: int=2000, sampler: Optional[Sampler]=None, generator=None,
+                 worker_init_fn: Callable[[int], None]=None, multiprocessing_context=None) -> None:
 
         if sampler is None:  # give default samplers
             if isinstance(dataset, Iterable):
@@ -240,7 +229,8 @@ class DataLoader(object):
             else:  # map-style
                 if shuffle:
                     # Cannot statically verify that dataset is Sized
-                    # Somewhat related: see NOTE [ Lack of Default `__len__` in Python Abstract Base Classes ]
+                    # Somewhat related: see NOTE [ Lack of Default `__len__` in
+                    # Python Abstract Base Classes ]
                     sampler = RandomSampler(dataset, generator=generator)  # type: ignore
                 else:
                     sampler = SequentialSampler(dataset)
@@ -263,16 +253,13 @@ class DataLoader(object):
         if isinstance(dataset, IterableDataset):
             self.dataset_kind = _DatasetKind.Iterable
             if shuffle is not False:
-                raise ValueError(
-                    "DataLoader with IterableDataset: expected unspecified "
+                raise ValueError("DataLoader with IterableDataset: expected unspecified "
                     "shuffle option, but got shuffle={}".format(shuffle))
             elif sampler is not None:
-                raise ValueError(
-                    "DataLoader with IterableDataset: expected unspecified "
+                raise ValueError("DataLoader with IterableDataset: expected unspecified "
                     "sampler option, but got sampler={}".format(sampler))
             elif self.batch_sampler is not None:
-                raise ValueError(
-                    "DataLoader with IterableDataset: expected unspecified "
+                raise ValueError("DataLoader with IterableDataset: expected unspecified "
                     "batch_sampler option, but got batch_sampler={}".format(self.batch_sampler))
         else:
             self.dataset_kind = _DatasetKind.Map
@@ -302,7 +289,8 @@ class DataLoader(object):
             else:  # map-style
                 if shuffle:
                     # Cannot statically verify that dataset is Sized
-                    # Somewhat related: see NOTE [ Lack of Default `__len__` in Python Abstract Base Classes ]
+                    # Somewhat related: see NOTE [ Lack of Default `__len__` in
+                    # Python Abstract Base Classes ]
                     self.sampler = RandomSampler(dataset, generator=generator)  # type: ignore
                 else:
                     self.sampler = SequentialSampler(dataset)
@@ -324,8 +312,7 @@ class DataLoader(object):
                 if isinstance(multiprocessing_context, str) or isinstance(multiprocessing_context, bytes):
                     valid_start_methods = mp.get_all_start_methods()
                     if multiprocessing_context not in valid_start_methods:
-                        raise ValueError(
-                            ('multiprocessing_context option '
+                        raise ValueError(('multiprocessing_context option '
                              'should specify a valid start method in {!r}, but got '
                              'multiprocessing_context={!r}').format(valid_start_methods, multiprocessing_context))
 
@@ -375,7 +362,6 @@ class DataLoader(object):
         else:
             return len(self.index_sampler)
 
-
 class _BaseDataLoaderIter(object):
     def __init__(self, loader: DataLoader) -> None:
         self._dataset = loader.dataset
@@ -417,23 +403,19 @@ class _BaseDataLoaderIter(object):
     def __len__(self) -> int:
         return len(self._index_sampler)
 
-
 class _SingleProcessDataLoaderIter(_BaseDataLoaderIter):
     def __init__(self, loader) -> None:
         super(_SingleProcessDataLoaderIter, self).__init__(loader)
         assert self._num_workers <= 0
-        self._dataset_fetcher = _DatasetKind.create_fetcher(
-            self._dataset_kind, self._dataset, self._auto_collation, self._collate_fn, self._drop_last)
+        self._dataset_fetcher = _DatasetKind.create_fetcher(self._dataset_kind, self._dataset, self._auto_collation, self._collate_fn, self._drop_last)
 
     def _next_data(self):
         index = self._next_index()  # may raise StopIteration
         data = self._dataset_fetcher.fetch(index)
         return data
 
-
 class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
-    _index_queues: List[mp.Queue[Union[List[int, ...], type(None)]]]
-    _send_idx: int
+    _send_idx : int
 
     def __init__(self, loader):
         super(_MultiProcessingDataLoaderIter, self).__init__(loader)
@@ -457,8 +439,7 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
         self._workers = []
         for i in range(self._num_workers):
             index_queue = mp.Queue()
-            w = multiprocessing_context.Process(
-                target=worker_loop,
+            w = multiprocessing_context.Process(target=worker_loop,
                 args=(self._dataset_kind, self._dataset, index_queue,
                       self._worker_result_queue, self._workers_done_event,
                       self._auto_collation, self._colate_fn, self._drop_last,
@@ -481,17 +462,36 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
             self._data_queue = mp.Queue()  # type: ignore
             # pin_memory_thread = mp.Process(
             #     target=_utils.pin_memory._pin_memory_loop,
-            #     args=(self._worker_result_queue, self._data_queue, self._pin_memory_thread_done_event)
+                                                     #     args=(self._worker_result_queue,
+                                                                                              #     self._data_queue,
+                                                                                                                                       #     self._pin_memory_thread_done_event)
             # )
-            # pin_memory_thread.daemon = True
-            # pin_memory_thread.start()
-            # Similar to workers (see comment above), we only register
-            # pin_memory_thread once it is started.
-            # self._pin_memory_thread = pin_memory_thread
+                                                     # pin_memory_thread.daemon
+                                                                                              # =
+                                                                                                                                       # True
+                                                                                                                                       # pin_memory_thread.start()
+                                                                                                                                       # Similar
+                                                                                                                                       # to
+                                                                                                                                       # workers
+                                                                                                                                       # (see
+                                                                                                                                       # comment
+                                                                                                                                       # above),
+                                                                                                                                       # we
+                                                                                                                                       # only
+                                                                                                                                       # register
+                                                                                                                                       # pin_memory_thread
+                                                                                                                                       # once
+                                                                                                                                       # it
+                                                                                                                                       # is
+                                                                                                                                       # started.
+                                                                                                                                       # self._pin_memory_thread
+                                                                                                                                       # =
+                                                                                                                                       # pin_memory_thread
         else:
             self._data_queue = self._worker_result_queue
 
-        # _utils.signal_handling._set_worker_pids(id(self), tuple(w.pid for w in self._workers))  # type: ignore
+        # _utils.signal_handling._set_worker_pids(id(self), tuple(w.pid for w
+        # in self._workers)) # type: ignore
         # _utils.signal_handling._set_SIGCHLD_handler()
         self._worker_pids_set = True
         self.reset(loader, first_iter=True)
@@ -521,7 +521,8 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
             return True, data
         except Exception as e:
             # At timeout and error, we manually check whether any worker has
-            # failed. Note that this is the only mechanism for Windows to detect
+            # failed.  Note that this is the only mechanism for Windows to
+            # detect
             # worker failures.
             failed_workers = []
             for worker_id, w in enumerate(self._workers):
@@ -544,8 +545,7 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
                 fs = [tempfile.NamedTemporaryFile() for i in range(fds_limit_margin)]
             except OSError as e:
                 if e.errno == errno.EMFILE:
-                    raise RuntimeError(
-                        "Too many open files. Communication with the"
+                    raise RuntimeError("Too many open files. Communication with the"
                         " workers is no longer possible. Please increase the"
                         " limit using `ulimit -n` in the shell or change the"
                         " sharing strategy by calling"

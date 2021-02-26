@@ -3,7 +3,6 @@
 
 #include "gemm.h"
 
-
 gemm::gemm(float alpha, float beta)
 {
     initVulkanThing(3);
@@ -12,8 +11,10 @@ gemm::gemm(float alpha, float beta)
     m_param.beta = beta;
 }
 
-void gemm::forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w){
-    if(m_pipeline == nullptr){
+void gemm::forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w)
+{
+    if (m_pipeline == nullptr)
+    {
         if (x->getShape().size() == w->getShape().size() + 1)
         {
             m_param.batchsize = x->getShape()[0];
@@ -27,7 +28,7 @@ void gemm::forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x,
             m_param.m = x->getShape()[0];
             m_param.k = x->getShape()[1];
             m_param.n = w->getShape()[1];
-        }   
+        }
         m_param.total = w->count();
 
         m_group_x = static_cast<int>(alignSize(m_param.m, 64)) / 64;
@@ -40,7 +41,6 @@ void gemm::forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x,
             m_group_y = max_compute_work_group_count - 1;
         if (m_group_z > max_compute_work_group_count)
             m_group_z = max_compute_work_group_count - 1;
-
 
         //createShaderModule(fwd_shader, fwd_codeSize);
         createPipeline(sizeof(gemm_param));

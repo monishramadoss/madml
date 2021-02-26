@@ -1,6 +1,5 @@
 #pragma once
 
-
 class context
 {
 public:
@@ -9,5 +8,3 @@ public:
 };
 
 void createContext();
-
-
