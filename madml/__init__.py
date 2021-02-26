@@ -5,8 +5,11 @@ from .optimizer import SGD, Adam, Nadam, Adagrad, RMSprop
 
 
 try:
-    import vknn
- 
     import backend
 except ImportError:
-    print("=== NO DLLS LOADED ===")
+    print("=== NO BACKEND DLL LOADED ===")
+
+try:
+    import vknn 
+except ImportError:
+    print("=== NO VKNN DLL LOADED ===")

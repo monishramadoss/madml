@@ -28,7 +28,8 @@ class TestImports(unittest.TestCase):
         try:
             import vknn
             self.assertTrue(True)
-        except:
+        except Exception as e:
+            print(e)
             self.assertTrue(False)
         
 
@@ -367,8 +368,6 @@ class TestModels(unittest.TestCase):
 
         ax1.scatter(x_a[:, 0], x_a[:, 1])
         ax1.scatter(x_b[:, 0], x_b[:, 1])
-
-        # np.savetxt("result.csv", res[0], delimiter=",", header="x,y,label", comments="", fmt='%.5f')
 
         class spiral_model(nn.Module):
             def __init__(self):
