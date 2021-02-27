@@ -6,16 +6,18 @@ from __future__ import unicode_literals
 import math
 
 import numpy as np
+
 from madml import tensor, zeros, kaiming_uniform
 from .module import Module, Parameter
 from .testing import fc_forward, fc_backward
 
+
 class Linear(Module):
     __constants__ = ['in_features', 'out_features']
-    in_features : int
-    out_features : int
+    in_features: int
+    out_features: int
 
-    def __init__(self, in_features: int, out_features: int, bias: bool=True) -> None:
+    def __init__(self, in_features: int, out_features: int, bias: bool = True) -> None:
         super(Linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features

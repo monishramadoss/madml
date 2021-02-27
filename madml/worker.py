@@ -3,22 +3,26 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import os
-import sys
 import atexit
+import os
 import queue
+import sys
 from dataclasses import dataclass
 from typing import Union
+
 from .data import MP_STATUS_CHECK_INTERVAL
 
 python_exit_status = False
 IS_WINDOWS = sys.platform == "win32"
 
+
 def _set_python_exit_flag():
     global python_exit_status
     python_exit_status = True
 
+
 atexit.register(_set_python_exit_flag)
+
 
 class _BaseDatasetFetcher(object):
     def __init__(self, dataset, auto_collation, collate_fn, drop_last):
@@ -29,6 +33,7 @@ class _BaseDatasetFetcher(object):
 
     def fetch(self, possibly_batched_index):
         raise NotImplementedError()
+
 
 class _IterableDatasetFetcher(_BaseDatasetFetcher):
     def __init__(self, dataset, auto_collation, collate_fn, drop_last):
@@ -49,6 +54,7 @@ class _IterableDatasetFetcher(_BaseDatasetFetcher):
             data = next(self.dataset_iter)
         return self.collate_fn(data)
 
+
 class _MapDatasetFetcher(_BaseDatasetFetcher):
     def __init__(self, dataset, auto_collation, collate_fn, drop_last):
         super(_MapDatasetFetcher, self).__init__(dataset, auto_collation, collate_fn, drop_last)
@@ -59,6 +65,7 @@ class _MapDatasetFetcher(_BaseDatasetFetcher):
         else:
             data = self.dataset[possibly_batched_index]
         return self.collate_fn(data)
+
 
 class _DatasetKind(object):
     Map = 0
@@ -71,9 +78,11 @@ class _DatasetKind(object):
         else:
             return _IterableDatasetFetcher(dataset, auto_collation, collate_fn, drop_last)
 
+
 if IS_WINDOWS:
     import ctypes
     from ctypes.wintypes import DWORD, BOOL, HANDLE
+
 
     class ManagerWatchdog(object):
         def __init__(self):
@@ -112,6 +121,7 @@ else:
 
 _worker_info = None
 
+
 class WorkerInfo(object):
     __initialized = False
 
@@ -132,16 +142,20 @@ class WorkerInfo(object):
             items.append('{}={}'.format(k, getattr(self, k)))
         return '{}({})'.format(self.__class__.__name__, ', '.join(items))
 
+
 def get_worker_info():
     return _worker_info
 
+
 @dataclass(frozen=True)
 class IterableDatasetStopIteration(object):
-    worker_id : int
+    worker_id: int
+
 
 @dataclass(frozen=True)
 class ResumeIteration(object):
     pass
+
 
 def worker_loop(dataset_kind, dataset, index_queue, data_queue, done_event,
                 auto_collation, collate_fn, drop_last, seed, init_fn, worker_id,
@@ -183,7 +197,7 @@ def worker_loop(dataset_kind, dataset, index_queue, data_queue, done_event,
             elif done_event.is_set() or iteration_end:
                 continue
             idx, index = r
-            data : Union[IterableDatasetStopIteration, Exception]
+            data: Union[IterableDatasetStopIteration, Exception]
             if init_exception is not None:
                 data = init_exception
                 init_exception = None

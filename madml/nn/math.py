@@ -9,10 +9,11 @@ from madml import tensor, zeros_like
 from .module import Module
 from .testing import tanh_forward, tanh_backward
 
+
 class tanh(Module):
     __constants__ = ['inplace']
 
-    def __init__(self, inplace: bool=False) -> None:
+    def __init__(self, inplace: bool = False) -> None:
         super(tanh, self).__init__()
         self.inplace = inplace
         self.out = None

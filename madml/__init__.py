@@ -3,14 +3,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from .tensor import tensor
 from .init import zeros, zeros_like, ones, full_like, fill, uniform, normal, xavier_uniform, xavier_normal, \
     kaiming_uniform, kaiming_normal
 from .optimizer import SGD, Adam, Nadam, Adagrad, RMSprop
+from .tensor import tensor
+
 
 class test_imports(object):
     def __init__(self):
         print(" === testing imports === ")
+
     def backend(self):
         try:
             import backend
@@ -26,5 +28,6 @@ class test_imports(object):
             return isinstance(m1, vknn.gemm)
         except:
             return False
+
 
 test_imports = test_imports()

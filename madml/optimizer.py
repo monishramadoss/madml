@@ -13,23 +13,28 @@ from madml.nn import Parameter
 
 DEBUG = False
 
+
 def print_p(p: Parameter) -> None:
     print('\tdata', p.param.host_data.max(),
           '\n\tgrad', p.param.gradient.host_data.max())
     for i, x in enumerate(p.optimizer_stuff):
         print('\n\toptmizer_value:', i, x.host_data.max())
 
-def dl1_reg(w: np.ndarray, lam: float=1e-3, esp: float=1e-8) -> np.ndarray:
+
+def dl1_reg(w: np.ndarray, lam: float = 1e-3, esp: float = 1e-8) -> np.ndarray:
     return w * lam / np.abs(w + esp)
 
-def dl2_reg(w: np.ndarray, lam: float=1e-3) -> np.ndarray:
+
+def dl2_reg(w: np.ndarray, lam: float = 1e-3) -> np.ndarray:
     return w * lam
+
 
 def exp_running_avg(running, new, gamma=.9):
     return gamma * running + (1. - gamma) * new
 
+
 class Optimizer(object):
-    _use_velocity : bool
+    _use_velocity: bool
 
     def __init__(self, params: List[Parameter], defaults: dict) -> None:
         self.defaults = defaults
@@ -46,9 +51,10 @@ class Optimizer(object):
     def step(self):
         raise NotImplementedError
 
+
 class SGD(Optimizer):
-    def __init__(self, params: List[Parameter], lr: float=1e-3, momentum: float=0.0, dampening: int=0,
-                 weight_decay: float=0, nesterov: bool=False) -> None:
+    def __init__(self, params: List[Parameter], lr: float = 1e-3, momentum: float = 0.0, dampening: int = 0,
+                 weight_decay: float = 0, nesterov: bool = False) -> None:
         if lr < 0.0:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if momentum < 0.0:
@@ -85,9 +91,10 @@ class SGD(Optimizer):
             if DEBUG:
                 print_p(p)
 
+
 class Adam(Optimizer):
-    def __init__(self, params: List[Parameter], lr: float=1e-3, betas: List[float]=(0.9, 0.999),
-                 eps: float=1e-8, weight_decay: float=0.0, amsgrad: bool=False) -> None:
+    def __init__(self, params: List[Parameter], lr: float = 1e-3, betas: List[float] = (0.9, 0.999),
+                 eps: float = 1e-8, weight_decay: float = 0.0, amsgrad: bool = False) -> None:
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
         if not 0.0 <= eps:
@@ -106,7 +113,7 @@ class Adam(Optimizer):
 
         for p in self.params:
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=True),
-                tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=True)]
+                                 tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=True)]
 
     def step(self, closure=None) -> None:
         for p in self.params:
@@ -139,9 +146,10 @@ class Adam(Optimizer):
                 print_p(p)
         self.counter += 1
 
+
 class Adagrad(Optimizer):
-    def __init__(self, params: List[Parameter], lr: float=1e-2, lr_decay: float=0.,
-                 weight_decay: float=0, initial_accumulator_value: int=0, eps: float=1e-10) -> None:
+    def __init__(self, params: List[Parameter], lr: float = 1e-2, lr_decay: float = 0.,
+                 weight_decay: float = 0, initial_accumulator_value: int = 0, eps: float = 1e-10) -> None:
 
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -176,9 +184,10 @@ class Adagrad(Optimizer):
             if DEBUG:
                 print_p(p)
 
+
 class RMSprop(Optimizer):
-    def __init__(self, params: List[Parameter], lr: float=1e-2, alpha: float=0.99, eps: float=1e-8,
-                 weight_decay: float=0, momentum: int=0, centered: bool=False) -> None:
+    def __init__(self, params: List[Parameter], lr: float = 1e-2, alpha: float = 0.99, eps: float = 1e-8,
+                 weight_decay: float = 0, momentum: int = 0, centered: bool = False) -> None:
 
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -213,9 +222,10 @@ class RMSprop(Optimizer):
             if DEBUG:
                 print_p(p)
 
+
 class Nadam(Optimizer):
-    def __init__(self, params: Dict[int, Parameter], lr: float=1e-2, lr_decay: float=0.,
-                 weight_decay: float=0, initial_accumulator_value: int=1, eps: float=1e-10) -> None:
+    def __init__(self, params: Dict[int, Parameter], lr: float = 1e-2, lr_decay: float = 0.,
+                 weight_decay: float = 0, initial_accumulator_value: int = 1, eps: float = 1e-10) -> None:
 
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
@@ -236,7 +246,7 @@ class Nadam(Optimizer):
 
         for x, p in self.params.items():
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False),
-                tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False)]
+                                 tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False)]
 
     def step(self, closure=None) -> None:
         for k, p in self.params.items():
@@ -253,7 +263,8 @@ class Nadam(Optimizer):
             r_k_hat = r / (1. - self.defaults['betas'][1] ** self.counter)
 
             w = self.defaults['lr'] / (np.sqrt(r_k_hat) + self.defaults['eps'])
-            w *= self.defaults['betas'][0] * m_k_hat + (1 - self.defaults['betas'][0]) / (1 - self.defaults['betas'][8] ** self.counter)
+            w *= self.defaults['betas'][0] * m_k_hat + (1 - self.defaults['betas'][0]) / (
+                        1 - self.defaults['betas'][8] ** self.counter)
             p.param.host_data -= w
 
             p.optimizer_stuff[0].host_data = m

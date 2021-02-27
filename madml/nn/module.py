@@ -7,8 +7,10 @@ from typing import List, Optional
 
 from madml import tensor
 
+
 def test_import_vknn():
-    import vknn
+    pass
+
 
 global parameter_cache
 
@@ -16,25 +18,27 @@ parameter_cache = []
 
 DEBUG = False
 
-class Parameter(object):
-    param : tensor
-    optimizer_stuff : Optional[List[tensor]]
-    device : str
-    shared_devices : bool
 
-    def __init__(self, init_fn, shape: List[int], on_gpu: bool=False, shared_devices: bool=False) -> None:
+class Parameter(object):
+    param: tensor
+    optimizer_stuff: Optional[List[tensor]]
+    device: str
+    shared_devices: bool
+
+    def __init__(self, init_fn, shape: List[int], on_gpu: bool = False, shared_devices: bool = False) -> None:
         self.param = init_fn(shape)
         self.optimizer_stuff = []
         self.device = 'gpu' if on_gpu else 'cpu'
         self.shared_devices = shared_devices
         parameter_cache.append(self)
 
-    def zero_grad(self,) -> None:
+    def zero_grad(self, ) -> None:
         for i in range(self.param.size):
             self.param.grad_data[i] = 0
 
     def reshape(self, shape: List[int]) -> None:
         self.param.reshape(shape)
+
 
 class Module(object):
     def __init__(self, backend=None):

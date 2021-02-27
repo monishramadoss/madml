@@ -4,8 +4,8 @@ import pickle
 import unittest
 from urllib import request
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 BATCHSIZE = 100
 
@@ -27,12 +27,10 @@ class TestImports(unittest.TestCase):
         from madml import test_imports
         self.assertTrue(test_imports.vknn())
 
+
 class TestModules(unittest.TestCase):
     def test_tensor(self):
-
         import madml
-        import madml.nn as nn
-        import madml.optimizer as optimizer
 
         x = np.array([[[[0., 1., 2., 3., 4.],  # (1, 1, 5, 5) input tensor
                         [5., 6., 7., 8., 9.],
@@ -44,10 +42,8 @@ class TestModules(unittest.TestCase):
         self.assertTrue((t1.host_data == x).all())
 
     def test_conv(self):
-
         import madml
         import madml.nn as nn
-        import madml.optimizer as optimizer
 
         kernel_shape = [3, 3]
         stride = [1, 1]
@@ -95,10 +91,8 @@ class TestModules(unittest.TestCase):
         self.assertTrue((y3 == dx).all())
 
     def test_maxpool(self):
-
         import madml
         import madml.nn as nn
-        import madml.optimizer as optimizer
 
         kernel_shape = [2, 2]
         stride = [1, 1]
@@ -148,6 +142,7 @@ class TestModules(unittest.TestCase):
         dx = module.backward_cpu().gradient.host_data
         self.assertTrue((np.sum(y) == np.sum(dx)).all())
 
+
 def load_mnist():
     filename = [["training_images", "train-images-idx3-ubyte.gz"],
                 ["test_images", "t10k-images-idx3-ubyte.gz"],
@@ -175,6 +170,7 @@ def load_mnist():
         mnist = pickle.load(f)
     return mnist["training_images"], mnist["training_labels"], mnist["test_images"], mnist["test_labels"]
 
+
 def train_loop(model, loss_fn, optim, t_x, t_y):
     for _ in range(10):
         for i in range(t_x.shape[0]):
@@ -192,6 +188,7 @@ def train_loop(model, loss_fn, optim, t_x, t_y):
                 for j in range(10):
                     print(t_y[i].host_data[0][j], end=']\n' if j == 9 else ', ')
 
+
 def test_loop(model, t_x, t_y):
     accuracies = list()
     for i in range(t_x.shape[0]):
@@ -200,6 +197,7 @@ def test_loop(model, t_x, t_y):
         target = np.argmax(t_y[i].host_data)
         accuracies.append(1.0 - (logits - target).mean())
     return accuracies
+
 
 class TestModels(unittest.TestCase):
     def test_cnn(self):
@@ -411,6 +409,7 @@ class TestModels(unittest.TestCase):
         acc = (logits - y).mean()
         print(1. - acc)
         self.assertTrue(1.0 - acc > 0.9)
+
 
 if __name__ == '__main__':
     unittest.main()
