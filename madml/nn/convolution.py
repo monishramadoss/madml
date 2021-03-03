@@ -8,11 +8,11 @@ from typing import Union, List, Optional
 
 import numpy as np
 
-from madml import tensor, kaiming_uniform, zeros, ones, xavier_uniform
+from madml import tensor
+from madml.init import kaiming_uniform, zeros, ones, xavier_uniform
 from .module import Module, Parameter
 from .testing import conv_forward, conv_backward
 from .transform import vol2col
-
 
 def _dim_fix(arr, arg_arr, pi):
     def parse(x):

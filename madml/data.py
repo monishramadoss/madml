@@ -11,8 +11,8 @@ from typing import List, Optional, Iterator, Iterable, Sized, Any, Callable
 
 import numpy as np
 
-from .tensor import tensor
-from .worker import worker_loop, IterableDatasetStopIteration, python_exit_status, ResumeIteration, _DatasetKind
+from tensor import tensor
+from worker import worker_loop, IterableDatasetStopIteration, python_exit_status, ResumeIteration, _DatasetKind
 
 MP_STATUS_CHECK_INTERVAL = 5.0
 
@@ -260,6 +260,7 @@ class DataLoader(object):
         self.prefetch_factor = prefetch_factor
         self.worker_init_fn = worker_init_fn
         self.__multiprocessing_context = multiprocessing_context
+        self._iterator = None
 
         if isinstance(dataset, IterableDataset):
             self.dataset_kind = _DatasetKind.Iterable
@@ -422,7 +423,7 @@ class _SingleProcessDataLoaderIter(_BaseDataLoaderIter):
         super(_SingleProcessDataLoaderIter, self).__init__(loader)
         assert self._num_workers <= 0
         self._dataset_fetcher = _DatasetKind.create_fetcher(self._dataset_kind, self._dataset, self._auto_collation,
-                                                            self._collate_fn, self._drop_last)
+                                                            None, self._drop_last)
 
     def _next_data(self):
         index = self._next_index()  # may raise StopIteration
@@ -561,14 +562,12 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
                 fds_limit_margin = 10
                 fs = [tempfile.NamedTemporaryFile() for i in range(fds_limit_margin)]
             except OSError as e:
-                if e.errno == errno.EMFILE:
-                    raise RuntimeError("Too many open files. Communication with the"
-                                       " workers is no longer possible. Please increase the"
-                                       " limit using `ulimit -n` in the shell or change the"
-                                       " sharing strategy by calling"
-                                       " `torch.multiprocessing.set_sharing_strategy('file_system')`"
-                                       " at the beginning of your code") from None
-            raise
+                raise RuntimeError("Too many open files. Communication with the"
+                                   " workers is no longer possible. Please increase the"
+                                   " limit using `ulimit -n` in the shell or change the"
+                                   " sharing strategy by calling"
+                                   " `torch.multiprocessing.set_sharing_strategy('file_system')`"
+                                   " at the beginning of your code")
 
     def _get_data(self):
         if self._timeout > 0:
@@ -667,7 +666,7 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
                 if hasattr(self, '_pin_memory_thread'):
                     self._pin_memory_thread_done_event.set()
                     self._worker_result_queue.put((None, None))
-                    self._pin_memory_thread.join()
+                    # self._pin_memory_thread.join()
                     self._worker_result_queue.cancel_join_thread()
                     self._worker_result_queue.close()
                 self._workers_done_event.set()

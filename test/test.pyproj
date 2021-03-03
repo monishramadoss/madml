@@ -15,7 +15,9 @@
     <InterpreterId>Global|ContinuumAnalytics|Anaconda38-64</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
-    <IsWindowsApplication>True</IsWindowsApplication>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <UnitTestPattern>test.py</UnitTestPattern>
+    <UnitTestRootDirectory>.</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -29,15 +31,15 @@
     <Compile Include="test.py" />
   </ItemGroup>
   <ItemGroup>
+    <InterpreterReference Include="CondaEnv|CondaEnv|madml_test_env" />
+    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda38-64" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\madml\madml.pyproj">
       <Name>madml</Name>
       <Project>{50d248ce-ee36-4b2c-8220-0f8242eec37d}</Project>
       <Private>True</Private>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <InterpreterReference Include="CondaEnv|CondaEnv|madml_test_env" />
-    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda38-64" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

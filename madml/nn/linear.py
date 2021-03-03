@@ -7,7 +7,8 @@ import math
 
 import numpy as np
 
-from madml import tensor, zeros, kaiming_uniform
+from madml import tensor, zeros
+from madml.init import kaiming_uniform
 from .module import Module, Parameter
 from .testing import fc_forward, fc_backward
 

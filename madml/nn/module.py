@@ -55,10 +55,12 @@ class Module(object):
 
     def backward(self):
         x = self.backward_cpu()
-        if DEBUG:
-            self.print_l()
         if isinstance(x, tensor):
             x.reset_shape()
+
+        if DEBUG:
+            self.print_l()
+
         return x
 
     def forward_cpu(self, *args, **kwargs) -> tensor:

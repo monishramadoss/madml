@@ -90,7 +90,7 @@ def bn_forward(X, gamma, beta, cache, momentum=.9, train=True):
         mu = np.mean(X, axis=0)
         var = np.var(X, axis=0)
 
-        X_norm = (X - mu) / np.sqrt(var + c.eps)
+        X_norm = (X - mu) / np.sqrt(var + 1e-8)
         out = gamma * X_norm + beta
 
         cache = (X, X_norm, mu, var, gamma, beta)
@@ -98,7 +98,7 @@ def bn_forward(X, gamma, beta, cache, momentum=.9, train=True):
         running_mean = exp_running_avg(running_mean, mu, momentum)
         running_var = exp_running_avg(running_var, var, momentum)
     else:
-        X_norm = (X - running_mean) / np.sqrt(running_var + c.eps)
+        X_norm = (X - running_mean) / np.sqrt(running_var + 1e-8)
         out = gamma * X_norm + beta
         cache = None
 

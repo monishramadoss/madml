@@ -15,7 +15,11 @@
     <InterpreterId>Global|ContinuumAnalytics|Anaconda38-64</InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
-    <IsWindowsApplication>True</IsWindowsApplication>
+    <IsWindowsApplication>False</IsWindowsApplication>
+    <PublishUrl>..\x64\package</PublishUrl>
+    <TestFramework>unittest</TestFramework>
+    <UnitTestPattern>test.py</UnitTestPattern>
+    <UnitTestRootDirectory>../test</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

@@ -10,7 +10,7 @@ import sys
 from dataclasses import dataclass
 from typing import Union
 
-from .data import MP_STATUS_CHECK_INTERVAL
+from data import MP_STATUS_CHECK_INTERVAL
 
 python_exit_status = False
 IS_WINDOWS = sys.platform == "win32"

@@ -10,7 +10,6 @@ import numpy as np
 
 try:
     import backend
-
     VULKAN_DLL_LOADED = True
 
 except ImportError:
@@ -35,7 +34,10 @@ class gpu_tensor(object):
 
         lst_data = data.astype(float).tolist()
         shape = data.shape
-        self.data = backend.tensor(lst_data, shape)
+        if VULKAN_DLL_LOADED:
+            self.data = None #backend.tensor(lst_data, shape)
+        else:
+            self.data = data
 
     def to_cpu(self, dtype: Type = float):
         if dtype != float:
