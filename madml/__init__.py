@@ -12,12 +12,8 @@ def test_import_backend():
     try:
         import backend
         import inspect
-        for name, obj in inspect.getmembers(backend.modules[__name__]):
-             print(name, obj)
-           
-        return True
-        #t1 = backend.tensor([float(0) for _ in range(100)], [100])
-        #return isinstance(t1, backend.tensor)
+        t1 = backend.tensor([float(0) for _ in range(100)], [100])
+        return isinstance(t1, backend.tensor)
     except Exception as e:
         print(e)
         return False

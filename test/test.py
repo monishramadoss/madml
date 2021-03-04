@@ -10,7 +10,6 @@ import numpy as np
 BATCHSIZE = 100
 
 
-
 class TestImports(unittest.TestCase):
     def test_madml(self):
         try:
@@ -21,6 +20,7 @@ class TestImports(unittest.TestCase):
 
     def test_backend(self):
         import madml
+        madml.test_import_backend()
         from madml import test_import_backend
         self.assertTrue(test_import_backend())
 
