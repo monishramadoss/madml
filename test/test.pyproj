@@ -38,7 +38,7 @@
     <ProjectReference Include="..\madml\madml.pyproj">
       <Name>madml</Name>
       <Project>{50d248ce-ee36-4b2c-8220-0f8242eec37d}</Project>
-      <Private>True</Private>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />

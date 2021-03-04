@@ -12,6 +12,7 @@ build/
 *.user
 *.userosscache
 *.sln.docstates
+*.gz
 *.pkl
 *.png
 *.PNG

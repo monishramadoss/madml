@@ -16,10 +16,10 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
-    <PublishUrl>..\x64\package</PublishUrl>
+    <PublishUrl>./test/madml/</PublishUrl>
     <TestFramework>unittest</TestFramework>
-    <UnitTestPattern>test.py</UnitTestPattern>
-    <UnitTestRootDirectory>../test</UnitTestRootDirectory>
+    <UnitTestPattern>test*.py</UnitTestPattern>
+    <UnitTestRootDirectory>.</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>

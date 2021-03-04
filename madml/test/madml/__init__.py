@@ -11,22 +11,16 @@ from .optimizer import SGD, Adam, Nadam, Adagrad, RMSprop
 def test_import_backend():
     try:
         import backend
-        import inspect
-        for name, obj in inspect.getmembers(backend.modules[__name__]):
-             print(name, obj)
-           
-        return True
-        #t1 = backend.tensor([float(0) for _ in range(100)], [100])
-        #return isinstance(t1, backend.tensor)
-    except Exception as e:
-        print(e)
+        t1 = backend.tensor([0.0 for _ in range(100)], [100])
+        return isinstance(t1, backend.tensor)
+    except:
         return False
+
 
 def test_import_vknn():
     try:
         import vknn
         m1 = vknn.gemm(1.0, 1.0)
         return isinstance(m1, vknn.gemm)
-    except Exception as e:
-        print(e)
+    except:
         return False
