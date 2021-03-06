@@ -113,3 +113,4 @@ std::vector<char>& tensor::toHost()
     unMap(); // m_buffer.reset();
     return std::ref(d);
 }
+

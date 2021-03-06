@@ -9,7 +9,6 @@ import numpy as np
 
 BATCHSIZE = 100
 
-
 class TestImports(unittest.TestCase):
     def test_madml(self):
         try:
@@ -19,15 +18,12 @@ class TestImports(unittest.TestCase):
             self.assertTrue(False)
 
     def test_backend(self):
-        import madml
-        madml.test_import_backend()
         from madml import test_import_backend
         self.assertTrue(test_import_backend())
 
     def test_vknn(self):
         from madml import test_import_vknn
         self.assertTrue(test_import_vknn())
-
 
 class TestModules(unittest.TestCase):
     def test_tensor(self):
@@ -143,7 +139,6 @@ class TestModules(unittest.TestCase):
         dx = module.backward_cpu().gradient.host_data
         self.assertTrue((np.sum(y) == np.sum(dx)).all())
 
-
 def load_mnist():
     filename = [["training_images", "train-images-idx3-ubyte.gz"],
                 ["test_images", "t10k-images-idx3-ubyte.gz"],
@@ -171,7 +166,6 @@ def load_mnist():
         mnist = pickle.load(f)
     return mnist["training_images"], mnist["training_labels"], mnist["test_images"], mnist["test_labels"]
 
-
 def train_loop(model, loss_fn, optim, t_x, t_y, epochs=10, early_break=-1):
     count = 0
     for _ in range(epochs):
@@ -183,7 +177,7 @@ def train_loop(model, loss_fn, optim, t_x, t_y, epochs=10, early_break=-1):
             optim.step()
             print('===', i, logit.shape, loss.host_data, loss_fn.accuracy())
             count += 1
-            if i % t_x.shape[0]-1 == 0 and i != 0:
+            if i % t_x.shape[0] - 1 == 0 and i != 0:
                 print('logit [', end=' ')
                 for j in range(10):
                     print(logit.host_data[0][j], end='] ' if j == 9 else ', ')
@@ -204,7 +198,6 @@ def test_loop(model, t_x, t_y, early_stop=-1):
         if count == early_stop:
             break
     return accuracies
-
 
 class TestModels(unittest.TestCase):
     def test_cnn(self):
@@ -419,7 +412,6 @@ class TestModels(unittest.TestCase):
         acc = (logits - y).mean()
         print(1. - acc)
         self.assertTrue(1.0 - acc > 0.9)
-
 
 if __name__ == '__main__':
     unittest.main()

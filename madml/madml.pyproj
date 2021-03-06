@@ -16,8 +16,9 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
-    <PublishUrl>./test/madml/</PublishUrl>
-    <TestFramework>unittest</TestFramework>
+    <PublishUrl>
+    </PublishUrl>
+    <TestFramework>none</TestFramework>
     <UnitTestPattern>test*.py</UnitTestPattern>
     <UnitTestRootDirectory>.</UnitTestRootDirectory>
   </PropertyGroup>

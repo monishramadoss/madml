@@ -16,6 +16,7 @@ public:
     tensor(char* data, const std::vector<int>& shape, Format fmt = Format::kFormatFp32);
     tensor(std::vector<float>& c, const std::vector<int>& shape);
     tensor(float c, const std::vector<int>& shape);
+
     void* map() const;
     void unMap() const;
     Shape getShape() const;

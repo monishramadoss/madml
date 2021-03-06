@@ -1,6 +1,5 @@
 cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
 
-
 find_package(Vulkan REQUIRED FATAL_ERROR)
 message(STATUS "Attempting to locate Vulkan SDK using manual path......")
 set(VULKAN_SDK "C:/VulkanSDK")

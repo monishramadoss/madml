@@ -10,7 +10,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backend", "backend\backend.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kernel", "kernel\kernel.vcxproj", "{12F36A4A-AF3A-4315-BDBE-FFE90BDBEC43}"
 EndProject
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "test1", "test\test1.pyproj", "{B2ACD99E-7905-4F1C-B528-46E83FD4E555}"
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "test", "test.pyproj", "{320FDF89-2633-425C-BBF8-B1851DD81824}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -58,12 +58,12 @@ Global
 		{12F36A4A-AF3A-4315-BDBE-FFE90BDBEC43}.Release|x64.Build.0 = Release|x64
 		{12F36A4A-AF3A-4315-BDBE-FFE90BDBEC43}.Release|x86.ActiveCfg = Release|Win32
 		{12F36A4A-AF3A-4315-BDBE-FFE90BDBEC43}.Release|x86.Build.0 = Release|Win32
-		{B2ACD99E-7905-4F1C-B528-46E83FD4E555}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B2ACD99E-7905-4F1C-B528-46E83FD4E555}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{B2ACD99E-7905-4F1C-B528-46E83FD4E555}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B2ACD99E-7905-4F1C-B528-46E83FD4E555}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B2ACD99E-7905-4F1C-B528-46E83FD4E555}.Release|x64.ActiveCfg = Release|Any CPU
-		{B2ACD99E-7905-4F1C-B528-46E83FD4E555}.Release|x86.ActiveCfg = Release|Any CPU
+		{320FDF89-2633-425C-BBF8-B1851DD81824}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{320FDF89-2633-425C-BBF8-B1851DD81824}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{320FDF89-2633-425C-BBF8-B1851DD81824}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{320FDF89-2633-425C-BBF8-B1851DD81824}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{320FDF89-2633-425C-BBF8-B1851DD81824}.Release|x64.ActiveCfg = Release|Any CPU
+		{320FDF89-2633-425C-BBF8-B1851DD81824}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

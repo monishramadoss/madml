@@ -1,0 +1,85 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{320fdf89-2633-425c-bbf8-b1851dd81824}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>test.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>Global|ContinuumAnalytics|Anaconda38-64</InterpreterId>
+    <TestFramework>unittest</TestFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="backend\CMakeLists.txt" />
+    <Content Include="backend\x64\Debug\backend.vcxproj.FileListAbsolute.txt" />
+    <Content Include="CMakeLists.txt" />
+    <Content Include="cmake_madml\CMakeLists.txt" />
+    <Content Include="kernel\CMakeLists.txt" />
+    <Content Include="kernel\x64\Debug\kernel.vcxproj.FileListAbsolute.txt" />
+    <Content Include="vknn\CMakeLists.txt" />
+    <Content Include="vknn\x64\Debug\vknn.vcxproj.FileListAbsolute.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="madml\data.py" />
+    <Compile Include="madml\init.py" />
+    <Compile Include="madml\nn\activation.py" />
+    <Compile Include="madml\nn\convolution.py" />
+    <Compile Include="madml\nn\linear.py" />
+    <Compile Include="madml\nn\loss.py" />
+    <Compile Include="madml\nn\math.py" />
+    <Compile Include="madml\nn\module.py" />
+    <Compile Include="madml\nn\normalization.py" />
+    <Compile Include="madml\nn\pooling.py" />
+    <Compile Include="madml\nn\rnn.py" />
+    <Compile Include="madml\nn\testing.py" />
+    <Compile Include="madml\nn\transform.py" />
+    <Compile Include="madml\nn\utils.py" />
+    <Compile Include="madml\nn\__init__.py" />
+    <Compile Include="madml\optimizer.py" />
+    <Compile Include="madml\tensor.py" />
+    <Compile Include="madml\worker.py" />
+    <Compile Include="madml\__init__.py" />
+    <Compile Include="setup.py" />
+    <Compile Include="test.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="backend" />
+    <Folder Include="backend\x64\" />
+    <Folder Include="backend\x64\Debug" />
+    <Folder Include="cmake_madml" />
+    <Folder Include="kernel" />
+    <Folder Include="kernel\x64\" />
+    <Folder Include="kernel\x64\Debug" />
+    <Folder Include="madml" />
+    <Folder Include="madml\nn" />
+    <Folder Include="vknn" />
+    <Folder Include="vknn\x64\" />
+    <Folder Include="vknn\x64\Debug" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda38-64" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="backend\backend.vcxproj">
+      <Name>backend</Name>
+      <Project>{09bfe37b-93e0-4eed-97cf-bc3536fdf9c1}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="kernel\kernel.vcxproj">
+      <Name>kernel</Name>
+      <Project>{12f36a4a-af3a-4315-bdbe-ffe90bdbec43}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
+</Project>

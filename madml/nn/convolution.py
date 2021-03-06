@@ -26,7 +26,6 @@ def _dim_fix(arr, arg_arr, pi):
         j += 1
     return arr
 
-
 def matmul(x: tensor, w: tensor, y: tensor):
     assert (x.shape[1] == w.shape[0])
     for m in range(x.shape[0]):
@@ -36,24 +35,23 @@ def matmul(x: tensor, w: tensor, y: tensor):
                 acc += x.host_data[m * w.shape[0] + k] * w.host_data[k * w.shape[1] + n]
             y.host_data[m * w.shape[1] + n] = acc
 
-
 class ConvNd(Module):
     __constants__ = ['dims', 'stride', 'padding', 'dilation', 'groups', 'padding_mode', 'output_padding', 'in_channels',
                      'out_channels', 'kernel_size']
     __annotations__ = {'bias': Optional[List]}
-    dims: int
-    in_channels: int
-    out_channels: int
-    kernel_size: List[int]
-    stride: List[int]
-    padding: List[int]
-    dilation: List[int]
-    transposed: bool
-    output_padding: List[int]
-    groups: int
-    padding_mode: str
-    weight: Parameter
-    bias: Optional[Parameter]
+    dims : int
+    in_channels : int
+    out_channels : int
+    kernel_size : List[int]
+    stride : List[int]
+    padding : List[int]
+    dilation : List[int]
+    transposed : bool
+    output_padding : List[int]
+    groups : int
+    padding_mode : str
+    weight : Parameter
+    bias : Optional[Parameter]
 
     def __init__(self, dims, in_channels: int, out_channels: int, kernel_size: Union[int, List[int]],
                  stride: Union[int, List[int]], padding: Union[int, List[int]], dilation: Union[int, List[int]],
@@ -70,8 +68,7 @@ class ConvNd(Module):
             raise ValueError('out_channels must be divisible by groups')
         valid_padding_modes = {'zeros'}  # , 'reflect', 'replicate', 'circular'} # needs to be implemented
         if padding_mode not in valid_padding_modes:
-            raise ValueError(
-                "padding_mode must be one of {}, but got padding_mode='{}'".format(valid_padding_modes, padding_mode))
+            raise ValueError("padding_mode must be one of {}, but got padding_mode='{}'".format(valid_padding_modes, padding_mode))
         self.dims = 3
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -108,9 +105,7 @@ class ConvNd(Module):
             self._vol = [1 for _ in range(self.dims)]
 
             for i in range(self.dims - 1, -1, -1):
-                self._col[i] = int(
-                    (x.shape[i + 2] + 2 * self.padding[i] - self.dilation[i] * (self.kernel_size[i] - 1) - 1) //
-                    self.stride[i]) + 1
+                self._col[i] = int((x.shape[i + 2] + 2 * self.padding[i] - self.dilation[i] * (self.kernel_size[i] - 1) - 1) // self.stride[i]) + 1
                 self._vol[i] = x.shape[i + 2]
             self.batch_size = x.shape[0]
 
@@ -162,19 +157,18 @@ class ConvNd(Module):
     def test(self) -> None:
         return
 
-
 class Conv1d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]] = 1,
-                 padding: Union[int, List[int]] = 0,
-                 dilation: Union[int, List[int]] = 1,
-                 groups: Union[int, List[int]] = 1,
-                 bias: bool = False,
-                 padding_mode: str = 'zeros',
-                 weight_init: str = 'kaiming_uniform') -> None:
+                 stride: Union[int, List[int]]=1,
+                 padding: Union[int, List[int]]=0,
+                 dilation: Union[int, List[int]]=1,
+                 groups: Union[int, List[int]]=1,
+                 bias: bool=False,
+                 padding_mode: str='zeros',
+                 weight_init: str='kaiming_uniform') -> None:
         super(Conv1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
@@ -195,19 +189,18 @@ class Conv1d(ConvNd):
         y.reset_shape()
         return x
 
-
 class Conv2d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]] = 1,
-                 padding: Union[int, List[int]] = 0,
-                 dilation: Union[int, List[int]] = 1,
-                 groups: Union[int, List[int]] = 1,
-                 bias: bool = False,
-                 padding_mode: str = 'zeros',
-                 weight_init: str = 'xavier_uniform') -> None:
+                 stride: Union[int, List[int]]=1,
+                 padding: Union[int, List[int]]=0,
+                 dilation: Union[int, List[int]]=1,
+                 groups: Union[int, List[int]]=1,
+                 bias: bool=False,
+                 padding_mode: str='zeros',
+                 weight_init: str='xavier_uniform') -> None:
         super(Conv2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
@@ -239,17 +232,16 @@ class Conv2d(ConvNd):
         if self._use_bias:
             assert ((_db == self.bias.param.gradient.host_data).all())
 
-
 class Conv3d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]] = 1,
-                 padding: Union[int, List[int]] = 0,
-                 dilation: Union[int, List[int]] = 1,
-                 groups: Union[int, List[int]] = 1,
-                 bias: bool = False,
-                 padding_mode: str = 'zeros'):
+                 stride: Union[int, List[int]]=1,
+                 padding: Union[int, List[int]]=0,
+                 dilation: Union[int, List[int]]=1,
+                 groups: Union[int, List[int]]=1,
+                 bias: bool=False,
+                 padding_mode: str='zeros'):
         super(Conv3d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode)

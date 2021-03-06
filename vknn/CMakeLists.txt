@@ -11,7 +11,6 @@ set(VULKAN_PATH "${VULKAN_SDK}/${VULKAN_VERSION}")
 message(STATUS "Using manual specified path: ${SRC_DIR}")
 set(VKNN_SRC ${CMAKE_SOURCE_DIR})
 
-
 file (GLOB_RECURSE VKNN_H ${CMAKE_SOURCE_DIR}/*.h)
 file (GLOB_RECURSE VKNN_CPP ${CMAKE_SOURCE_DIR}/*.cpp)
 
@@ -24,11 +23,9 @@ link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)
 
 pybind11_add_module(vknn MODULE ${VKNN_CPP} ${VKNN_H})
 
-
 target_link_libraries(vknn PUBLIC vulkan-1)
 target_link_libraries(vknn PUBLIC)
 target_link_libraries(vknn PUBLIC kernel)
-
 
 target_include_directories (vknn PUBLIC ${VULKAN_INCLUDE_DIRS})
 

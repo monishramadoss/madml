@@ -17,11 +17,9 @@ file (GLOB_RECURSE BACKEND_CPP ${CMAKE_SOURCE_DIR}/*.cpp)
 include_directories(${VULKAN_PATH}/Include)
 include_directories(AFTER ${CMAKE_SOURCE_DIR})
 
-
 link_directories(${VULKAN_PATH}/Bin; ${VULKAN_PATH}/Lib;)
 
 pybind11_add_module(backend MODULE ${BACKEND_CPP} ${BACKEND_H})
-
 
 target_link_libraries(backend PUBLIC vulkan-1)
 target_link_libraries(backend PUBLIC)
