@@ -19,13 +19,11 @@ DEBUG = False
 class Parameter(object):
     param : tensor
     optimizer_stuff : Optional[List[tensor]]
-    device : str
     shared_devices : bool
 
-    def __init__(self, init_fn, shape: List[int], on_gpu: bool=False, shared_devices: bool=False) -> None:
+    def __init__(self, init_fn, shape: List[int], shared_devices: bool=False) -> None:
         self.param = init_fn(shape)
         self.optimizer_stuff = []
-        self.device = 'gpu' if on_gpu else 'cpu'
         self.shared_devices = shared_devices
         parameter_cache.append(self)
 
@@ -45,12 +43,20 @@ class Module(object):
         self.id = id(self)
         self.y = None
         self.print_out_flag = False
+        self.use_gpu = False
+        self.modules = []
 
     def forward(self, *args, **kwargs) -> tensor:
+        if  self.use_gpu:
+            return self.forward_gpu(*args, **kwargs)
         return self.forward_cpu(*args, **kwargs)
 
     def backward(self):
-        x = self.backward_cpu()
+        if  self.use_gpu:
+            x = self.backward_gpu()
+        else:
+            x = self.backward_cpu()
+    
         if isinstance(x, tensor):
             x.reset_shape()
 
@@ -63,6 +69,12 @@ class Module(object):
         pass
 
     def backward_cpu(self) -> tensor:
+        pass
+
+    def forward_gpu(self, *args, **kwargs) -> tensor:
+        pass
+
+    def backward_gpu(self) -> tensor:
         pass
 
     def __call__(self, *args, **kwargs):

@@ -5,27 +5,27 @@
 #include "common.h"
 #include "utils.h"
 
-tensor::tensor(Format fmt) : format(fmt), size_in_byte(0)
+tensor::tensor(Format fmt) : m_format(fmt), m_size_in_byte(0)
 {
     createContext();
     m_device = kDevice;
 }
 
-tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : format(fmt), size_in_byte(0)
+tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : m_format(fmt), m_size_in_byte(0)
 {
     createContext();
     m_device = kDevice;
     reshape(data, shape);
 }
 
-tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
+tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : m_format(Format::kFormatFp32), m_size_in_byte(0)
 {
     createContext();
     m_device = kDevice;
     reshape((char*)c.data(), shape);
 }
 
-tensor::tensor(float c, const std::vector<int>& shape) : format(Format::kFormatFp32), size_in_byte(0)
+tensor::tensor(float c, const std::vector<int>& shape) : m_format(Format::kFormatFp32), m_size_in_byte(0)
 {
     createContext();
     m_device = kDevice;
@@ -36,7 +36,7 @@ tensor::tensor(float c, const std::vector<int>& shape) : format(Format::kFormatF
 void* tensor::map() const
 {
     void* p;
-    VK_CHECK_RESULT(vkMapMemory(m_device, m_buffer->getVkMemory(), 0, size_in_byte, 0, (void**)&p));
+    VK_CHECK_RESULT(vkMapMemory(m_device, m_buffer->getVkMemory(), 0, m_size_in_byte, 0, (void**)&p));
     return p;
 }
 
@@ -65,17 +65,17 @@ tensor tensor::reshape(const char* data, const std::vector<int>& shape, bool all
     if (m_device == nullptr)
         return *this;
     if (m_shape != shape) m_shape = shape;
-    if (checkFormat(fmt) && fmt != format) format = fmt;
-    const size_t new_size = shapeCount(m_shape) * elementSize(format);
-    if (alloc || new_size > size_in_byte)
+    if (checkFormat(fmt) && fmt != m_format) m_format = fmt;
+    const size_t new_size = shapeCount(m_shape) * elementSize(m_format);
+    if (alloc || new_size > m_size_in_byte)
         alloc = true;
-    size_in_byte = new_size;
+    m_size_in_byte = new_size;
     if (alloc)
-        m_buffer.reset(new buffer(m_device, size_in_byte, data));
+        m_buffer.reset(new buffer(m_device, m_size_in_byte, data));
     else if (data)
     {
         void* p = map();
-        memcpy(p, data, size_in_byte);
+        memcpy(p, data, m_size_in_byte);
         unMap();
     }
     return *this;
@@ -92,10 +92,10 @@ tensor tensor::reShape(const std::vector<int>& shape)
 
 void tensor::toDevice(const std::vector<char>& data)
 {
-    reshape(data.data(), m_shape, true, format);
+    reshape(data.data(), m_shape, true, m_format);
 }
 
-Format tensor::getFormat() const { return format; }
+
 
 void tensor::copyTo(tensor& dst) const
 {
@@ -108,8 +108,8 @@ std::vector<char>& tensor::toHost()
 {
     std::vector<char> d;
     char* p = static_cast<char*>(map());
-    d.resize(size_in_byte);
-    std::copy(p, p + size_in_byte, d.data());
+    d.resize(m_size_in_byte);
+    std::copy(p, p + m_size_in_byte, d.data());
     unMap(); // m_buffer.reset();
     return std::ref(d);
 }

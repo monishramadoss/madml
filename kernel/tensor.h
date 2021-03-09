@@ -27,9 +27,9 @@ public:
     tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false, Format fmt = Format::kFormatInvalid);
     tensor reShape(const std::vector<int>& shape);
     void toDevice(const std::vector<char>& val);
-    Format getFormat() const;
-    size_t size() const { return size_in_byte; }
-    bool isEmpty() const { return size_in_byte == 0; }
+    Format getFormat() const { return m_format; }
+    size_t size() const { return m_size_in_byte; }
+    bool isEmpty() const { return m_size_in_byte == 0; }
 
     void copyTo(tensor& dst) const;
     std::shared_ptr<buffer>& getBuffer() { return m_buffer; }
@@ -37,9 +37,8 @@ public:
 
 private:
 
-    Format format;
-    size_t size_in_byte;
-
+    Format m_format;
+    size_t m_size_in_byte;
     VkDevice m_device;
     std::shared_ptr<buffer> m_buffer;
 };

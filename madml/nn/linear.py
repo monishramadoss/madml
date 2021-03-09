@@ -12,6 +12,8 @@ from madml.init import kaiming_uniform
 from .module import Module, Parameter
 from .testing import fc_forward, fc_backward
 
+import vknn
+
 class Linear(Module):
     __constants__ = ['in_features', 'out_features']
     in_features : int
@@ -23,6 +25,8 @@ class Linear(Module):
         self.out_features = out_features
         self.weight = Parameter(kaiming_uniform(a=math.sqrt(5), nonlinearity='linear'), [in_features, out_features])
         self.bias = Parameter(zeros, [out_features]) if bias else None
+        if self.use_gpu:
+            self.modules = [vknn.gemm(1., 1.), vknn.gemm(1., 1.), vknn.gemm(1.,1.)]
 
     def forward_cpu(self, x: tensor) -> tensor:
         assert len(x.shape) == 2
@@ -45,9 +49,36 @@ class Linear(Module):
 
         self.weight.param.gradient.host_data = np.matmul(x.host_data.T, dy.host_data)
         x.gradient.host_data = np.matmul(dy.host_data, self.weight.param.host_data.T)
+        # y.zero_grad()
+        return x
+
+    def forward_gpu(self, x: tensor) -> tensor:
+        assert len(x.shape) == 2
+        y = zeros([x.shape[0], self.out_features])
+
+        self.modules[0].forward(y.device_data, x.device_data, self.weight.param.device_data)
+
+        if self.bias is not None:
+            y.host_data += self.bias.param.host_data
+
+        self.cache = [x, y]
+        return y
+
+    def backward_gpu(self) -> tensor:
+        x, y = self.cache
+        dx, dy = x.gradient, y.gradient
+
+        if self.bias is not None:
+            self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
+               
+
+        self.modules[1].forward(self.weight.param.gradient.device_data, x.device_data, dy.device_data) # Trans X
+        self.modules[2].forward(x.gradient.device_data, dy.device_data, self.weight.param.device_data) # Trans W
 
         # y.zero_grad()
         return x
+
+
 
     def print_l(self) -> None:
         x, y = self.cache

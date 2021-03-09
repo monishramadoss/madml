@@ -7,6 +7,8 @@ from urllib import request
 import matplotlib.pyplot as plt
 import numpy as np
 
+from sklearn.datasets import load_digits
+
 BATCHSIZE = 100
 
 class TestImports(unittest.TestCase):
@@ -211,7 +213,7 @@ class TestModels(unittest.TestCase):
                 self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
                 self.pool = nn.MaxPool2d(2, 2)
                 self.conv2 = nn.Conv2d(32, 48, 3)
-                self.fc1 = nn.Linear(48 * 12 * 12, 120)
+                self.fc1 = nn.Linear(48 * 2 * 2, 120) # (599, 192)
                 self.fc2 = nn.Linear(120, 84)
                 self.fc3 = nn.Linear(84, 10)
                 self.relu1 = nn.ReLU()
@@ -233,26 +235,29 @@ class TestModels(unittest.TestCase):
                 X = self.fc3(X)
                 return X
 
-        x, y, tx, ty = load_mnist()
-        x = x.reshape((-1, BATCHSIZE, 1, 28, 28))
+        BATCHSIZE = 599
+
+        x, y, = load_digits(return_X_y=True)
+        tx, ty = x[:-100], y[:-100]
+        x = x.reshape((-1, BATCHSIZE, 1, 8, 8))
         y = y.reshape((-1, BATCHSIZE, 1))
-        tx = tx.reshape((-1, 1, 1, 28, 28))
+        tx = tx.reshape((-1, 1, 1, 8, 8))
         ty = ty.reshape((-1, 1, 1))
 
         model = cnn_mnist_model()
         self.assertIsInstance(model, nn.Module)
 
-        t_x = madml.tensor(x / 225.)
+        t_x = madml.tensor(x / 1.)
         t_y = madml.tensor(y).onehot(label_count=10)
         # loss_fn = nn.MSELoss()
         loss_fn = nn.CrossEntropyLoss(with_logit=True)
         optim = optimizer.Adam(model.parameters(), lr=1e-3)
-        train_loop(model, loss_fn, optim, t_x, t_y, epochs=1, early_break=5)
+        train_loop(model, loss_fn, optim, t_x, t_y, epochs=30)
 
-        test_x = madml.tensor(tx / 255.)
+        test_x = madml.tensor(tx / 1.)
         test_y = madml.tensor(ty)
-        #acc = test_loop(model, test_x, test_y, early_stop=10)
-        #print(sum(acc) / len(acc))
+        acc = test_loop(model, test_x, test_y)
+        print(sum(acc) / len(acc))
         self.assertTrue(True)
 
     def test_dnn(self):
@@ -263,7 +268,7 @@ class TestModels(unittest.TestCase):
         class dnn_mnist_model(nn.Module):
             def __init__(self):
                 super(dnn_mnist_model, self).__init__()
-                self.fc1 = nn.Linear(28 * 28, 256)
+                self.fc1 = nn.Linear(8 * 8, 256)
                 self.fc2 = nn.Linear(256, 10)
                 self.relu1 = nn.ReLU()
                 self.relu2 = nn.ReLU()
@@ -275,25 +280,28 @@ class TestModels(unittest.TestCase):
                 X = self.relu2(X)
                 return X
 
-        x, y, tx, ty = load_mnist()
-        x = x.reshape((-1, BATCHSIZE, 28 * 28))
+        BATCHSIZE = 599
+        x, y, = load_digits(return_X_y=True)
+        tx, ty = x[:-100], y[:-100]
+               
+        x = x.reshape((-1, BATCHSIZE, 8 * 8))
         y = y.reshape((-1, BATCHSIZE, 1))
-        tx = tx.reshape((-1, 1, 28 * 28))
+        tx = tx.reshape((-1, 1, 8 * 8))
         ty = ty.reshape((-1, 1, 1))
-
+        
         model = dnn_mnist_model()
         self.assertIsInstance(model, nn.Module)
-        t_x = madml.tensor(x / 225.)
+        t_x = madml.tensor(x / 1.)
         t_y = madml.tensor(y).onehot(label_count=10)
         # loss_fn = nn.MSELoss()
         loss_fn = nn.CrossEntropyLoss(with_logit=True)
         optim = optimizer.Adam(model.parameters(), lr=1e-3)
-        train_loop(model, loss_fn, optim, t_x, t_y, epochs=1, early_break=5)
+        train_loop(model, loss_fn, optim, t_x, t_y, epochs=30)
 
-        test_x = madml.tensor(tx / 255.)
+        test_x = madml.tensor(tx / 1.)
         test_y = madml.tensor(ty)
-        #acc = test_loop(model, test_x, test_y, early_stop=10)
-        #print(sum(acc) / len(acc))
+        acc = test_loop(model, test_x, test_y, early_stop=10)
+        print(sum(acc) / len(acc))
         self.assertTrue(True)
 
     def test_identity(self):
@@ -314,6 +322,8 @@ class TestModels(unittest.TestCase):
 
         model = identity_model()
         self.assertIsInstance(model, nn.Module)
+
+        
         x = np.ones((2, 32))
         t_x = madml.tensor(x)
         t_y = madml.tensor(x.copy())

@@ -1,5 +1,6 @@
 #pragma once
 
+
 #ifdef USE_SHADERC
 #include <shaderc/shaderc.hpp>
 #else
@@ -62,16 +63,4 @@ inline int shapeCount(const Shape& shape, int start = -1, int end = -1)
     return elems;
 }
 
-/// <summary>
-/// Function to write shader code for single param shaders
-/// </summary>
-/// <param name="op"> Ex: B[i] = A[i]; </param>
-/// <returns> shader string</returns>
-std::string& single_shader_op(const std::string& op);
 
-/// <summary>
-/// Function to write shader code for two param shaders
-/// </summary>
-/// <param name="op"> Ex: C[i] = A[i] __ B[i]; </param>
-/// <returns> shader string</returns>
-std::string& double_shader_op(const std::string& op);

@@ -7,13 +7,11 @@ import struct
 from typing import List, Union, Optional, Type
 
 import numpy as np
+import backend
 
-try:
-    import backend
-    VULKAN_DLL_LOADED = True
+from concurrent.futures import ThreadPoolExecutor
+executor = ThreadPoolExecutor(2)
 
-except ImportError:
-    VULKAN_DLL_LOADED = False
 
 # from .nn.module import module_cache, execution_order
 def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
@@ -23,37 +21,42 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
         ret_data[i] = struct.unpack("f", ret_data[i])
     return ret_data
 
+
+def async_download(host: np.ndarray, device: backend.tensor):
+    if host.dtype == np.float32:
+        #return executor.submit(backend.tensor_to_np_float, (device, host.ravel().tolist()))
+        return None
+    else:
+        raise TypeError(" dtype: {0} is not implement.".format(host.dtype))
+
+def async_upload(host: np.ndarray, device: backend.tensor):
+    if host.dtype == np.float32:
+        #return backend.np_to_tensor_float(device, host)
+        return None
+    else:
+        raise TypeError(" dtype: {0} is not Implemented".format(host.dtype))
+    
+
 class gpu_tensor(object):
-    # data: Optional[backend.tensor]
-
-    def __init__(self, data: np.ndarray, dtype: Type=float):
-        if dtype != float:
-            raise TypeError(" dtype: {1} is not implement.")
-
-        lst_data = data.astype(float).tolist()
-        shape = data.shape
-        if VULKAN_DLL_LOADED:
-            self.data = None #backend.tensor(lst_data, shape)
-        else:
-            self.data = data
-
-    def to_cpu(self, dtype: Type=float):
-        if dtype != float:
-            raise TypeError(" dtype: {1} is not implement.")
-
-        char_data = self.data.tohost()
-        _convert_to_float(self.data.size(), char_data)
+    def __init__(self, data: np.ndarray):
+        if data.dtype != np.float32:
+            raise TypeError(" dtype: {1} is not implement.".format(data.dtype))
+        lst_data = data.astype(float)
+        self.data = backend.init_float(lst_data)
+    
+    
+    
 
 class tensor(object):
     shape : List[int]
-    init_shape : List[int]
+    _init_shape : List[int]
     _host_memory : np.ndarray
     _device_memory : gpu_tensor
     on_device : bool
     id : int
 
     def __init__(self, data: Union[List[Union[float, int, bytes, bool]], np.ndarray], shape=None,
-                 requires_grad: bool=True) -> None:
+                 requires_grad: bool=True, dtype=float) -> None:
         if shape is None:
             shape = []
         if isinstance(data, np.ndarray):
@@ -64,13 +67,13 @@ class tensor(object):
             self.shape = shape
 
         self._device_memory = gpu_tensor(self._host_memory)
-        self.init_shape = self.shape
+        self._init_shape = self.shape
         self.size = 1
 
         for s in self.shape:
             self.size *= s
 
-        self.on_device = False
+        self.on_device = True
         self.parent = []
         self.children = []
         self.id = id(self)
@@ -80,9 +83,10 @@ class tensor(object):
             self._grad = None
         assert (len(self.shape) > 0)
         assert (self._host_memory.size == self.size)
+        self._future_obj = None
 
     def __copy__(self):
-        new = tensor(self._host_memory, self.init_shape)
+        new = tensor(self._host_memory, self._init_shape, requires_grad=False)
         new._grad = self._grad
         return new
 
@@ -109,9 +113,6 @@ class tensor(object):
         assert (type(value) == type(self))
         self._host_memory[key] = value.host_data
 
-    def copy(self):
-        return tensor(self._host_memory, self.shape)
-
     def reshape(self, shape: List[int]) -> None:
         self._host_memory = self._host_memory.reshape(shape)
         assert (self._host_memory.size == self.size)
@@ -136,6 +137,9 @@ class tensor(object):
 
     @property
     def host_data(self) -> np.ndarray:
+        if self._future_obj is not None and  self._future_obj.done():
+            self._future_obj.result()
+        #self._future_obj = async_upload(self._host_memory, self._device_memory.data)
         return self._host_memory
 
     @host_data.setter
@@ -143,14 +147,27 @@ class tensor(object):
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
+        if self._future_obj is not None and  self._future_obj.done():
+            self._future_obj.result()
+        #self._future_obj = async_upload(self._host_memory, self._device_memory.data)
+       
 
     @property
-    def device_data(self) -> np.array:
-        return self._device_memory
+    def device_data(self) -> backend.tensor:
+        if self._future_obj is not None and  self._future_obj.is_alive():
+            self._future_obj.result()
+        #self._future_obj = async_download(self._host_memory, self._device_memory.data)
+        
+        return self._device_memory.data
 
     @device_data.setter
-    def device_data(self, value: np.ndarray) -> None:
-        raise NotImplementedError
+    def device_data(self, value: backend.tensor) -> None:
+        self._device_memory.data = value
+        if self._future_obj is not None and  self._future_obj.done():
+            self._future_obj.result()
+        #self._future_obj = async_download(self._host_memory, self._device_memory.data)
+        
+        
 
     def backward(self) -> None:
         for x in reversed(self.parent):
@@ -163,10 +180,10 @@ class tensor(object):
         self.children.clear()
 
     def reset_shape(self) -> None:
-        self._host_memory = self._host_memory.reshape(self.init_shape)
-        self.shape = self.init_shape
+        self._host_memory = self._host_memory.reshape(self._init_shape)
+        self.shape = self._init_shape
         if self._grad is not None:
-            self._grad.reshape(self.init_shape)
+            self._grad.reshape(self._init_shape)
 
     def flatten(self) -> None:
         self._host_memory = self._host_memory.reshape([self.shape[0], -1])
@@ -191,9 +208,9 @@ class tensor(object):
         self._host_memory = self._host_memory.flatten()
         for i in range(self.size):
             y[i][self._host_memory[i].astype(int)] = 1
-        self._host_memory = self._host_memory.reshape(self.init_shape)
-        if self.init_shape[-1] == 1:
-            y = y.reshape(self.init_shape[:-1] + [_max])
+        self._host_memory = self._host_memory.reshape(self._init_shape)
+        if self._init_shape[-1] == 1:
+            y = y.reshape(self._init_shape[:-1] + [_max])
         else:
-            y = y.reshape(self.init_shape + [_max])
+            y = y.reshape(self._init_shape + [_max])
         return tensor(y, y.shape)
