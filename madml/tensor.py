@@ -26,15 +26,13 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
 
 def async_download(executor: ThreadPoolExecutor, host: np.ndarray, device: backend.tensor):
     if host.dtype == np.float32:
-        return executor.submit(backend.tensor_to_np_float, (device, host))
-        return None
+        return executor.submit(backend.tensor_to_np_float, (device, host))      
     else:
         raise TypeError(" dtype: {0} is not implement.".format(host.dtype))
 
 def async_upload(executor: ThreadPoolExecutor, host: np.ndarray, device: backend.tensor):
     if host.dtype == np.float32:
-        return executor.submit(backend.np_to_tensor_float, (device, host))
-        
+        return executor.submit(backend.list_to_tensor_float, (device, host))        
     else:
         raise TypeError(" dtype: {0} is not Implemented".format(host.dtype))
     
