@@ -43,5 +43,5 @@ public:
     int m_group_y;
     int m_group_z;
 
-    std::string m_type;
+    std::string m_type;    
 };

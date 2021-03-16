@@ -10,7 +10,9 @@ import numpy as np
 import backend
 
 from concurrent.futures import ThreadPoolExecutor
-executor = ThreadPoolExecutor(2)
+
+global EXECUTOR
+EXECUTOR = ThreadPoolExecutor(2)
 
 
 # from .nn.module import module_cache, execution_order
@@ -22,17 +24,17 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
     return ret_data
 
 
-def async_download(host: np.ndarray, device: backend.tensor):
+def async_download(executor: ThreadPoolExecutor, host: np.ndarray, device: backend.tensor):
     if host.dtype == np.float32:
-        #return executor.submit(backend.tensor_to_np_float, (device, host.ravel().tolist()))
+        return executor.submit(backend.tensor_to_np_float, (device, host))
         return None
     else:
         raise TypeError(" dtype: {0} is not implement.".format(host.dtype))
 
-def async_upload(host: np.ndarray, device: backend.tensor):
+def async_upload(executor: ThreadPoolExecutor, host: np.ndarray, device: backend.tensor):
     if host.dtype == np.float32:
-        #return backend.np_to_tensor_float(device, host)
-        return None
+        return executor.submit(backend.np_to_tensor_float, (device, host))
+        
     else:
         raise TypeError(" dtype: {0} is not Implemented".format(host.dtype))
     
@@ -43,8 +45,6 @@ class gpu_tensor(object):
             raise TypeError(" dtype: {1} is not implement.".format(data.dtype))
         lst_data = data.astype(float)
         self.data = backend.init_float(lst_data)
-    
-    
     
 
 class tensor(object):
@@ -84,6 +84,7 @@ class tensor(object):
         assert (len(self.shape) > 0)
         assert (self._host_memory.size == self.size)
         self._future_obj = None
+        self.executor =  EXECUTOR  
 
     def __copy__(self):
         new = tensor(self._host_memory, self._init_shape, requires_grad=False)
@@ -139,7 +140,7 @@ class tensor(object):
     def host_data(self) -> np.ndarray:
         if self._future_obj is not None and  self._future_obj.done():
             self._future_obj.result()
-        #self._future_obj = async_upload(self._host_memory, self._device_memory.data)
+        self._future_obj = async_upload(self.executor, self._host_memory, self._device_memory.data)
         return self._host_memory
 
     @host_data.setter
@@ -149,14 +150,14 @@ class tensor(object):
         self._host_memory = value.astype(self._host_memory.dtype)
         if self._future_obj is not None and  self._future_obj.done():
             self._future_obj.result()
-        #self._future_obj = async_upload(self._host_memory, self._device_memory.data)
+        self._future_obj = async_upload(self.executor, self._host_memory, self._device_memory.data)
        
 
     @property
     def device_data(self) -> backend.tensor:
         if self._future_obj is not None and  self._future_obj.is_alive():
             self._future_obj.result()
-        #self._future_obj = async_download(self._host_memory, self._device_memory.data)
+        self._future_obj = async_download(self.executor, self._host_memory, self._device_memory.data)
         
         return self._device_memory.data
 
@@ -165,7 +166,7 @@ class tensor(object):
         self._device_memory.data = value
         if self._future_obj is not None and  self._future_obj.done():
             self._future_obj.result()
-        #self._future_obj = async_download(self._host_memory, self._device_memory.data)
+        self._future_obj = async_download(self.executor, self._host_memory, self._device_memory.data)
         
         
 

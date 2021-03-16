@@ -30,7 +30,6 @@ class TestImports(unittest.TestCase):
 class TestModules(unittest.TestCase):
     def test_tensor(self):
         import madml
-
         x = np.array([[[[0., 1., 2., 3., 4.],  # (1, 1, 5, 5) input tensor
                         [5., 6., 7., 8., 9.],
                         [10., 11., 12., 13., 14.],
@@ -43,12 +42,10 @@ class TestModules(unittest.TestCase):
     def test_conv(self):
         import madml
         import madml.nn as nn
-
         kernel_shape = [3, 3]
         stride = [1, 1]
         padding = [1, 1]
         dilation = [1, 1]
-
         x = np.array([[[[0., 1., 2., 3., 4.],
                         [5., 6., 7., 8., 9.],
                         [10., 11., 12., 13., 14.],

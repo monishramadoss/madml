@@ -41,7 +41,7 @@ class ReLU(Module):
         arr = dy.host_data.reshape(x.shape) * tmp
         x.gradient.host_data = arr.reshape(x.shape)
         if not self.inplace:
-            pass  # y.zero_grad()
+            y.zero_grad()
         return x
 
     def print_l(self) -> None:

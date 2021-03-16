@@ -1,5 +1,6 @@
 #pragma once
 
+#define USE_SHADERC
 
 #ifdef USE_SHADERC
 #include <shaderc/shaderc.hpp>

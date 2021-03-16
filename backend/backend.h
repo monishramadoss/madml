@@ -32,7 +32,7 @@ std::shared_ptr<tensor> init_tensor(py::array_t<T, py::array::c_style | py::arra
 
 
 template<typename T = float>
-void np_to_tensor(std::shared_ptr<tensor>& t, const py::array_t<T, py::array::c_style | py::array::forcecast>& a)
+void np_to_tensor(std::shared_ptr<tensor>& t, py::array_t<T, py::array::c_style | py::array::forcecast> a)
 {
     std::vector<int> shape;
     for (size_t i = 0; i < a.ndim(); ++i)
@@ -50,7 +50,7 @@ void tensor_to_np(const std::shared_ptr<tensor>& t, py::array_t<T, py::array::c_
         shape.push_back((int)a.shape()[i]);
     if (shape != t->getShape()) printf("SHAPES DON'T MATCH \n");
     
-    char* ptr = (char*)a.mutable_data();
+    char* ptr = (char*)a.ptr;
     auto vec = t->toHost();
     memcpy(ptr, vec.data(), t->size());
 }
