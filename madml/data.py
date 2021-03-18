@@ -474,23 +474,23 @@ class _MultiProcessingDataLoaderIter(_BaseDataLoaderIter):
                                                                                               # =
                                                                                                                                        # True
                                                                                                                                                                                 # pin_memory_thread.start()
-                                                                                                                                                                                # Similar
-                                                                                                                                                                                # to
-                                                                                                                                                                                # workers
-                                                                                                                                                                                # (see
-                                                                                                                                                                                # comment
-                                                                                                                                                                                # above),
-                                                                                                                                                                                # we
-                                                                                                                                                                                # only
-                                                                                                                                                                                # register
-                                                                                                                                                                                # pin_memory_thread
-                                                                                                                                                                                # once
-                                                                                                                                                                                # it
-                                                                                                                                                                                # is
-                                                                                                                                                                                # started.
-                                                                                                                                                                                # self._pin_memory_thread
-                                                                                                                                                                                # =
-                                                                                                                                                                                # pin_memory_thread
+                                                                                                                                                                                                                         # Similar
+                                                                                                                                                                                                                         # to
+                                                                                                                                                                                                                         # workers
+                                                                                                                                                                                                                         # (see
+                                                                                                                                                                                                                         # comment
+                                                                                                                                                                                                                         # above),
+                                                                                                                                                                                                                         # we
+                                                                                                                                                                                                                         # only
+                                                                                                                                                                                                                         # register
+                                                                                                                                                                                                                         # pin_memory_thread
+                                                                                                                                                                                                                         # once
+                                                                                                                                                                                                                         # it
+                                                                                                                                                                                                                         # is
+                                                                                                                                                                                                                         # started.
+                                                                                                                                                                                                                         # self._pin_memory_thread
+                                                                                                                                                                                                                         # =
+                                                                                                                                                                                                                         # pin_memory_thread
         else:
             self._data_queue = self._worker_result_queue
 

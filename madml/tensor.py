@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import struct
 from typing import List, Union, Optional, Type
 
@@ -12,8 +13,7 @@ import backend
 from concurrent.futures import ThreadPoolExecutor
 
 global EXECUTOR
-EXECUTOR = ThreadPoolExecutor(2)
-
+EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
 # from .nn.module import module_cache, execution_order
 def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
@@ -23,19 +23,17 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
         ret_data[i] = struct.unpack("f", ret_data[i])
     return ret_data
 
-
-def async_download(executor: ThreadPoolExecutor, host: np.ndarray, device: backend.tensor):
+def _download(host: np.ndarray, device: backend.tensor) -> None:
     if host.dtype == np.float32:
-        return executor.submit(backend.tensor_to_np_float, (device, host))      
+        return backend.tensor_to_np_float(device, host)
     else:
         raise TypeError(" dtype: {0} is not implement.".format(host.dtype))
 
-def async_upload(executor: ThreadPoolExecutor, host: np.ndarray, device: backend.tensor):
+def _upload(host: np.ndarray, device: backend.tensor) -> None:
     if host.dtype == np.float32:
-        return executor.submit(backend.list_to_tensor_float, (device, host))        
+        return backend.np_to_tensor_float(device, host)
     else:
         raise TypeError(" dtype: {0} is not Implemented".format(host.dtype))
-    
 
 class gpu_tensor(object):
     def __init__(self, data: np.ndarray):
@@ -43,7 +41,6 @@ class gpu_tensor(object):
             raise TypeError(" dtype: {1} is not implement.".format(data.dtype))
         lst_data = data.astype(float)
         self.data = backend.init_float(lst_data)
-    
 
 class tensor(object):
     shape : List[int]
@@ -82,7 +79,7 @@ class tensor(object):
         assert (len(self.shape) > 0)
         assert (self._host_memory.size == self.size)
         self._future_obj = None
-        self.executor =  EXECUTOR  
+        self.executor = EXECUTOR
 
     def __copy__(self):
         new = tensor(self._host_memory, self._init_shape, requires_grad=False)
@@ -136,9 +133,9 @@ class tensor(object):
 
     @property
     def host_data(self) -> np.ndarray:
-        if self._future_obj is not None and  self._future_obj.done():
+        if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = async_upload(self.executor, self._host_memory, self._device_memory.data)
+        self._future_obj = self.executor.submit(_upload, self._host_memory, self._device_memory.data)
         return self._host_memory
 
     @host_data.setter
@@ -146,27 +143,24 @@ class tensor(object):
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
-        if self._future_obj is not None and  self._future_obj.done():
+        if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = async_upload(self.executor, self._host_memory, self._device_memory.data)
-       
+        self._future_obj = self.executor.submit(_upload, self._host_memory, self._device_memory.data)
 
     @property
     def device_data(self) -> backend.tensor:
-        if self._future_obj is not None and  self._future_obj.is_alive():
+        if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = async_download(self.executor, self._host_memory, self._device_memory.data)
-        
+        self._future_obj = self.executor.submit(_upload, self._host_memory, self._device_memory.data)
+        self._future_obj.result()
         return self._device_memory.data
 
     @device_data.setter
     def device_data(self, value: backend.tensor) -> None:
         self._device_memory.data = value
-        if self._future_obj is not None and  self._future_obj.done():
+        if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = async_download(self.executor, self._host_memory, self._device_memory.data)
-        
-        
+        self._future_obj = self.executor.submit(_download, self._host_memory, self._device_memory.data)
 
     def backward(self) -> None:
         for x in reversed(self.parent):

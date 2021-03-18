@@ -5,6 +5,7 @@
 layer::layer()
 {
     createContext();
+
     m_device = kDevice;
     m_pipeline = nullptr;
     m_cmd_buffer = nullptr;
@@ -17,6 +18,7 @@ layer::layer()
     m_group_x = 1;
     m_group_y = 1;
     m_group_z = 1;
+    m_device_id = 0;
 }
 
 layer::~layer()

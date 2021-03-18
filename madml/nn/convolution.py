@@ -113,6 +113,7 @@ class ConvNd(Module):
                                   self.stride, self.padding, self.dilation)
             if self._use_bias and self.bias is not None:
                 self.bias = Parameter(zeros, [self.out_channels, *self._col])
+
         y = zeros([self.batch_size, self.out_channels, *self._col])
         self.col = self.kernel.forward_cpu(x)
         self.weight.param.reshape([self.weight.param.shape[0], -1])
@@ -120,7 +121,7 @@ class ConvNd(Module):
 
         y.reshape([self.out_channels, self.batch_size, self._col[0], self._col[1], self._col[2]])
         y.transpose([1, 0, 2, 3, 4])
-        if self._use_bias and self.bias is not None:
+        if self.bias is Parameter:
             y.host_data += self.bias.param.host_data
 
         self.cache = [x, y]
@@ -131,7 +132,7 @@ class ConvNd(Module):
         dx, dy = x.gradient, y.gradient
         dc = self.col.gradient
         assert (x.size == dx.size and dy.size == y.size and dc == self.col.gradient)
-        if self.bias is not None:
+        if self.bias is Parameter:
             self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
 
         dy_reshaped = dy.host_data.transpose([1, 0, 2, 3, 4]).reshape(self.out_channels, -1)

@@ -39,6 +39,25 @@ class TestModules(unittest.TestCase):
         self.assertTrue(t1.shape == list(x.shape))
         self.assertTrue((t1.host_data == x).all())
 
+    def test_linear(self):
+        import madml
+        import madml.nn as nn
+        a = np.random.ranf([3, 5]).astype(np.float32)
+
+        t1 = madml.tensor(a)
+        module = nn.Linear(5, 5)
+
+        t2 = module.forward_cpu(t1)
+        y = t2.host_data
+
+        t3 = module.forward_gpu(t1)
+        y_hat = t3.host_data
+
+        self.assertTrue((y == y_hat))
+
+        t2.gradient.host_data = a
+        self.assertTrue(True)
+
     def test_conv(self):
         import madml
         import madml.nn as nn
@@ -280,12 +299,12 @@ class TestModels(unittest.TestCase):
         BATCHSIZE = 599
         x, y, = load_digits(return_X_y=True)
         tx, ty = x[:-100], y[:-100]
-               
+
         x = x.reshape((-1, BATCHSIZE, 8 * 8))
         y = y.reshape((-1, BATCHSIZE, 1))
         tx = tx.reshape((-1, 1, 8 * 8))
         ty = ty.reshape((-1, 1, 1))
-        
+
         model = dnn_mnist_model()
         self.assertIsInstance(model, nn.Module)
         t_x = madml.tensor(x / 1.)
@@ -320,7 +339,6 @@ class TestModels(unittest.TestCase):
         model = identity_model()
         self.assertIsInstance(model, nn.Module)
 
-        
         x = np.ones((2, 32))
         t_x = madml.tensor(x)
         t_y = madml.tensor(x.copy())

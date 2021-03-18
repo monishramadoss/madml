@@ -2,7 +2,12 @@
 #include "context.h"
 
 std::shared_ptr<context> kCtx;
-bool enableValidationLayers = false;
+
+#ifdef NDEBUG
+const bool enableValidationLayers = false;
+#else
+const bool enableValidationLayers = false;
+#endif
 
 VkInstance kInstance;
 VkPhysicalDevice kPhysicalDevice;
@@ -93,15 +98,17 @@ context::context()
         bool foundLayer = false;
         for (VkLayerProperties prop : layerProperties)
         {
-            if (strcmp("VK_LAYER_LUNARG_standard_validation", prop.layerName) == 0)
+            if (strcmp("VK_LAYER_KRONOS_validation", prop.layerName) == 0)
             {
                 foundLayer = true;
                 break;
             }
         }
 
-        if (!foundLayer) throw std::runtime_error("Layer VK_LAYER_LUNARG_standard_validation not supported\n");
-        kEnabledLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+        if (!foundLayer)
+            throw std::runtime_error("Layer VK_LAYER_KRONOS_validation not supported\n");
+        
+        kEnabledLayers.push_back("VK_LAYER_KRONOS_validation");
 
         uint32_t extensionCount;
 
@@ -120,8 +127,7 @@ context::context()
         }
 
         if (!foundExtension)
-            throw std::runtime_error(
-                "Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
+            throw std::runtime_error( "Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
         enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
 
@@ -153,8 +159,11 @@ context::context()
         createInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT |
             VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
         createInfo.pfnCallback = &debugReportCallbackFn;
-
-        //VK_CHECK_RESULT(vkCreateDebugReportCallbackEXT(kInstance, &createInfo, nullptr, &kDebugReportCallback));
+#ifndef NDEBUG
+        PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
+        CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(kInstance, "vkCreateDebugReportCallbackEXT");
+        //VK_CHECK_RESULT(CreateDebugReportCallback(kInstance, &createInfo, nullptr, &kDebugReportCallback));
+#endif
     }
 
     uint32_t deviceCount;

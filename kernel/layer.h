@@ -43,5 +43,7 @@ public:
     int m_group_y;
     int m_group_z;
 
+    int m_device_id;
+
     std::string m_type;    
 };

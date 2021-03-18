@@ -56,7 +56,7 @@ class Module(object):
             x = self.backward_gpu()
         else:
             x = self.backward_cpu()
-    
+
         if isinstance(x, tensor):
             x.reset_shape()
 

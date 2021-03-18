@@ -5,7 +5,7 @@
 
 
 const std::string gemm_shader = R"(
-#version 460
+#version 450
 layout(push_constant) uniform pushBlock {
     int total;
     int b;
@@ -29,7 +29,7 @@ void gemm_1(){
             for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
                 float acc = use_bias ? beta * C[globalRow*N + globalCol]: 0.0;
                 for (uint k=0u; k < K; k++)
-                    acc += p.alpha * A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
+                    acc += alpha * A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
                 D[globalDepth*M*N + globalRow*N + globalCol] = acc;
             }
         }
@@ -38,16 +38,19 @@ void gemm_1(){
 
 void main() {
     gemm_1();
-})";
+}
+
+)";
 
 
 gemm::gemm(float alpha, float beta, bool use_bias)
 {
-    initVulkanThing(3);
+    initVulkanThing(4);
     m_type = "gemm";
     m_param.alpha = alpha;
     m_param.beta = beta;
     m_param.use_bias = use_bias;
+   
 }
 
 void gemm::forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, const std::shared_ptr<tensor>& b)
