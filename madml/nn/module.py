@@ -3,8 +3,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from typing import List, Optional
-
+from concurrent.futures import ThreadPoolExecutor
 from madml import tensor
 
 def test_import_vknn():
@@ -15,6 +16,9 @@ global parameter_cache
 parameter_cache = []
 
 DEBUG = False
+
+global MODULE_EXECUTOR
+MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
 class Parameter(object):
     param : tensor
@@ -44,7 +48,7 @@ class Module(object):
         self.y = None
         self.print_out_flag = False
         self.use_gpu = False
-        self.modules = []
+        self.executor = MODULE_EXECUTOR
 
     def forward(self, *args, **kwargs) -> tensor:
         if  self.use_gpu:
@@ -52,7 +56,7 @@ class Module(object):
         return self.forward_cpu(*args, **kwargs)
 
     def backward(self):
-        if  self.use_gpu:
+        if self.use_gpu:
             x = self.backward_gpu()
         else:
             x = self.backward_cpu()

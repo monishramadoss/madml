@@ -32,7 +32,9 @@ class Linear(Module):
             self.bias = None
 
         if self.use_gpu:
-            self.modules = [vknn.gemm(1., 1., bias), vknn.gemm(1., 1., False), vknn.gemm(1., 1., False)]
+            self.gpu_forward = vknn.gemm(1., 1., bias)
+            self.gpu_backward1 = vknn.gemm(1., 1., False)
+            self.gpu_backward2 = vknn.gemm(1., 1., False)
         self._empty_backend_obj = backend.tensor([0.], [1])
 
     def forward_cpu(self, x: tensor) -> tensor:
@@ -58,9 +60,11 @@ class Linear(Module):
         assert len(x.shape) == 2
         y = zeros([x.shape[0], self.out_features])
         if self.bias is Parameter:
-            self.modules[0].forward(y.device_data, x.device_data, self.weight.param.device_data, self.bias.param.device_data)
+            y.device_data = self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self.bias.param.device_data)
         else:
-            self.modules[0].forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_backend_obj)
+            y.device_data = self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_backend_obj)
+
+
         self.cache = [x, y]
         return y
 
@@ -69,8 +73,8 @@ class Linear(Module):
         dx, dy = x.gradient, y.gradient
         if self.bias is Parameter:
             self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
-        self.modules[1].forward(self.weight.param.gradient.device_data, x.device_data, dy.device_data, self._empty_backend_obj) # Trans X
-        self.modules[2].forward(x.gradient.device_data, dy.device_data, self.weight.param.device_data,  self._empty_backend_obj) # Trans W
+        self.weight.param.gradient.device_data = self.gpu_backward1.forward(self.weight.param.gradient.device_data, x.device_data, dy.device_data, self._empty_backend_obj) # Trans X
+        x.gradient.device_data = self.gpu_backward2.forward(x.gradient.device_data, dy.device_data, self.weight.param.device_data,  self._empty_backend_obj) # Trans W
         y.zero_grad()
         return x
 

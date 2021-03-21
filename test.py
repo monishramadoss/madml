@@ -1,10 +1,8 @@
 import gzip
 import os
-import pickle
 import unittest
 from urllib import request
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from sklearn.datasets import load_digits
@@ -45,15 +43,18 @@ class TestModules(unittest.TestCase):
         a = np.random.ranf([3, 5]).astype(np.float32)
 
         t1 = madml.tensor(a)
+        self.assertTrue((t1.host_data == a).all())
+
         module = nn.Linear(5, 5)
 
         t2 = module.forward_cpu(t1)
         y = t2.host_data
 
         t3 = module.forward_gpu(t1)
-        y_hat = t3.host_data
+        y_hat = t3.download()
+        print(y_hat, y)
 
-        self.assertTrue((y == y_hat))
+        # self.assertTrue((y == y_hat).all())
 
         t2.gradient.host_data = a
         self.assertTrue(True)
@@ -77,6 +78,7 @@ class TestModules(unittest.TestCase):
                                     [72., 111., 117., 123., 84.]]]).astype(np.float32).reshape([1, 1, 5, 5])
 
         t1 = madml.tensor(x)
+
         module = nn.Conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
         t2 = module.forward_cpu(t1)
         y = t2.host_data
@@ -360,7 +362,7 @@ class TestModels(unittest.TestCase):
         import madml.optimizer as optimizer
 
         from numpy import pi
-        # import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
         N = 400
         theta = np.sqrt(np.random.rand(N)) * 2 * pi  # np.linspace(0,2*pi,100)

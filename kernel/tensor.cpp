@@ -95,8 +95,6 @@ void tensor::toDevice(const std::vector<char>& data)
     reshape(data.data(), m_shape, true, m_format);
 }
 
-
-
 void tensor::copyTo(tensor& dst) const
 {
     void* p = map();
@@ -104,13 +102,12 @@ void tensor::copyTo(tensor& dst) const
     unMap();
 }
 
-std::vector<char>& tensor::toHost()
+char* tensor::toHost()
 {
-    std::vector<char> d;
+    char* d = new char[m_size_in_byte];
     char* p = static_cast<char*>(map());
-    d.resize(m_size_in_byte);
-    std::copy(p, p + m_size_in_byte, d.data());
+    std::copy(p, p + m_size_in_byte, d);
     unMap(); // m_buffer.reset();
-    return std::ref(d);
+    return d;
 }
 

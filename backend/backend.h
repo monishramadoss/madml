@@ -35,45 +35,36 @@ std::shared_ptr<tensor> init_tensor(py::array_t<T, py::array::c_style | py::arra
 template<typename T = float>
 void np_to_tensor(std::shared_ptr<tensor>& t, const py::array_t<T, py::array::c_style | py::array::forcecast>& a)
 {
-    py::gil_scoped_release release;
+    //py::gil_scoped_release release;
     std::vector<int> shape;
     for (size_t i = 0; i < a.ndim(); ++i)
         shape.push_back((int)a.shape()[i]);
     if (shape != t->getShape()) printf("SHAPES DON'T MATCH \n");
     t->reshape((char*)a.data(), t->getShape());
-    py::gil_scoped_acquire acquire;
 }
 
 
 template<typename T = float>
 void tensor_to_np(const std::shared_ptr<tensor>& t, py::array_t<T, py::array::c_style | py::array::forcecast>& a)
 {
-    py::gil_scoped_release release;
     std::vector<int> shape;
     for (size_t i = 0; i < a.ndim(); ++i)
         shape.push_back((int)a.shape()[i]);
     if (shape != t->getShape()) printf("SHAPES DON'T MATCH \n");    
     char* ptr = (char*)a.data();
-    std::vector<char> vec = t->toHost();
-    memcpy(ptr, vec.data(), t->size());
-    py::gil_scoped_acquire acquire;
+    memcpy(ptr, t->toHost(), t->size());
 }
 
 template<typename T = float>
 void list_to_tensor(std::shared_ptr<tensor>& t, const std::vector<T>& v)
 {
-    py::gil_scoped_release release;
     if (t->count() != v.size()) printf("SHAPES DON'T MATCH \n");
     t->reshape((const char*)v.data(), t->getShape());
-    py::gil_scoped_acquire acquire;
 }
 
 template<typename T = float>
 void tensor_to_list(const std::shared_ptr<tensor>& t, std::vector<T> v)
 {
-    py::gil_scoped_release release;
     char* ptr = (char*)v.data();
-    std::vector<char> vec = t->toHost();
-    memcpy(ptr, vec.data(), t->size());
-    py::gil_scoped_acquire acquire;
+    memcpy(ptr, t->toHost(), t->size());
 }

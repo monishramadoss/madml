@@ -12,8 +12,8 @@ import backend
 
 from concurrent.futures import ThreadPoolExecutor
 
-global EXECUTOR
-EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
+global TENSOR_EXECUTOR
+TENSOR_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
 # from .nn.module import module_cache, execution_order
 def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
@@ -79,7 +79,7 @@ class tensor(object):
         assert (len(self.shape) > 0)
         assert (self._host_memory.size == self.size)
         self._future_obj = None
-        self.executor = EXECUTOR
+        self.executor = TENSOR_EXECUTOR
 
     def __copy__(self):
         new = tensor(self._host_memory, self._init_shape, requires_grad=False)
@@ -135,7 +135,6 @@ class tensor(object):
     def host_data(self) -> np.ndarray:
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = self.executor.submit(_upload, self._host_memory, self._device_memory.data)
         return self._host_memory
 
     @host_data.setter
@@ -143,16 +142,13 @@ class tensor(object):
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
-        if self._future_obj is not None and not self._future_obj.done():
-            self._future_obj.result()
-        self._future_obj = self.executor.submit(_upload, self._host_memory, self._device_memory.data)
+        
 
     @property
     def device_data(self) -> backend.tensor:
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = self.executor.submit(_upload, self._host_memory, self._device_memory.data)
-        self._future_obj.result()
+        _upload(self._host_memory, self._device_memory.data)
         return self._device_memory.data
 
     @device_data.setter
@@ -160,7 +156,7 @@ class tensor(object):
         self._device_memory.data = value
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        self._future_obj = self.executor.submit(_download, self._host_memory, self._device_memory.data)
+        _download(self._host_memory, self._device_memory.data)
 
     def backward(self) -> None:
         for x in reversed(self.parent):
@@ -207,3 +203,7 @@ class tensor(object):
         else:
             y = y.reshape(self._init_shape + [_max])
         return tensor(y, y.shape)
+
+    def download(self) -> np.ndarray:
+        _download(self._host_memory, self._device_memory.data)
+        return self._host_memory

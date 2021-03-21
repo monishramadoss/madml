@@ -23,7 +23,7 @@ public:
     int dimNum() const;
     int dimSize(int axis) const;
     int count(int start_axis = 0, int end_axis = -1) const;
-    std::vector<char>& toHost();
+    char* toHost();
     tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false, Format fmt = Format::kFormatInvalid);
     tensor reShape(const std::vector<int>& shape);
     void toDevice(const std::vector<char>& val);

@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{320fdf89-2633-425c-bbf8-b1851dd81824}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>test.py</StartupFile>
+    <StartupFile>module.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -50,6 +50,9 @@
     <Compile Include="madml\tensor.py" />
     <Compile Include="madml\worker.py" />
     <Compile Include="madml\__init__.py" />
+    <Compile Include="module.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="setup.py" />
     <Compile Include="test.py" />
   </ItemGroup>
