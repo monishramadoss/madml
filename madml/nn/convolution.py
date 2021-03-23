@@ -13,6 +13,8 @@ from madml.init import kaiming_uniform, zeros, ones, xavier_uniform
 from .module import Module, Parameter
 from .testing import conv_forward, conv_backward
 from .transform import vol2col
+import vknn
+
 
 def _dim_fix(arr, arg_arr, pi):
     def parse(x):
@@ -98,7 +100,12 @@ class ConvNd(Module):
         else:
             self.weight = Parameter(ones, weight_shape)
         self.kernel = None
-
+        self.kernel_backend = None
+        if self.use_gpu:
+            self.gemm1 = vknn.gemm(1.0, 1.0, bias)
+            self.gemm1_backward  = vknn.gemm(1.0, 1.0, False)
+            self.gemm1_backward2 = vknn.gemm(1.0, 1.0, False)
+    
     def forward_cpu(self, x: tensor) -> tensor:
         if self._col == [] or self._vol == []:
             self._col = [1 for _ in range(self.dims)]
@@ -123,7 +130,31 @@ class ConvNd(Module):
         y.transpose([1, 0, 2, 3, 4])
         if self.bias is Parameter:
             y.host_data += self.bias.param.host_data
+        self.cache = [x, y]
+        return y
 
+    def forward_gpu(self, x: tensor) -> tensor:
+        if self._col == [] or self._vol == []:
+            self._col = [1 for _ in range(self.dims)]
+            self._vol = [1 for _ in range(self.dims)]
+
+            for i in range(self.dims - 1, -1, -1):
+                self._col[i] = int((x.shape[i + 2] + 2 * self.padding[i] - self.dilation[i] * (self.kernel_size[i] - 1) - 1) // self.stride[i]) + 1
+                self._vol[i] = x.shape[i + 2]
+            self.batch_size = x.shape[0]
+
+            self.kernel = vol2col(self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size,
+                                    self.stride, self.padding, self.dilation)
+            if self._use_bias and self.bias is not None:
+                self.bias = Parameter(zeros, [self.out_channels, *self._col])
+
+        y = zeros([self.batch_size, self.out_channels, *self._col])
+        self.col = self.kernel.forward_gpu(x)
+        self.weight.param.reshape([self.weight.param.shape[0], -1])
+        if self._use_bias:
+            self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self.bias.param.device_data)
+        else:
+            self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self._empty_backend_obj)
         self.cache = [x, y]
         return y
 
@@ -142,6 +173,19 @@ class ConvNd(Module):
         w_reshaped = self.weight.param.host_data.reshape([self.out_channels, -1])
         self.col.gradient.host_data = np.matmul(w_reshaped.T, dy_reshaped)
         _ = self.kernel.backward_cpu()
+        y.zero_grad()
+        return x
+
+    def backward_gpu(self) -> tensor:
+        x, y = self.cache
+        dx, dy = x.gradient.device_data, y.gradient.device_data
+        dc = self.col.gradient.device_data
+        if self.bias is Parameter:
+            self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
+
+        self.gemm1_backward.forward(self.weight.param.gradient.device_data, dy, dc, self._empty_backend_obj)
+        self.gemm1_backward1.forward(dc, self.weight.param.device_data, dy, self._empty_backend_obj )
+
         y.zero_grad()
         return x
 
@@ -189,6 +233,8 @@ class Conv1d(ConvNd):
         x.reset_shape()
         y.reset_shape()
         return x
+
+
 
 class Conv2d(ConvNd):
     def __init__(self,

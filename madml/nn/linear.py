@@ -35,7 +35,7 @@ class Linear(Module):
             self.gpu_forward = vknn.gemm(1., 1., bias)
             self.gpu_backward1 = vknn.gemm(1., 1., False)
             self.gpu_backward2 = vknn.gemm(1., 1., False)
-        self._empty_backend_obj = backend.tensor([0.], [1])
+        
 
     def forward_cpu(self, x: tensor) -> tensor:
         assert len(x.shape) == 2

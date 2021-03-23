@@ -12,6 +12,7 @@ from numba import njit, prange
 
 from madml import tensor, zeros
 from .module import Module
+import vknn
 
 class vol2col(Module):
     def __init__(self,
@@ -43,6 +44,10 @@ class vol2col(Module):
             self.index_length *= c
             self._c *= c
         self.col = zeros([self.n_output_plane, self.output_length])
+        if self.use_gpu:
+            self.kernel = vknn.vol2col([batch_size, in_channels, *_vol, *_col, *kernel_size, *stride, *padding, *dilation])
+            self.kernel_backward = vknn.col2vol([batch_size, in_channels, *_vol, *_col, *kernel_size, *stride, *padding, *dilation])
+
 
     def forward_cpu(self, x: tensor) -> tensor:
         _vol2col(x.host_data.ravel(), self.col.host_data.ravel(), self.batch_size, self.in_channels,
@@ -51,16 +56,27 @@ class vol2col(Module):
         self.cache = [x]
         return self.col
 
+    def forward_gpu(self, x: tensor) -> tensor:
+        self.kernel.forward(x.device_data, self.col.device_data)
+        self.cache = [x]
+        return self.col
+
     def backward_cpu(self):
         x = self.cache[0]
-        tmp = x.gradient.host_data.ravel()
+        dx = x.gradient.host_data.ravel()
         col = self.col.gradient.host_data.ravel()
-        _col2vol(tmp, col, self.batch_size, self.in_channels,
+        _col2vol(dx, col, self.batch_size, self.in_channels,
                  self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
                  nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
         x.gradient.host_data = tmp.reshape(x.shape)
         self.col = zeros([self.n_output_plane, self.output_length])
+        return x
 
+    def backward_gpu(self):
+        x = self.cache[0]
+        dx = x.gradient.device_data
+        col = self.col.gradient.device_data
+        self.kernel_backward.forward(dx, col)
         return x
 
     def print_l(self):

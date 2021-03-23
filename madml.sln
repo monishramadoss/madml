@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "madml", "madml\madml.pyproj", "{50D248CE-EE36-4B2C-8220-0F8242EEC37D}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vknn", "vknn\vknn.vcxproj", "{80AC384C-FF65-4136-8BEA-BF2F4B14DE4D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backend", "backend\backend.vcxproj", "{09BFE37B-93E0-4EED-97CF-BC3536FDF9C1}"
@@ -22,12 +20,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{50D248CE-EE36-4B2C-8220-0F8242EEC37D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50D248CE-EE36-4B2C-8220-0F8242EEC37D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{50D248CE-EE36-4B2C-8220-0F8242EEC37D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{50D248CE-EE36-4B2C-8220-0F8242EEC37D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50D248CE-EE36-4B2C-8220-0F8242EEC37D}.Release|x64.ActiveCfg = Release|Any CPU
-		{50D248CE-EE36-4B2C-8220-0F8242EEC37D}.Release|x86.ActiveCfg = Release|Any CPU
 		{80AC384C-FF65-4136-8BEA-BF2F4B14DE4D}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{80AC384C-FF65-4136-8BEA-BF2F4B14DE4D}.Debug|x64.ActiveCfg = Debug|x64
 		{80AC384C-FF65-4136-8BEA-BF2F4B14DE4D}.Debug|x64.Build.0 = Debug|x64

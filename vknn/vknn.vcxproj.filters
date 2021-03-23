@@ -45,6 +45,9 @@
     <ClCompile Include="transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="spv_shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activation.h">
@@ -75,6 +78,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vknn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spv_shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

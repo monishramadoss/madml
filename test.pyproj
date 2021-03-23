@@ -11,7 +11,7 @@
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
-    <InterpreterId>Global|ContinuumAnalytics|Anaconda38-64</InterpreterId>
+    <InterpreterId>Global|VisualStudio|madml_testing</InterpreterId>
     <TestFramework>unittest</TestFramework>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
   </PropertyGroup>
@@ -27,6 +27,11 @@
     <Content Include="cmake_madml\CMakeLists.txt" />
     <Content Include="kernel\CMakeLists.txt" />
     <Content Include="kernel\x64\Debug\kernel.vcxproj.FileListAbsolute.txt" />
+    <Compile Include="compile_shaders.py" />
+    <Compile Include="shaders\gemm.comp" />
+    <Content Include="shaders\col2vol.comp" />
+    <Content Include="shaders\transpose.comp" />
+    <Content Include="shaders\vol2col.comp" />
     <Content Include="vknn\CMakeLists.txt" />
     <Content Include="vknn\x64\Debug\vknn.vcxproj.FileListAbsolute.txt" />
   </ItemGroup>
@@ -66,12 +71,10 @@
     <Folder Include="kernel\x64\Debug" />
     <Folder Include="madml" />
     <Folder Include="madml\nn" />
+    <Folder Include="shaders\" />
     <Folder Include="vknn" />
     <Folder Include="vknn\x64\" />
     <Folder Include="vknn\x64\Debug" />
-  </ItemGroup>
-  <ItemGroup>
-    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda38-64" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="backend\backend.vcxproj">
@@ -84,6 +87,14 @@
       <Project>{12f36a4a-af3a-4315-bdbe-ffe90bdbec43}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <ProjectReference Include="vknn\vknn.vcxproj">
+      <Name>vknn</Name>
+      <Project>{80ac384c-ff65-4136-8bea-bf2f4b14de4d}</Project>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|VisualStudio|madml_testing" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
 </Project>

@@ -12,7 +12,8 @@
     <Name>madml</Name>
     <RootNamespace>madml</RootNamespace>
     <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
-    <InterpreterId>Global|ContinuumAnalytics|Anaconda38-64</InterpreterId>
+    <InterpreterId>
+    </InterpreterId>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
@@ -65,10 +66,6 @@
     <Compile Include="tensor.py" />
     <Compile Include="worker.py" />
     <Compile Include="__init__.py" />
-  </ItemGroup>
-  <ItemGroup>
-    <InterpreterReference Include="CondaEnv|CondaEnv|madml_test_env" />
-    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda38-64" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

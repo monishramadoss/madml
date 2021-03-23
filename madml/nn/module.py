@@ -7,15 +7,12 @@ import os
 from typing import List, Optional
 from concurrent.futures import ThreadPoolExecutor
 from madml import tensor
-
-def test_import_vknn():
-    pass
-
-global parameter_cache
-
-parameter_cache = []
+import backend
 
 DEBUG = False
+
+global parameter_cache
+parameter_cache = []
 
 global MODULE_EXECUTOR
 MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
@@ -39,9 +36,8 @@ class Parameter(object):
         self.param.reshape(shape)
 
 class Module(object):
-    def __init__(self, backend=None):
+    def __init__(self):
         self.cache = []
-        self.backend = backend
         self.registered = False
         self.visited = {}
         self.id = id(self)
@@ -49,6 +45,7 @@ class Module(object):
         self.print_out_flag = False
         self.use_gpu = False
         self.executor = MODULE_EXECUTOR
+        self._empty_backend_obj = backend.tensor([0.], [1])
 
     def forward(self, *args, **kwargs) -> tensor:
         if  self.use_gpu:

@@ -21,8 +21,8 @@ extern std::mutex kContextMtx;
 
 #define VK_CHECK_RESULT(f) \
 { \
-        if (f != VK_SUCCESS) \
-        { \
+		if (f != VK_SUCCESS) \
+		{ \
 			std::cout << "VULKAN KERNEL ERROR: " << f; \
 		} \
 }
