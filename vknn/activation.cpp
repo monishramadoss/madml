@@ -2,7 +2,7 @@
 #include "../kernel/utils.h"
 #include "activation.h"
 
-relu::relu(bool in_place) :inplace(in_place)
+relu::relu(bool in_place): inplace(in_place)
 {
     initVulkanThing(2);
     m_param.alpha = 0.f;
@@ -22,11 +22,11 @@ void relu::forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x)
         createPipeline(sizeof(single_param));
     }
 
-    bindtensor(x, 0);
+    bindtensor(*x, 0);
     if (inplace)
-        bindtensor(x, 1);
+        bindtensor(*x, 1);
     else
-        bindtensor(y, 1);
+        bindtensor(*y, 1);
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(single_param));
     runCommandBuffer();
 }

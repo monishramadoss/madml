@@ -8,6 +8,7 @@ namespace py = pybind11;
 
 #include "../kernel/kernel.h"
 
+#include "spv_shader.h"
 #include "activation.h"
 #include "convolution.h"
 #include "gemm.h"

@@ -14,7 +14,9 @@ VkPhysicalDevice kPhysicalDevice;
 VkDevice kDevice;
 std::vector<VkDevice> kDevices;
 VkQueue kQueue;
+std::vector<VkQueue> kQueues;
 VkCommandPool kCmdPool;
+std::vector<VkCommandPool> kCmdPools;
 
 VkDebugReportCallbackEXT kDebugReportCallback;
 uint32_t kQueueFamilyIndex;
@@ -98,7 +100,8 @@ context::context()
         bool foundLayer = false;
         for (VkLayerProperties prop : layerProperties)
         {
-            if (strcmp("VK_LAYER_KRONOS_validation", prop.layerName) == 0)
+            std::cout << prop.layerName << " ::: " << prop.description << std::endl;
+            if (strcmp("VK_LAYER_KHRONOS_validation", prop.layerName) == 0)
             {
                 foundLayer = true;
                 break;
@@ -106,9 +109,9 @@ context::context()
         }
 
         if (!foundLayer)
-            throw std::runtime_error("Layer VK_LAYER_KRONOS_validation not supported\n");
+            throw std::runtime_error("Layer VK_LAYER_KHRONOS_validation not supported\n");
         
-        kEnabledLayers.push_back("VK_LAYER_KRONOS_validation");
+        kEnabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 
         uint32_t extensionCount;
 
@@ -135,7 +138,7 @@ context::context()
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pApplicationName = "madml backend Library";
     applicationInfo.applicationVersion = 0;
-    applicationInfo.pEngineName = "backend";
+    applicationInfo.pEngineName = "madml";
     applicationInfo.engineVersion = 0;
     applicationInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -160,9 +163,10 @@ context::context()
             VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
         createInfo.pfnCallback = &debugReportCallbackFn;
 #ifndef NDEBUG
-        PFN_vkCreateDebugReportCallbackEXT CreateDebugReportCallback = VK_NULL_HANDLE;
-        CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(kInstance, "vkCreateDebugReportCallbackEXT");
-        //VK_CHECK_RESULT(CreateDebugReportCallback(kInstance, &createInfo, nullptr, &kDebugReportCallback));
+        PFN_vkCreateDebugReportCallbackEXT func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(kInstance, "vkCreateDebugReportCallbackEXT");
+        if (func == nullptr)
+            throw std::runtime_error("vkCreateDebugCallbackExt not supported\n");
+        func(kInstance, &createInfo, nullptr, &kDebugReportCallback);
 #endif
     }
 
@@ -172,9 +176,11 @@ context::context()
     {
         throw std::runtime_error("could not find a device with vulkan support");
     }
-
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(kInstance, &deviceCount, devices.data());
+    kDevices.resize(deviceCount);
+    kQueues.resize(deviceCount);
+    kCmdPools.resize(deviceCount);
 
     for (VkPhysicalDevice device : devices)
     {
@@ -236,4 +242,5 @@ context::~context()
 
     if (kInstance != nullptr)
         vkDestroyInstance(kInstance, nullptr);
+    return;
 }

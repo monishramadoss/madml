@@ -28,7 +28,7 @@ public:
     void createCommandBuffer();
     void recordCommandBuffer(void* push_constants = nullptr, size_t push_constants_size = 0) const;
     int runCommandBuffer();
-    void bindtensor(std::shared_ptr<tensor> tensor, int binding);
+    void bindtensor(tensor& tensor, int binding);
 
     VkDevice m_device;
     VkPipeline m_pipeline;
@@ -37,7 +37,7 @@ public:
     VkDescriptorSet m_descriptor_set;
     VkDescriptorSetLayout m_descriptor_set_layout;
     VkPipelineLayout m_pipeline_layout;
-    VkShaderModule m_module;
+    VkShaderModule m_shader_module;
 
     int m_group_x;
     int m_group_y;

@@ -142,13 +142,13 @@ class tensor(object):
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
-        
+        _upload(self._host_memory, self._device_memory.data)
 
     @property
     def device_data(self) -> backend.tensor:
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        _upload(self._host_memory, self._device_memory.data)
+        #_upload(self._host_memory, self._device_memory.data)
         return self._device_memory.data
 
     @device_data.setter

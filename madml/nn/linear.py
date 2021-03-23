@@ -60,9 +60,9 @@ class Linear(Module):
         assert len(x.shape) == 2
         y = zeros([x.shape[0], self.out_features])
         if self.bias is Parameter:
-            y.device_data = self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self.bias.param.device_data)
+            self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self.bias.param.device_data)
         else:
-            y.device_data = self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_backend_obj)
+            self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_backend_obj)
 
 
         self.cache = [x, y]

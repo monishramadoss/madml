@@ -5,14 +5,14 @@
 
 struct gemm_param
 {
-    int total;
-    int batchsize;
+    uint32_t total;
+    uint32_t batchsize;
     float alpha;
     float beta;
-    bool use_bias;
-    int m;
-    int n;
-    int k;
+    uint32_t use_bias;
+    uint32_t m;
+    uint32_t n;
+    uint32_t k;
 };
 
 class gemm : public layer
@@ -21,5 +21,5 @@ class gemm : public layer
 
 public:
     explicit gemm(float alpha, float beta, bool use_bias);
-    std::shared_ptr<tensor>& forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, const std::shared_ptr<tensor>& b);
+    void forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, const std::shared_ptr<tensor>& b);
 };

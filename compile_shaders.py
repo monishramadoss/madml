@@ -61,11 +61,11 @@ for i in range(0, len(lst)):
     if(modified or dir_change or forced):
         bin_dict[prefix]['time'] = os.path.getmtime(path)
         bin_file = prefix + '.tmp'
-        cmd = 'glslangValidator --target-env spirv1.5 -V ' + path + ' -S comp -o ' + bin_file
+        cmd = 'glslangValidator --target-env spirv1.3 -V ' + path + ' -S comp -o ' + bin_file
         if os.system(cmd) != 0:
             continue
         
-        cmd = 'glslangValidator --target-env spirv1.5 -V ' + path + ' -S comp -o ' + spv_txt_file + ' -x' + null_out 
+        cmd = 'glslangValidator --target-env spirv1.3 -V ' + path + ' -S comp -o ' + spv_txt_file + ' -x' + null_out 
         os.system(cmd)
         bin_dict[prefix]['bin']=[]
         infile = open(spv_txt_file, 'r')

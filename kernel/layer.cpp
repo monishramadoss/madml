@@ -13,7 +13,7 @@ layer::layer()
     m_descriptor_set = nullptr;
     m_descriptor_set_layout = nullptr;
     m_pipeline_layout = nullptr;
-    m_module = nullptr;
+    m_shader_module = nullptr;
 
     m_group_x = 1;
     m_group_y = 1;
@@ -23,8 +23,8 @@ layer::layer()
 
 layer::~layer()
 {
-    if (m_module != nullptr)
-        vkDestroyShaderModule(m_device, m_module, nullptr);
+    if (m_shader_module != nullptr)
+        vkDestroyShaderModule(m_device, m_shader_module, nullptr);
     if (m_descriptor_pool != nullptr)
         vkDestroyDescriptorPool(m_device, m_descriptor_pool, nullptr);
     if (m_pipeline != nullptr)
@@ -33,10 +33,10 @@ layer::~layer()
         vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
 }
 
-void layer::initVulkanThing(int buffer_num_forward)
+void layer::initVulkanThing(int buffer_num)
 {
-    createDescriptorSetLayout(buffer_num_forward);
-    createDescriptorSet(buffer_num_forward);
+    createDescriptorSetLayout(buffer_num);
+    createDescriptorSet(buffer_num);
     createCommandBuffer();
 }
 
@@ -98,7 +98,7 @@ void layer::createShaderModule(const uint32_t* spv, size_t size, const std::stri
         create_info.codeSize = sizeof(uint32_t) * code.size();
 #endif
     }
-    VK_CHECK_RESULT(vkCreateShaderModule(m_device, &create_info, 0, &m_module));
+    VK_CHECK_RESULT(vkCreateShaderModule(m_device, &create_info, 0, &m_shader_module));
 }
 
 void layer::createPipeline(size_t push_constants_size, VkSpecializationInfo* specialization_info)
@@ -106,7 +106,7 @@ void layer::createPipeline(size_t push_constants_size, VkSpecializationInfo* spe
     VkPipelineShaderStageCreateInfo stage_create_info = {};
     stage_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     stage_create_info.stage = VK_SHADER_STAGE_COMPUTE_BIT;
-    stage_create_info.module = m_module;
+    stage_create_info.module = m_shader_module;
     stage_create_info.pName = "main";
     stage_create_info.pSpecializationInfo = specialization_info;
     VkPushConstantRange push_constant_ranges[1] = {};
@@ -115,11 +115,13 @@ void layer::createPipeline(size_t push_constants_size, VkSpecializationInfo* spe
     push_constant_ranges[0].size = static_cast<uint32_t>(push_constants_size);
     VkPipelineLayoutCreateInfo pipeline_layout_create_info = {};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+   
     if (push_constants_size != 0)
     {
         pipeline_layout_create_info.pushConstantRangeCount = 1;
         pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges;
     }
+
     pipeline_layout_create_info.setLayoutCount = 1;
     pipeline_layout_create_info.pSetLayouts = &m_descriptor_set_layout;
     VK_CHECK_RESULT(vkCreatePipelineLayout(m_device, &pipeline_layout_create_info, 0, &m_pipeline_layout));
@@ -174,21 +176,23 @@ int layer::runCommandBuffer()
 
     VK_CHECK_RESULT(vkCreateFence(m_device, &fence_create_info_, nullptr, &fence));
 
-    kContextMtx.lock();
-    VK_CHECK_RESULT(vkQueueSubmit(kQueue, 1, &submit_info, fence));
-    kContextMtx.unlock();
+    {
+        kContextMtx.lock();
+        VK_CHECK_RESULT(vkQueueSubmit(kQueue, 1, &submit_info, fence));
+        kContextMtx.unlock();
+    }
 
     VK_CHECK_RESULT(vkWaitForFences(m_device, 1, &fence, VK_TRUE, 100000000000));
     vkDestroyFence(m_device, fence, nullptr);
     return 1;
 }
 
-void layer::bindtensor(std::shared_ptr<tensor> tensor, int binding)
+void layer::bindtensor(tensor& tensor, int binding)
 {
     VkDescriptorBufferInfo desc_buffer_info = {};
-    desc_buffer_info.buffer = tensor->getBuffer()->getVkBuffer();
+    desc_buffer_info.buffer = tensor.getBuffer()->getVkBuffer();
     desc_buffer_info.offset = 0;
-    desc_buffer_info.range = tensor->size();
+    desc_buffer_info.range = tensor.size();
 
     VkWriteDescriptorSet write_descriptor_set = {};
     write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;

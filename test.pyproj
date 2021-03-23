@@ -29,9 +29,9 @@
     <Content Include="kernel\x64\Debug\kernel.vcxproj.FileListAbsolute.txt" />
     <Compile Include="compile_shaders.py" />
     <Compile Include="shaders\gemm.comp" />
-    <Content Include="shaders\col2vol.comp" />
-    <Content Include="shaders\transpose.comp" />
-    <Content Include="shaders\vol2col.comp" />
+    <Compile Include="shaders\col2vol.comp" />
+    <Compile Include="shaders\transpose.comp" />
+    <Compile Include="shaders\vol2col.comp" />
     <Content Include="vknn\CMakeLists.txt" />
     <Content Include="vknn\x64\Debug\vknn.vcxproj.FileListAbsolute.txt" />
   </ItemGroup>
