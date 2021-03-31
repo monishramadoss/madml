@@ -15,8 +15,8 @@ file (GLOB_RECURSE VKNN_H ${CMAKE_SOURCE_DIR}/*.h)
 file (GLOB_RECURSE VKNN_CPP ${CMAKE_SOURCE_DIR}/*.cpp)
 
 include_directories(${VULKAN_PATH}/Include)
-include_directories(AFTER ${KERNEL_SRC})
-include_directories(AFTER ${BACKEND_SRC})
+include_directories(AFTER ${ENGINE_SRC})
+
 include_directories(AFTER ${CMAKE_SOURCE_DIR})
 
 link_directories(${VULKAN_PATH}/Bin;${VULKAN_PATH}/Lib;)

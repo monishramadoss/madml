@@ -45,7 +45,7 @@ class Module(object):
         self.print_out_flag = False
         self.use_gpu = False
         self.executor = MODULE_EXECUTOR
-        self._empty_backend_obj = backend.tensor([0.], [1])
+        self._empty_backend_obj = vknn.tensor([0.], [1])
 
     def forward(self, *args, **kwargs) -> tensor:
         if  self.use_gpu:

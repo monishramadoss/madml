@@ -8,7 +8,7 @@ import struct
 from typing import List, Union, Optional, Type
 
 import numpy as np
-import backend
+import vknn
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -23,15 +23,15 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
         ret_data[i] = struct.unpack("f", ret_data[i])
     return ret_data
 
-def _download(host: np.ndarray, device: backend.tensor) -> None:
+def _download(host: np.ndarray, device: vknn.tensor) -> None:
     if host.dtype == np.float32:
-        return backend.tensor_to_np_float(device, host)
+        return vknn.tensor_to_np_float(device, host)
     else:
         raise TypeError(" dtype: {0} is not implement.".format(host.dtype))
 
-def _upload(host: np.ndarray, device: backend.tensor) -> None:
+def _upload(host: np.ndarray, device: vknn.tensor) -> None:
     if host.dtype == np.float32:
-        return backend.np_to_tensor_float(device, host)
+        return vknn.np_to_tensor_float(device, host)
     else:
         raise TypeError(" dtype: {0} is not Implemented".format(host.dtype))
 
@@ -40,7 +40,7 @@ class gpu_tensor(object):
         if data.dtype != np.float32:
             raise TypeError(" dtype: {1} is not implement.".format(data.dtype))
         lst_data = data.astype(float)
-        self.data = backend.init_float(lst_data)
+        self.data = vknn.init_float(lst_data)
 
 class tensor(object):
     shape : List[int]
@@ -145,14 +145,14 @@ class tensor(object):
         _upload(self._host_memory, self._device_memory.data)
 
     @property
-    def device_data(self) -> backend.tensor:
+    def device_data(self) -> vknn.tensor:
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
         #_upload(self._host_memory, self._device_memory.data)
         return self._device_memory.data
 
     @device_data.setter
-    def device_data(self, value: backend.tensor) -> None:
+    def device_data(self, value: vknn.tensor) -> None:
         self._device_memory.data = value
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()

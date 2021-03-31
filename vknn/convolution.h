@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vknn.h"
-#include "../kernel/layer.h"
+#include "../engine/layer.h"
 
 struct vol2col_param
 {
@@ -33,7 +33,7 @@ class vol2col : public layer
     vol2col_param m_param;
 public:
     explicit vol2col(std::vector<int>& params);
-    void forward(std::shared_ptr<tensor>& col, const std::shared_ptr<tensor>& vol);
+    void forward(tensor& col, tensor& vol);
 };
 
 class col2vol : public layer
@@ -41,5 +41,5 @@ class col2vol : public layer
     vol2col_param m_param;
 public:
     explicit col2vol(std::vector<int>& params);
-    void forward(std::shared_ptr<tensor>& vol, const std::shared_ptr<tensor>& col);
+    void forward(tensor& vol, tensor& col);
 };

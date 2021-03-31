@@ -17,10 +17,7 @@ class TestImports(unittest.TestCase):
         except:
             self.assertTrue(False)
 
-    def test_backend(self):
-        from madml import test_import_backend
-        self.assertTrue(test_import_backend())
-
+   
     def test_vknn(self):
         from madml import test_import_vknn
         self.assertTrue(test_import_vknn())

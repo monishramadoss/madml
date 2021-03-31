@@ -93,6 +93,6 @@ class CMakeBuild(build_ext):
 # The information here can also be placed in setup.cfg - better separation of
 # logic and declaration, and simpler if you include description/version in a
 # file.
-setup(ext_modules=[CMakeExtension("backend", './backend/'), CMakeExtension("vknn", './vknn')],
+setup(ext_modules=[CMakeExtension("vknn", './vknn')],
     cmdclass={"build_ext": CMakeBuild},
     zip_safe=False,)

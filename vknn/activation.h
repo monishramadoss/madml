@@ -1,7 +1,7 @@
 #pragma once
 
 #include "vknn.h"
-#include "../kernel/layer.h"
+#include "../engine/layer.h"
 
 struct single_param
 {
@@ -15,5 +15,5 @@ class relu : public layer
     bool inplace;
 public:
     explicit relu(bool in_place);
-    void forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x);
+    void forward(tensor& y, tensor& x);
 };

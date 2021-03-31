@@ -143,7 +143,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary Condition="$(PythonCoreDVersion) == ''">MultiThreadedDebugDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\kernel;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\engine;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderFile />
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -187,7 +187,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\kernel;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(PythonHome)\Lib\site-packages\pybind11\include;$(PythonHome)\Include;$(SolutionDir)\engine;$(VULKAN_SDK)\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>false</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -232,7 +232,7 @@
     <ClInclude Include="vknn.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\kernel\kernel.vcxproj">
+    <ProjectReference Include="..\engine\engine.vcxproj">
       <Project>{12f36a4a-af3a-4315-bdbe-ffe90bdbec43}</Project>
     </ProjectReference>
   </ItemGroup>

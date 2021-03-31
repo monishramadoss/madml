@@ -2,6 +2,10 @@ import madml
 import madml.nn as nn
 import numpy as np
 
+
+madml.test_pipeline()
+
+
 a = np.random.ranf([3, 5]).astype(np.float32)
 t1 = madml.tensor(a)
 

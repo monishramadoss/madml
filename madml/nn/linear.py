@@ -13,7 +13,6 @@ from .module import Module, Parameter
 from .testing import fc_forward, fc_backward
 
 import vknn
-import backend
 
 class Linear(Module):
     __constants__ = ['in_features', 'out_features']
@@ -40,9 +39,10 @@ class Linear(Module):
     def forward_cpu(self, x: tensor) -> tensor:
         assert len(x.shape) == 2
         y = zeros([x.shape[0], self.out_features])
-        y.host_data = np.matmul(x.host_data, self.weight.param.host_data)
-        if self.bias is Parameter:
-            y.host_data += self.bias.param.host_data
+        for i in range(x.shape[0]):
+            y.host_data[i] = np.matmul(x.host_data[i], self.weight.param.host_data)
+            if self.bias is Parameter:
+                y.host_data[i] += self.bias.param.host_data
         self.cache = [x, y]
         return y
 
@@ -52,7 +52,8 @@ class Linear(Module):
         if self.bias is Parameter:
             self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
         self.weight.param.gradient.host_data = np.matmul(x.host_data.T, dy.host_data)
-        x.gradient.host_data = np.matmul(dy.host_data, self.weight.param.host_data.T)
+        for i in range(x.shape[0]):
+            x.gradient.host_data[i] = np.matmul(dy.host_data[i], self.weight.param.host_data.T)
         y.zero_grad()
         return x
 
@@ -62,7 +63,8 @@ class Linear(Module):
         if self.bias is Parameter:
             self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self.bias.param.device_data)
         else:
-            self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_backend_obj)
+            self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_
+                                     _obj)
 
 
         self.cache = [x, y]

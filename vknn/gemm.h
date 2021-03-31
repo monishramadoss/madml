@@ -1,14 +1,15 @@
 #pragma once
 
 #include "vknn.h"
-#include "../kernel/layer.h"
+#include "../engine/layer.h"
+
+
 
 struct gemm_param
 {
     uint32_t total;
     uint32_t batchsize;
-    float alpha;
-    float beta;
+    
     uint32_t use_bias;
     uint32_t m;
     uint32_t n;
@@ -21,5 +22,7 @@ class gemm : public layer
 
 public:
     explicit gemm(float alpha, float beta, bool use_bias);
-    void forward(std::shared_ptr<tensor>& y, const std::shared_ptr<tensor>& x, const std::shared_ptr<tensor>& w, const std::shared_ptr<tensor>& b);
+    void forward(tensor& y,tensor& x, tensor& w, tensor& b);
 };
+
+extern void test_gemm();

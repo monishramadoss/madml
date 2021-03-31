@@ -6,7 +6,7 @@
     <ProjectHome>.</ProjectHome>
     <StartupFile>
     </StartupFile>
-    <SearchPath>..\x64\Debug;..\vknn;..\kernel;..\backend</SearchPath>
+    <SearchPath>..\x64\Debug;..\vknn;..\kernel;</SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <Name>madml</Name>
@@ -32,10 +32,6 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\backend\backend.vcxproj">
-      <Name>backend</Name>
-      <Project>{09bfe37b-93e0-4eed-97cf-bc3536fdf9c1}</Project>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\vknn\vknn.vcxproj">
       <Name>vknn</Name>
