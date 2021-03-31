@@ -1,16 +1,17 @@
 #version 450
+
 layout(push_constant) uniform pushBlock {
-	int total;
-	int BA;
+	uint total;
+	uint BA;
 	float alpha;
 	float beta;
 	bool use_bias;
-	int M;
-	int N;
-	int K;
+	uint M;
+	uint N;
+	uint K;
 };
 
-layout (local_size_x = 64, local_size_y = 64, local_size_z = 1) in;
+layout (local_size_x = 16, local_size_y = 16, local_size_z = 2) in;
 layout (binding = 0) readonly buffer ssbA { float A[]; };
 layout (binding = 1) readonly buffer ssbB { float B[]; };
 layout (binding = 2) readonly buffer ssbC { float C[]; };
@@ -24,7 +25,7 @@ void gemm(){
 				float acc = use_bias ? beta * C[globalRow*N + globalCol]: 0.0;
 				for (uint k=0u; k < K; k++)
 					acc += alpha * A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
-				D[globalDepth*M*N + globalRow*N + globalCol] = 1.0f;
+				D[globalDepth*M*N + globalRow*N + globalCol] = acc;
 			}
 		}
 	}

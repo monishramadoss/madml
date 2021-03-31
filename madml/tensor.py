@@ -207,3 +207,21 @@ class tensor(object):
     def download(self) -> np.ndarray:
         _download(self._host_memory, self._device_memory.data)
         return self._host_memory
+
+    def squeeze(axis:int=None):
+        new_shape = self.shape
+        if axis is None:
+            for i, s in enumerate(new_shape):
+                if s == 1:
+                    axis = i
+                    break
+        if self.shape[axis] == 1:
+                del new_shape[axis]
+        else:
+            raise IndexError("Cannot squeeze element that is not one")
+        self.reshape(new_shape)
+
+    def unsqueeze(axis:int=0):
+        new_shape = self.shape
+        new_shape.insert(axis, 1)
+        self.reshape(new_shape)

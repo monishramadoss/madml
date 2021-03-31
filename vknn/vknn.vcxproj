@@ -236,6 +236,12 @@
       <Project>{12f36a4a-af3a-4315-bdbe-ffe90bdbec43}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\col2vol.comp" />
+    <None Include="..\shaders\gemm.comp" />
+    <None Include="..\shaders\transpose.comp" />
+    <None Include="..\shaders\vol2col.comp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

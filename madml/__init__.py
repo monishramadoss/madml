@@ -21,10 +21,8 @@ def test_pipeline():
         import vknn
      
            
-        vknn.test_gemm()
-
-        print(":::::::")
-
+        
+      
         m1 = vknn.gemm(1.0, 1.0, False)
         x = vknn.tensor([float(1) for _ in range(100)], [10, 10])
         w = vknn.tensor([float(1) for _ in range(100)], [10, 10])

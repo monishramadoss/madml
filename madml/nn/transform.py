@@ -64,11 +64,11 @@ class vol2col(Module):
     def backward_cpu(self):
         x = self.cache[0]
         dx = x.gradient.host_data.ravel()
-        col = self.col.gradient.host_data.ravel()
-        _col2vol(dx, col, self.batch_size, self.in_channels,
+        dcol = self.col.gradient.host_data.ravel()
+        _col2vol(dx, dcol, self.batch_size, self.in_channels,
                  self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
                  nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
-        x.gradient.host_data = tmp.reshape(x.shape)
+        x.gradient.host_data = dx.reshape(x.shape)
         self.col = zeros([self.n_output_plane, self.output_length])
         return x
 

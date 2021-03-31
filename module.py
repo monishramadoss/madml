@@ -3,19 +3,20 @@ import madml.nn as nn
 import numpy as np
 
 
-madml.test_pipeline()
 
+if __name__ == "__main__":
+    madml.test_pipeline()
 
-a = np.random.ranf([3, 5]).astype(np.float32)
-t1 = madml.tensor(a)
+    a = np.random.ranf([3, 5]).astype(np.float32)
+    t1 = madml.tensor(a)
 
-module = nn.Linear(5, 5)
+    module = nn.Linear(5, 5)
 
-t2 = module.forward_cpu(t1)
-y = t2.host_data
+    t2 = module.forward_cpu(t1)
+    y = t2.host_data
 
-t3 = module.forward_gpu(t1)
-y_hat = t3.download()
-print(y_hat, y)
+    t3 = module.forward_gpu(t1)
+    y_hat = t3.download()
+    print(y_hat, y)
 
-input()
+    input()

@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
@@ -7,7 +8,7 @@ import os
 from typing import List, Optional
 from concurrent.futures import ThreadPoolExecutor
 from madml import tensor
-import backend
+import vknn
 
 DEBUG = False
 
@@ -45,7 +46,7 @@ class Module(object):
         self.print_out_flag = False
         self.use_gpu = False
         self.executor = MODULE_EXECUTOR
-        self._empty_backend_obj = vknn.tensor([0.], [1])
+        self._empty_gpu_tensor_obj = vknn.tensor([0.], [1])
 
     def forward(self, *args, **kwargs) -> tensor:
         if  self.use_gpu:

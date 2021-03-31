@@ -53,8 +53,8 @@ void vol2col::forward(tensor& col, tensor& vol)
 		createPipeline(sizeof(vol2col_param));
 	}
 
-	//bindtensor(vol, 0);
-	//bindtensor(col, 1);
+	bindtensor(vol, 0);
+	bindtensor(col, 1);
 
 	recordCommandBuffer(static_cast<void*>(&m_param), sizeof(vol2col_param));
 	runCommandBuffer();
@@ -107,8 +107,8 @@ void col2vol::forward(tensor& vol, tensor& col)
 		createPipeline(sizeof(vol2col_param));
 	}
 
-	//bindtensor(vol, 0);
-	//bindtensor(col, 1);
+	bindtensor(vol, 0);
+	bindtensor(col, 1);
 
 	recordCommandBuffer(static_cast<void*>(&m_param), sizeof(vol2col_param));
 	runCommandBuffer();

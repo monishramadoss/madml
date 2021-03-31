@@ -154,7 +154,7 @@ class ConvNd(Module):
         if self._use_bias:
             self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self.bias.param.device_data)
         else:
-            self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self._empty_backend_obj)
+            self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self._empty_gpu_tensor_obj)
         self.cache = [x, y]
         return y
 
@@ -183,9 +183,9 @@ class ConvNd(Module):
         if self.bias is Parameter:
             self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
 
-        self.gemm1_backward.forward(self.weight.param.gradient.device_data, dy, dc, self._empty_backend_obj)
-        self.gemm1_backward1.forward(dc, self.weight.param.device_data, dy, self._empty_backend_obj )
-
+        self.gemm1_backward.forward(self.weight.param.gradient.device_data, dy, dc, self._empty_gpu_tensor_obj)
+        self.gemm1_backward1.forward(dc, self.weight.param.device_data, dy, self._empty_gpu_tensor_obj )
+        self.kernel.backward_gpu()
         y.zero_grad()
         return x
 

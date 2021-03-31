@@ -49,9 +49,7 @@ class TestModules(unittest.TestCase):
 
         t3 = module.forward_gpu(t1)
         y_hat = t3.download()
-        print(y_hat, y)
-
-        # self.assertTrue((y == y_hat).all())
+        self.assertTrue((y == y_hat).all())
 
         t2.gradient.host_data = a
         self.assertTrue(True)

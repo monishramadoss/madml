@@ -9,6 +9,8 @@ gemm::gemm(float alpha, float beta, bool use_bias)
 {
 	initVulkanThing(4);
 	m_type = "gemm";	
+	m_param.alpha = alpha;
+	m_param.beta = beta;
 	m_param.use_bias = use_bias;
    
 }
@@ -55,12 +57,6 @@ void gemm::forward(tensor& y,tensor& x, tensor& w, tensor& b)
 
 	recordCommandBuffer(static_cast<void*>(&m_param), sizeof(gemm_param));
 	runCommandBuffer();
-
-
-	auto* tmp = (float*)y.toHost();
-	for (int i = 0; i < y.size() / sizeof(float); ++i)
-		std::cout << tmp[i] << ", ";
-	std::cout << std::endl;
 	return;
 }
 

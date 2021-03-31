@@ -9,7 +9,8 @@ struct gemm_param
 {
     uint32_t total;
     uint32_t batchsize;
-    
+    float alpha;
+    float beta;
     uint32_t use_bias;
     uint32_t m;
     uint32_t n;

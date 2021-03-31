@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shader FIles">
+      <UniqueIdentifier>{63a7cc17-650f-460b-b530-71366386553f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vknn.cpp">
@@ -83,5 +86,19 @@
     <ClInclude Include="spv_shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\col2vol.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\gemm.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\transpose.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\vol2col.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
   </ItemGroup>
 </Project>
