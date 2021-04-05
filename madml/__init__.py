@@ -19,11 +19,8 @@ def test_import_vknn():
 def test_pipeline():
     try:
         import vknn
-     
-           
         
-      
-        m1 = vknn.gemm(1.0, 1.0, False)
+        m1 = vknn.gemm(1.0, 1.0, False, False, False)
         x = vknn.tensor([float(1) for _ in range(100)], [10, 10])
         w = vknn.tensor([float(1) for _ in range(100)], [10, 10])
         b = vknn.tensor([0], [1])
@@ -31,7 +28,7 @@ def test_pipeline():
 
         m1.forward(y, x, w, b)       
 
-        print(":::::::")
+        print("Pipeline Testing Done...")
 
         input()
     except Exception as e:

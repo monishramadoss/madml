@@ -238,9 +238,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\col2vol.comp" />
+    <None Include="..\shaders\d_relu.comp" />
     <None Include="..\shaders\gemm.comp" />
+    <None Include="..\shaders\relu.comp" />
     <None Include="..\shaders\transpose.comp" />
     <None Include="..\shaders\vol2col.comp" />
+    <None Include="..\shaders\wt_gemm.comp" />
+    <None Include="..\shaders\xt_gemm.comp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

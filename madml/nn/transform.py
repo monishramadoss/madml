@@ -44,9 +44,8 @@ class vol2col(Module):
             self.index_length *= c
             self._c *= c
         self.col = zeros([self.n_output_plane, self.output_length])
-        if self.use_gpu:
-            self.kernel = vknn.vol2col([batch_size, in_channels, *_vol, *_col, *kernel_size, *stride, *padding, *dilation])
-            self.kernel_backward = vknn.col2vol([batch_size, in_channels, *_vol, *_col, *kernel_size, *stride, *padding, *dilation])
+        self.kernel = vknn.vol2col([batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol,])
+        self.kernel_backward = vknn.col2vol([batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol,])
 
 
     def forward_cpu(self, x: tensor) -> tensor:
@@ -75,8 +74,8 @@ class vol2col(Module):
     def backward_gpu(self):
         x = self.cache[0]
         dx = x.gradient.device_data
-        col = self.col.gradient.device_data
-        self.kernel_backward.forward(dx, col)
+        dcol = self.col.gradient.device_data
+        self.kernel_backward.forward(dx, dcol)
         return x
 
     def print_l(self):

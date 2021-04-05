@@ -143,12 +143,12 @@ class tensor(object):
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
         _upload(self._host_memory, self._device_memory.data)
-
+        
     @property
     def device_data(self) -> vknn.tensor:
         if self._future_obj is not None and not self._future_obj.done():
             self._future_obj.result()
-        #_upload(self._host_memory, self._device_memory.data)
+        _upload(self._host_memory, self._device_memory.data)
         return self._device_memory.data
 
     @device_data.setter
@@ -207,8 +207,12 @@ class tensor(object):
     def download(self) -> np.ndarray:
         _download(self._host_memory, self._device_memory.data)
         return self._host_memory
+    
+    def upload(self) -> None:
+        _upload(self._host_memory, self._device_memory.data)
 
-    def squeeze(axis:int=None):
+
+    def squeeze(axis:int=None) -> None:
         new_shape = self.shape
         if axis is None:
             for i, s in enumerate(new_shape):
@@ -221,7 +225,7 @@ class tensor(object):
             raise IndexError("Cannot squeeze element that is not one")
         self.reshape(new_shape)
 
-    def unsqueeze(axis:int=0):
+    def unsqueeze(axis:int=0) -> None:
         new_shape = self.shape
         new_shape.insert(axis, 1)
         self.reshape(new_shape)

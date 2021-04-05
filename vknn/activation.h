@@ -12,8 +12,9 @@ struct single_param
 class relu : public layer
 {
     single_param m_param;
-    bool inplace;
+    bool m_inplace;
+    bool m_derivative;
 public:
-    explicit relu(bool in_place);
-    void forward(tensor& y, tensor& x);
+    explicit relu(bool in_place, bool derivative);
+    void forward(tensor& y, tensor& x, tensor& w);
 };

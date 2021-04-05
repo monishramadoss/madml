@@ -13,11 +13,13 @@
 
 #include <vulkan/vulkan.h>
 
-extern VkPhysicalDevice kPhysicalDevice;
-extern VkDevice kDevice;
-extern VkQueue kQueue;
-extern VkCommandPool kCmdPool;
+
+extern std::vector<VkPhysicalDevice> kPhysicalDevices;
+extern std::vector<VkDevice> kDevices;
+extern std::vector<VkQueue> kQueues;
+extern std::vector<VkCommandPool> kCmdPools;
 extern std::mutex kContextMtx;
+extern std::mutex kDesciptorMtx;
 
 #define VK_CHECK_RESULT(f) \
 { \

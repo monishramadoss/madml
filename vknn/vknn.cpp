@@ -4,21 +4,24 @@
 PYBIND11_MODULE(vknn, m)
 {
     py::class_<gemm, std::shared_ptr<gemm>>(m, "gemm")
-        .def(py::init<float&, float&, bool&>())
+        .def(py::init<float&, float&, bool&, bool&, bool&>())
         .def("forward", &gemm::forward);
     
     py::class_<vol2col>(m, "vol2col")
         .def(py::init<std::vector<int>&>())
         .def("forward", &vol2col::forward);
+
     py::class_<col2vol>(m, "col2vol")
         .def(py::init<std::vector<int>&>())
         .def("forward", &col2vol::forward);
   
     py::class_<relu>(m, "relu")
-        .def(py::init<bool&>())
+        .def(py::init<bool&, bool&>())
         .def("forward", &relu::forward);
 
-    m.def("test_gemm", &test_gemm);
+    py::class_<transpose>(m, "transpose")
+        .def(py::init<std::vector<int>&>())
+        .def("forward", &transpose::forward);
 
     py::class_<tensor>(m, "tensor")
         .def(py::init<std::vector<float>&, const std::vector<int>&>())

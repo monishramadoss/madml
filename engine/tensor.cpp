@@ -7,28 +7,32 @@
 
 tensor::tensor(Format fmt) : m_format(fmt), m_size_in_byte(0)
 {
+    m_device_id = 0;
     createContext();
-    m_device = kDevice;
+    m_device = kDevices[m_device_id];
 }
 
 tensor::tensor(char* data, const std::vector<int>& shape, Format fmt) : m_format(fmt), m_size_in_byte(0)
 {
+    m_device_id = 0;
     createContext();
-    m_device = kDevice;
+    m_device = kDevices[m_device_id];
     reshape(data, shape);
 }
 
 tensor::tensor(std::vector<float>& c, const std::vector<int>& shape) : m_format(Format::kFormatFp32), m_size_in_byte(0)
 {
+    m_device_id = 0;
     createContext();
-    m_device = kDevice;
+    m_device = kDevices[m_device_id];
     reshape((char*)c.data(), shape);
 }
 
 tensor::tensor(float c, const std::vector<int>& shape) : m_format(Format::kFormatFp32), m_size_in_byte(0)
 {
+    m_device_id = 0;
     createContext();
-    m_device = kDevice;
+    m_device = kDevices[m_device_id];
     char* c_arr = init::fill_memory_shape<float>(shape, c);
     reshape(c_arr, shape);
 }

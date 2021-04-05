@@ -2,11 +2,14 @@
 #include "utils.h"
 #include "layer.h"
 
+std::mutex kDesciptorMtx;
+
 layer::layer()
 {
     createContext();
+    m_device_id = 0;
 
-    m_device = kDevice;
+    m_device = kDevices[m_device_id];
     m_pipeline = nullptr;
     m_cmd_buffer = nullptr;
     m_descriptor_pool = nullptr;
@@ -18,7 +21,6 @@ layer::layer()
     m_group_x = 1;
     m_group_y = 1;
     m_group_z = 1;
-    m_device_id = 0;
 }
 
 layer::~layer()
@@ -39,7 +41,7 @@ void layer::initVulkanThing(int buffer_num)
 {
     createDescriptorSetLayout(buffer_num);
     createDescriptorSet(buffer_num);
-    createCommandBuffer();
+    createCommandBuffer();    
 }
 
 void layer::createDescriptorSetLayout(int buffer_num)
@@ -141,27 +143,57 @@ void layer::createCommandBuffer()
 {
     VkCommandBufferAllocateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    info.commandPool = kCmdPool;
+    info.commandPool = kCmdPools[m_device_id];
     info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     info.commandBufferCount = 1;
+    kContextMtx.lock();
     VK_CHECK_RESULT(vkAllocateCommandBuffers(m_device, &info, &m_cmd_buffer));
+    kContextMtx.unlock();
 }
 
-void layer::recordCommandBuffer(void* push_constants, uint32_t push_constants_size) const
+void layer::recordCommandBuffer(void* push_constants, uint32_t push_constants_size)
 {
+    for (size_t i = 0; i < m_futures.size(); ++i){
+        if (m_futures[i].valid())
+            m_futures[i].wait();
+    }
+    
+
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+    
     kContextMtx.lock();
     VK_CHECK_RESULT(vkBeginCommandBuffer(m_cmd_buffer, &beginInfo));
-
     if (push_constants)
         vkCmdPushConstants(m_cmd_buffer, m_pipeline_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, push_constants_size, push_constants);
     vkCmdBindPipeline(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
     vkCmdBindDescriptorSets(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_layout, 0, 1, &m_descriptor_set, 0, nullptr);
     vkCmdDispatch(m_cmd_buffer, m_group_x, m_group_y, m_group_z);
-    VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));
+    VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));   
     kContextMtx.unlock();
+}
+
+
+void layer::bindtensor(tensor& t, uint32_t binding)
+{
+    VkDescriptorBufferInfo desc_buffer_info = {};
+    desc_buffer_info.buffer = t.getBuffer()->getVkBuffer();
+    desc_buffer_info.offset = 0;
+    desc_buffer_info.range = t.size();
+
+
+    VkWriteDescriptorSet write_descriptor_set = {};
+    write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write_descriptor_set.dstSet = m_descriptor_set;
+    write_descriptor_set.dstBinding = binding;
+    write_descriptor_set.descriptorCount = 1;
+    write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    write_descriptor_set.pBufferInfo = &desc_buffer_info;
+
+    kDesciptorMtx.lock();
+    vkUpdateDescriptorSets(m_device, 1, &write_descriptor_set, 0, nullptr);
+    kDesciptorMtx.unlock();
 }
 
 int layer::runCommandBuffer()
@@ -176,11 +208,12 @@ int layer::runCommandBuffer()
     fence_create_info_.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info_.flags = 0;
 
+    m_future.wait();
     VK_CHECK_RESULT(vkCreateFence(m_device, &fence_create_info_, nullptr, &fence));
 
     {
         kContextMtx.lock();
-        VK_CHECK_RESULT(vkQueueSubmit(kQueue, 1, &submit_info, fence));
+        VK_CHECK_RESULT(vkQueueSubmit(kQueues[m_device_id], 1, &submit_info, fence));
         kContextMtx.unlock();
     }
 
@@ -189,21 +222,3 @@ int layer::runCommandBuffer()
     return 1;
 }
 
-void layer::bindtensor(tensor& t, int binding)
-{
-    VkDescriptorBufferInfo desc_buffer_info = {};
-    desc_buffer_info.buffer = t.getBuffer()->getVkBuffer(); 
-    desc_buffer_info.offset = 0;
-    desc_buffer_info.range = t.size();
-
-    
-    VkWriteDescriptorSet write_descriptor_set = {};
-    write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write_descriptor_set.dstSet = m_descriptor_set;
-    write_descriptor_set.dstBinding = binding;
-    write_descriptor_set.descriptorCount = 1;
-    write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    write_descriptor_set.pBufferInfo = &desc_buffer_info;
-
-    vkUpdateDescriptorSets(m_device, 1, &write_descriptor_set, 0, nullptr);
-}

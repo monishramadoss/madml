@@ -59,7 +59,6 @@ void np_to_tensor(tensor& t, const py::array_t<T, py::array::c_style | py::array
     std::vector<int> shape;
     for (size_t i = 0; i < a.ndim(); ++i)
         shape.push_back((int)a.shape()[i]);
-    if (shape != t.getShape()) printf("SHAPES DON'T MATCH \n");
     t.reshape((char*)a.data(), t.getShape());
 }
 
@@ -70,7 +69,6 @@ void tensor_to_np(const tensor& t, py::array_t<T, py::array::c_style | py::array
     std::vector<int> shape;
     for (size_t i = 0; i < a.ndim(); ++i)
         shape.push_back((int)a.shape()[i]);
-    if (shape != t.getShape()) printf("SHAPES DON'T MATCH \n");
     char* host_ptr = (char*)a.data();
     char* device_ptr = t.toHost();
     memcpy(host_ptr, device_ptr, t.size());
@@ -80,7 +78,6 @@ void tensor_to_np(const tensor& t, py::array_t<T, py::array::c_style | py::array
 template<typename T = float>
 void list_to_tensor(tensor& t, const std::vector<T>& v)
 {
-    if (t.count() != v.size()) printf("SHAPES DON'T MATCH \n");
     t.reshape((const char*)v.data(), t.getShape());
 }
 

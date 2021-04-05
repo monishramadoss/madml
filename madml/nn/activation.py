@@ -8,6 +8,7 @@ import numpy as np
 from madml import tensor, zeros_like
 from .module import Module
 from .testing import relu_forward, relu_backward, dropout_forward, dropout_backward
+import vknn
 
 class ReLU(Module):
     __constants__ = ['inplace']
@@ -17,6 +18,9 @@ class ReLU(Module):
         super(ReLU, self).__init__()
         self.inplace = inplace
         self.out = None
+        self.kernel = vknn.relu(inplace, False)
+        self.kernel_backward = vknn.relu(inplace, True)
+        self.tmp = None
 
     def extra_repr(self) -> str:
         inplace_str = 'inplace=True' if self.inplace else ''
@@ -30,19 +34,42 @@ class ReLU(Module):
             x.host_data = data
             return x
         else:
-            y = zeros_like(x)
-            self.cache = [x, tmp, y]
+            if self.y is None:
+                self.y = zeros_like(x)
+
+            self.cache = [x, tmp]
             y.host_data = data
-            return y
+            return self.y
+
+    def forward_gpu(self, x: tensor) -> tensor:
+        if self.tmp is None:
+            self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool))       
+        if self.y is None and not self.inplace:
+            self.y = zeros_like(x)
+        elif self.inplace:
+            self.y = x
+
+        self.kernel.forward(self.y.device_data, x.device_data, self.tmp)
+        self.cache = [x]
+        return self.y
+      
 
     def backward_cpu(self) -> tensor:
-        x, tmp, y = self.cache
+        x, tmp = self.cache
+        y = self.y
         dx, dy = x.gradient, y.gradient
         arr = dy.host_data.reshape(x.shape) * tmp
         x.gradient.host_data = arr.reshape(x.shape)
         if not self.inplace:
             y.zero_grad()
         return x
+
+    def backward_gpu(self) -> tensor:
+        x = self.cache[0]
+        dx, dy = x.gradient, self.y.gradient
+        self.kernel_backward.forward(dx, dy, self.tmp)
+        return x
+
 
     def print_l(self) -> None:
         x, t, y = self.cache
@@ -59,6 +86,14 @@ class ReLU(Module):
         _dx = relu_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
+
+
+
+
+
+
+
+
 
 class Dropout(Module):
     __constants__ = ['prob']

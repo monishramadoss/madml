@@ -16,7 +16,7 @@ global parameter_cache
 parameter_cache = []
 
 global MODULE_EXECUTOR
-MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
+MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=1)
 
 class Parameter(object):
     param : tensor
@@ -47,6 +47,7 @@ class Module(object):
         self.use_gpu = False
         self.executor = MODULE_EXECUTOR
         self._empty_gpu_tensor_obj = vknn.tensor([0.], [1])
+        self.y = None
 
     def forward(self, *args, **kwargs) -> tensor:
         if  self.use_gpu:

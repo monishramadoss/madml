@@ -183,6 +183,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="layer.h" />
+    <ClInclude Include="render.h" />
     <ClInclude Include="tensor.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
@@ -191,6 +192,7 @@
     <ClCompile Include="context.cpp" />
     <ClCompile Include="engine.cpp" />
     <ClCompile Include="layer.cpp" />
+    <ClCompile Include="render.cpp" />
     <ClCompile Include="tensor.cpp" />
     <ClCompile Include="utils.cpp" />
   </ItemGroup>

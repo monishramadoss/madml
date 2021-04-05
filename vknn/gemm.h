@@ -20,9 +20,11 @@ struct gemm_param
 class gemm : public layer
 {
     gemm_param m_param;
+    bool m_transpose_x;
+    bool m_transpose_w;
 
 public:
-    explicit gemm(float alpha, float beta, bool use_bias);
+    explicit gemm(float alpha, float beta, bool use_bias, bool transpose_x=false, bool transpose_w=false);
     void forward(tensor& y,tensor& x, tensor& w, tensor& b);
 };
 

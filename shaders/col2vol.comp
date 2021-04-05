@@ -1,74 +1,69 @@
 #version 450
 
 layout(push_constant) uniform pushBlock {
-        int total;
-	    int batchsize;
-        int channels;
-        int kernel_h;
-        int kernel_w;
-        int kernel_d;
-        int pad_h;
-        int pad_w;
-        int pad_d;
-        int stride_h;
-        int stride_w;
-        int stride_d;
-        int dilation_h;
-        int dilation_w;
-        int dilation_d;
-
-        int height_col; // height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
-        int width_col;  // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
-        int depth_col;  // depth + 2 * pad_d - (dilation-d * (kernel_d - 1) + 1)) / stride_d + 1
-
-        int height_vol;
-        int width_vol;
-        int depth_vol;
-};
-layout(binding = 0) buffer buf1 {
-    float A[];
+		uint total;
+		uint batchsize;
+		uint channels;
+		uint kernel_h;
+		uint kernel_w;
+		uint kernel_d;
+		uint pad_h;
+		uint pad_w;
+		uint pad_d;
+		uint stride_h;
+		uint stride_w;
+		uint stride_d;
+		uint dilation_h;
+		uint dilation_w;
+		uint dilation_d;
+		uint height_col;
+		uint width_col;  
+		uint depth_col;
+		uint height_vol;
+		uint width_vol;
+		uint depth_vol;
 };
 
-layout(binding = 1) buffer buf2 {
-    float B[];
-};
+layout(binding = 0) buffer buf1 { float A[]; };
+
+layout(binding = 1) buffer buf2 { float B[]; };
 
 layout (local_size_x = 16, local_size_y = 64, local_size_z = 1) in;
 
 void col2vol(){
-    uint n_output_plane = channels *kernel_h * kernel_w * kernel_d;
-    uint channels_col = channels * kernel_h * kernel_w * kernel_d;
+	uint n_output_plane = channels *kernel_h * kernel_w * kernel_d;
+	uint channels_col = channels * kernel_h * kernel_w * kernel_d;
 
-    uint elt = gl_GlobalInvocationID.y;
-    if(elt >= batchsize)
-        return;
+	uint elt = gl_GlobalInvocationID.y;
+	if(elt >= batchsize)
+		return;
 
-    uint data_vol = elt * channels * height_col * width_col * depth_col;
-    uint data_col = elt * n_output_plane * height_vol * width_vol * depth_vol;
+	uint data_vol = elt * channels * height_col * width_col * depth_col;
+	uint data_col = elt * n_output_plane * height_vol * width_vol * depth_vol;
 
-    uint c_col = gl_GlobalInvocationID.x;
-    if(c_col >= channels_col)
-        return;
+	uint c_col = gl_GlobalInvocationID.x;
+	if(c_col >= channels_col)
+		return;
 
-    uint w_offset = c_col % kernel_w;
-    uint h_offset = (c_col / kernel_w) % kernel_h;
-    uint d_offset = (c_col / kernel_w / kernel_h) % kernel_d;
-    uint c_vol = c_col / kernel_w / kernel_h / kernel_d;
+	uint w_offset = c_col % kernel_w;
+	uint h_offset = (c_col / kernel_w) % kernel_h;
+	uint d_offset = (c_col / kernel_w / kernel_h) % kernel_d;
+	uint c_vol = c_col / kernel_w / kernel_h / kernel_d;
 
-    for (uint d_col = 0; d_col < depth_col; ++d_col){
-        uint d_vol = d_col * stride_d - pad_d + d_offset * dilation_d;
-        for (uint h_col = 0; h_col < height_col; ++h_col){
-            uint h_vol = h_col * stride_h - pad_h + h_offset * dilation_h;
-            for (uint w_col = 0; w_col < width_col; ++w_col){
-                uint w_vol = w_col * stride_w - pad_w + w_offset * dilation_w;
-
-                if (0 <= h_vol && h_vol < height_vol && 0 <= w_vol && w_vol < width_vol && 0 <= d_vol && d_vol < depth_vol){
-                    B[data_vol + ((c_vol * depth_vol + d_vol) * height_vol + h_vol) * width_vol + w_vol] +=
-                        A[data_col + ((c_col * depth_col + d_col) * height_col + h_col) * width_col + w_col];
-                }
-            }
-        }
-    }
+	for (uint d_col = 0; d_col < depth_col; ++d_col){
+		uint d_vol = d_col * stride_d - pad_d + d_offset * dilation_d;
+		for (uint h_col = 0; h_col < height_col; ++h_col){
+			uint h_vol = h_col * stride_h - pad_h + h_offset * dilation_h;
+			for (uint w_col = 0; w_col < width_col; ++w_col){
+				uint w_vol = w_col * stride_w - pad_w + w_offset * dilation_w;
+				if (0 <= h_vol && h_vol < height_vol && 0 <= w_vol && w_vol < width_vol && 0 <= d_vol && d_vol < depth_vol){
+					uint data_col_idx = uint(floor(data_col + ((c_col * depth_col + d_col) * height_col + h_col) * width_col + w_col));
+					uint data_vol_idx = uint(floor(data_vol + ((c_vol * depth_vol + d_vol) * height_vol + h_vol) * width_vol + w_vol));	
+					B[data_vol_idx] += A[data_col_idx];
+				}
+			}
+		}
+	}
 }
 
  void main(){

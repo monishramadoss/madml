@@ -15,6 +15,8 @@ from .testing import conv_forward, conv_backward
 from .transform import vol2col
 import vknn
 
+MAX_DIMS = 3
+
 
 def _dim_fix(arr, arg_arr, pi):
     def parse(x):
@@ -62,7 +64,7 @@ class ConvNd(Module):
         super(ConvNd, self).__init__()
 
         if groups != 1:
-            raise NotImplementedError("dilation not implemented in conv")
+            raise NotImplementedError("groups not implemented in conv")
 
         if in_channels % groups != 0:
             raise ValueError('in_channels must be divisible by groups')
@@ -71,15 +73,15 @@ class ConvNd(Module):
         valid_padding_modes = {'zeros'}  # , 'reflect', 'replicate', 'circular'} # needs to be implemented
         if padding_mode not in valid_padding_modes:
             raise ValueError("padding_mode must be one of {}, but got padding_mode='{}'".format(valid_padding_modes, padding_mode))
-        self.dims = 3
+        self.dims = dims
         self.in_channels = in_channels
         self.out_channels = out_channels
-        self.kernel_size = _dim_fix([1 for _ in range(self.dims)], kernel_size, dims)
-        self.stride = _dim_fix([1 for _ in range(self.dims)], stride, dims)
-        self.padding = _dim_fix([0 for _ in range(self.dims)], padding, dims)
-        self.dilation = _dim_fix([1 for _ in range(self.dims)], dilation, dims)
+        self.kernel_size = _dim_fix([1 for _ in range(MAX_DIMS)], kernel_size, dims)
+        self.stride = _dim_fix([1 for _ in range(MAX_DIMS)], stride, dims)
+        self.padding = _dim_fix([0 for _ in range(MAX_DIMS)], padding, dims)
+        self.dilation = _dim_fix([1 for _ in range(MAX_DIMS)], dilation, dims)
         self.transposed = transposed
-        self.output_padding = _dim_fix([0 for _ in range(self.dims)], output_padding, dims)
+        self.output_padding = _dim_fix([0 for _ in range(MAX_DIMS)], output_padding, dims)
         self.groups = groups
         self.padding_mode = padding_mode
         self._col = []
@@ -101,65 +103,67 @@ class ConvNd(Module):
             self.weight = Parameter(ones, weight_shape)
         self.kernel = None
         self.kernel_backend = None
-        if self.use_gpu:
-            self.gemm1 = vknn.gemm(1.0, 1.0, bias)
-            self.gemm1_backward  = vknn.gemm(1.0, 1.0, False)
-            self.gemm1_backward2 = vknn.gemm(1.0, 1.0, False)
-    
+
+        self.gemm1 = vknn.gemm(1.0, 1.0, bias, False, False)
+        self.gemm1_backward  = vknn.gemm(1.0, 1.0, False, True, False)
+        self.gemm1_backward2 = vknn.gemm(1.0, 1.0, False, False, True)
+
+        self.output_shape = []
+
     def forward_cpu(self, x: tensor) -> tensor:
         if self._col == [] or self._vol == []:
-            self._col = [1 for _ in range(self.dims)]
-            self._vol = [1 for _ in range(self.dims)]
-
-            for i in range(self.dims - 1, -1, -1):
-                self._col[i] = int((x.shape[i + 2] + 2 * self.padding[i] - self.dilation[i] * (self.kernel_size[i] - 1) - 1) // self.stride[i]) + 1
-                self._vol[i] = x.shape[i + 2]
             self.batch_size = x.shape[0]
-
-            self.kernel = vol2col(self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size,
-                                  self.stride, self.padding, self.dilation)
+            self._col = [1 for _ in range(MAX_DIMS)]
+            self._vol = [1 for _ in range(MAX_DIMS)]
+            for i in range(1, self.dims+1):
+                self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
+                self._vol[-i] = x.shape[-i]
+            self.kernel = vol2col(self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+            self.output_shape = [self._col[i] for i in range(-1, -(self.dims+1), -1)]
             if self._use_bias and self.bias is not None:
-                self.bias = Parameter(zeros, [self.out_channels, *self._col])
+                self.bias = Parameter(zeros, [self.out_channels, *self.output_shape])
+            if self.y is None:
+                self.y = zeros([self.batch_size, self.out_channels, *self.output_shape])
 
-        y = zeros([self.batch_size, self.out_channels, *self._col])
         self.col = self.kernel.forward_cpu(x)
         self.weight.param.reshape([self.weight.param.shape[0], -1])
-        y.host_data = np.matmul(self.weight.param.host_data, self.col.host_data)
+        self.y.host_data = np.matmul(self.weight.param.host_data, self.col.host_data)
 
-        y.reshape([self.out_channels, self.batch_size, self._col[0], self._col[1], self._col[2]])
-        y.transpose([1, 0, 2, 3, 4])
+        self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
+        self.y.transpose([1, 0] + [i+2 for i in range(self.dims)])
         if self.bias is Parameter:
-            y.host_data += self.bias.param.host_data
-        self.cache = [x, y]
-        return y
+            self.y.host_data += self.bias.param.host_data
+        self.cache = [x]
+        return self.y
 
     def forward_gpu(self, x: tensor) -> tensor:
         if self._col == [] or self._vol == []:
-            self._col = [1 for _ in range(self.dims)]
-            self._vol = [1 for _ in range(self.dims)]
-
-            for i in range(self.dims - 1, -1, -1):
-                self._col[i] = int((x.shape[i + 2] + 2 * self.padding[i] - self.dilation[i] * (self.kernel_size[i] - 1) - 1) // self.stride[i]) + 1
-                self._vol[i] = x.shape[i + 2]
             self.batch_size = x.shape[0]
-
+            self._col = [1 for _ in range(MAX_DIMS)]
+            self._vol = [1 for _ in range(MAX_DIMS)]
+            for i in range(1, self.dims+1):
+                self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
+                self._vol[-i] = x.shape[-i]
             self.kernel = vol2col(self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size,
-                                    self.stride, self.padding, self.dilation)
+                                  self.stride, self.padding, self.dilation)
+            self.output_shape = [self._col[i] for i in range(-1, -(self.dims+1), -1)]
             if self._use_bias and self.bias is not None:
-                self.bias = Parameter(zeros, [self.out_channels, *self._col])
+                self.bias = Parameter(zeros, [self.out_channels, *self.output_shape])
+            if self.y is None:
+                self.y = zeros([self.batch_size, self.out_channels, *self.output_shape])
 
-        y = zeros([self.batch_size, self.out_channels, *self._col])
         self.col = self.kernel.forward_gpu(x)
         self.weight.param.reshape([self.weight.param.shape[0], -1])
         if self._use_bias:
-            self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self.bias.param.device_data)
+            self.gemm1.forward(self.y.device_data, self.col.device_data, self.weight.param.device_data, self.bias.param.device_data)
         else:
-            self.gemm1.forward(y.device_data, self.col.device_data, self.weight.param.device_data, self._empty_gpu_tensor_obj)
-        self.cache = [x, y]
-        return y
+            self.gemm1.forward(self.y.device_data, self.col.device_data, self.weight.param.device_data, self._empty_gpu_tensor_obj)
+
+        self.cache = [x]
+        return self.y
 
     def backward_cpu(self) -> tensor:
-        x, y = self.cache
+        x, y = self.cache[0], self.y
         dx, dy = x.gradient, y.gradient
         dc = self.col.gradient
         assert (x.size == dx.size and dy.size == y.size and dc == self.col.gradient)
@@ -177,20 +181,20 @@ class ConvNd(Module):
         return x
 
     def backward_gpu(self) -> tensor:
-        x, y = self.cache
+        x, y = self.cache[0], self.y
         dx, dy = x.gradient.device_data, y.gradient.device_data
         dc = self.col.gradient.device_data
         if self.bias is Parameter:
             self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
 
-        self.gemm1_backward.forward(self.weight.param.gradient.device_data, dy, dc, self._empty_gpu_tensor_obj)
-        self.gemm1_backward1.forward(dc, self.weight.param.device_data, dy, self._empty_gpu_tensor_obj )
-        self.kernel.backward_gpu()
+        self.gemm1_backward1.forward(self.weight.param.gradient.device_data, dy, dc, self._empty_gpu_tensor_obj)
+        self.gemm1_backward.forward(dc, self.weight.param.device_data, dy, self._empty_gpu_tensor_obj)
+        _ = self.kernel.backward_gpu()
         y.zero_grad()
         return x
 
     def print_l(self) -> None:
-        x, y = self.cache
+        x, y = self.cache[0], self.y
         super(ConvNd, self).print_l()
         print('\tmax input:', x.host_data.max(), 'g', x.gradient.host_data.max(),
               ' weight:', self.weight.param.host_data.max(), 'g', self.weight.param.gradient.host_data.max(),
@@ -217,25 +221,6 @@ class Conv1d(ConvNd):
         super(Conv1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
-    def forward_cpu(self, x: tensor) -> tensor:
-        x.reshape([x.shape[0], x.shape[1], 1, 1, x.shape[2]])
-        y = super(Conv1d, self).forward_cpu(x)
-        x.reset_shape()
-        y.reshape([x.shape[0], y.shape[1], y.shape[4]])
-        y.init_shape = y.shape
-        return y
-
-    def backward_cpu(self) -> tensor:
-        x, y = self.cache
-        y.reshape([x.shape[0], y.shape[1], 1, 1, y.shape[2]])
-        x.reshape([x.shape[0], x.shape[1], 1, 1, x.shape[2]])
-        x = super(Conv1d, self).backward_cpu()
-        x.reset_shape()
-        y.reset_shape()
-        return x
-
-
-
 class Conv2d(ConvNd):
     def __init__(self,
                  in_channels: int,
@@ -251,34 +236,7 @@ class Conv2d(ConvNd):
         super(Conv2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
-    def forward_cpu(self, x: tensor) -> tensor:
-        x.reshape([x.shape[0], x.shape[1], 1, x.shape[2], x.shape[3]])
-        y = super(Conv2d, self).forward_cpu(x)
-        x.reset_shape()
-        y.reshape([y.shape[0], y.shape[1], y.shape[3], y.shape[4]])
-        y.init_shape = y.shape
-        return y
-
-    def backward_cpu(self) -> tensor:
-        x, y = self.cache
-        y.reshape([y.shape[0], y.shape[1], 1, y.shape[2], y.shape[3]])
-        x.reshape([x.shape[0], x.shape[1], 1, x.shape[2], x.shape[3]])
-        x = super(Conv2d, self).backward_cpu()
-        x.reset_shape()
-        y.reset_shape()
-        return x
-
-    def test(self):
-        x, y = self.cache
-        _y, c = conv_forward(x.host_data, self.weight.param.host_data, self.bias.param.host_data, self.stride[-1]
-                             , self.padding[-1])
-        _dx, _dw, _db = conv_backward(y.gradient.host_data, c)
-        assert ((y.host_data == _y).all())
-        assert ((_dx == x.gradient.host_data).all())
-        assert ((_dw == self.weight.param.gradient.host_data).all())
-        if self._use_bias:
-            assert ((_db == self.bias.param.gradient.host_data).all())
-
+   
 class Conv3d(ConvNd):
     def __init__(self,
                  in_channels: int,

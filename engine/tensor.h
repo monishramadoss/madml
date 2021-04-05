@@ -41,6 +41,7 @@ private:
     size_t m_size_in_byte;
     VkDevice m_device;
     std::shared_ptr<buffer> m_buffer;
+    int m_device_id;
 };
 
 namespace init

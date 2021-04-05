@@ -1,41 +1,38 @@
 #version 450
 
 layout(push_constant) uniform pushBlock {
-		int total;
-		int batchsize;
-		int channels;
-		float kernel_h;
-		float kernel_w;
-		float kernel_d;
-		float pad_h;
-		float pad_w;
-		float pad_d;
-		float stride_h;
-		float stride_w;
-		float stride_d;
-		float dilation_h;
-		float dilation_w;
-		float dilation_d;
-		float height_col; // height + 2 * pad_h - (dilation_h * (kernel_h - 1) + 1)) / stride_h + 1
-		float width_col;  // width + 2 * pad_w - (dilation_w * (kernel_w - 1) + 1)) / stride_w + 1
-		float depth_col;  // depth + 2 * pad_d - (dilation_d * (kernel_d - 1) + 1)) / stride_d + 1
-		float height_vol;
-		float width_vol;
-		float depth_vol;
+		uint total;
+		uint batchsize;
+		uint channels;
+		uint kernel_h;
+		uint kernel_w;
+		uint kernel_d;
+		uint pad_h;
+		uint pad_w;
+		uint pad_d;
+		uint stride_h;
+		uint stride_w;
+		uint stride_d;
+		uint dilation_h;
+		uint dilation_w;
+		uint dilation_d;
+		uint height_col;
+		uint width_col;  
+		uint depth_col;
+		uint height_vol;
+		uint width_vol;
+		uint depth_vol;
 };
 
-layout(binding = 0) buffer buf1 {
-	float A[];
-};
+layout(binding = 0) buffer buf1 { float A[]; };
 
-layout(binding = 1) buffer buf2 {
-	float B[];
-};
+layout(binding = 1) buffer buf2 { float B[]; };
 
 layout (local_size_x = 16, local_size_y = 64, local_size_z = 1) in;
 
 void vol2col(){
 	float n_output_plane = channels * kernel_h * kernel_w * kernel_d;
+
 	uint elt = gl_GlobalInvocationID.y;
 	if(elt >= batchsize)
 		return;

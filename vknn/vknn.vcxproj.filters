@@ -100,5 +100,17 @@
     <None Include="..\shaders\vol2col.comp">
       <Filter>Shader FIles</Filter>
     </None>
+    <None Include="..\shaders\xt_gemm.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\wt_gemm.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\relu.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\d_relu.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
   </ItemGroup>
 </Project>

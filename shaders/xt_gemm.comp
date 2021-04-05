@@ -24,7 +24,7 @@ void gemm(){
 			for (uint globalCol = gl_GlobalInvocationID.y; globalCol < N; globalCol += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
 				float acc = use_bias ? beta * C[globalRow*N + globalCol]: 0.0;
 				for (uint k=0u; k < K; k++)
-					acc += alpha * A[globalDepth*M*K + globalRow*K + k] * B[k*N + globalCol]; 
+					acc += alpha * A[globalDepth*M*K + k*M + globalRow] * B[k*N + globalCol]; 
 				D[globalDepth*M*N + globalRow*N + globalCol] = acc;
 			}
 		}
