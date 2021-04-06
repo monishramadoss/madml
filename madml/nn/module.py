@@ -18,6 +18,7 @@ parameter_cache = []
 global MODULE_EXECUTOR
 MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=1)
 
+
 class Parameter(object):
     param : tensor
     optimizer_stuff : Optional[List[tensor]]
@@ -48,6 +49,8 @@ class Module(object):
         self.executor = MODULE_EXECUTOR
         self._empty_gpu_tensor_obj = vknn.tensor([0.], [1])
         self.y = None
+        self.m_type = type(self).__name__
+
 
     def forward(self, *args, **kwargs) -> tensor:
         if  self.use_gpu:
@@ -81,7 +84,7 @@ class Module(object):
         pass
 
     def __call__(self, *args, **kwargs):
-        # print(type(self), 'forward')
+        
         y = self.forward(*args, **kwargs)
         if isinstance(y, tuple) or isinstance(y, list):
             for x in y:
@@ -101,9 +104,7 @@ class Module(object):
             x.zero_grad()
 
         if not self.registered:
-            self.registered = True
-        # if isinstance(y, tensor):
-        #      print('\t', y.shape, y.host_data.max(), y.host_data.min())
+            self.registered = True         
         return y
 
     @staticmethod

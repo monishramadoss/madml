@@ -68,17 +68,19 @@ def test_maxpool():
     print(y_hat)
     input()
 
-def test_relu(self):
+def test_relu():
     x = np.random.uniform(-2, 2, size=81).reshape([9, 9])
     t1 = madml.tensor(x)
     module = nn.ReLU()
+    t3 = module.forward_gpu(t1)
+    y_hat = t3.download()
+    print(y_hat)
+    print()
+
     t2 = module.forward_cpu(t1)
     y = t2.host_data
     print(y)
-    t3 = module.forward_gpu(t1)
-    y_hat = t3.download()
-    print()
-    print(y_hat)
+    input()
 
 if __name__ == "__main__":
-    test_maxpool()
+    test_relu()

@@ -5,8 +5,8 @@
 relu::relu(bool in_place, bool derivative): m_inplace(in_place), m_derivative(derivative)
 {
     m_future = std::async(&relu::initVulkanThing, &*this, 3);
-    m_param.alpha = 0.f;
-    m_futures.resize(2);
+    m_param.alpha = 1.f;
+    m_futures.resize(3);
 }
 
 void relu::forward(tensor& y, tensor& x, tensor& w)
@@ -33,7 +33,7 @@ void relu::forward(tensor& y, tensor& x, tensor& w)
     if (m_inplace)
         m_futures[2] = std::async(&relu::bindtensor, &*this, x, 2);
     else
-        m_futures[2] = std::async(&relu::bindtensor, &*this, x, 2);
+        m_futures[2] = std::async(&relu::bindtensor, &*this, y, 2);
 
     m_future = std::async(&relu::recordCommandBuffer, &*this,  static_cast<void*>(&m_param), sizeof(single_param));
     runCommandBuffer();

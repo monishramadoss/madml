@@ -38,7 +38,7 @@ class ReLU(Module):
                 self.y = zeros_like(x)
 
             self.cache = [x, tmp]
-            y.host_data = data
+            self.y.host_data = data
             return self.y
 
     def forward_gpu(self, x: tensor) -> tensor:

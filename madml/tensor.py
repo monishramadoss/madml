@@ -47,7 +47,8 @@ class tensor(object):
     _init_shape : List[int]
     _host_memory : np.ndarray
     _device_memory : gpu_tensor
-    on_device : bool
+    gpu_access: bool
+    cpu_access: bool
     id : int
 
     def __init__(self, data: Union[List[Union[float, int, bytes, bool]], np.ndarray], shape=None,
@@ -65,10 +66,12 @@ class tensor(object):
         self._init_shape = self.shape
         self.size = 1
 
+        self.gpu_access = False
+        self.cpu_access = False
+
         for s in self.shape:
             self.size *= s
 
-        self.on_device = True
         self.parent = []
         self.children = []
         self.id = id(self)
@@ -133,8 +136,10 @@ class tensor(object):
 
     @property
     def host_data(self) -> np.ndarray:
-        if self._future_obj is not None and not self._future_obj.done():
-            self._future_obj.result()
+        if self.gpu_access:
+            self.download()
+            self.gpu_acess = False
+        self.cpu_acess = True
         return self._host_memory
 
     @host_data.setter
@@ -142,20 +147,19 @@ class tensor(object):
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
-        _upload(self._host_memory, self._device_memory.data)
+        self.upload()
         
     @property
     def device_data(self) -> vknn.tensor:
-        if self._future_obj is not None and not self._future_obj.done():
-            self._future_obj.result()
-        _upload(self._host_memory, self._device_memory.data)
+        if self.cpu_access:
+            self.upload()
+            self.cpu_access = False
+        self.gpu_access = True
         return self._device_memory.data
 
     @device_data.setter
     def device_data(self, value: vknn.tensor) -> None:
         self._device_memory.data = value
-        if self._future_obj is not None and not self._future_obj.done():
-            self._future_obj.result()
         _download(self._host_memory, self._device_memory.data)
 
     def backward(self) -> None:

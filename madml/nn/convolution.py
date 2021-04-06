@@ -30,14 +30,6 @@ def _dim_fix(arr, arg_arr, pi):
         j += 1
     return arr
 
-def matmul(x: tensor, w: tensor, y: tensor):
-    assert (x.shape[1] == w.shape[0])
-    for m in range(x.shape[0]):
-        for n in range(w.shape[1]):
-            acc = 0
-            for k in range(w.shape[0]):
-                acc += x.host_data[m * w.shape[0] + k] * w.host_data[k * w.shape[1] + n]
-            y.host_data[m * w.shape[1] + n] = acc
 
 class ConvNd(Module):
     __constants__ = ['dims', 'stride', 'padding', 'dilation', 'groups', 'padding_mode', 'output_padding', 'in_channels',
@@ -107,7 +99,6 @@ class ConvNd(Module):
         self.gemm1 = vknn.gemm(1.0, 1.0, bias, False, False)
         self.gemm1_backward  = vknn.gemm(1.0, 1.0, False, True, False)
         self.gemm1_backward2 = vknn.gemm(1.0, 1.0, False, False, True)
-
         self.output_shape = []
 
     def forward_cpu(self, x: tensor) -> tensor:
@@ -250,3 +241,61 @@ class Conv3d(ConvNd):
                  padding_mode: str='zeros'):
         super(Conv3d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode)
+
+class ConvTransposeNd(ConvNd):
+    def __init__(self, dims, in_channels, out_channels, kernel_size, stride,
+                  padding, dilation, output_padding,
+                  groups, bias, padding_mode, weight_init):
+        if padding_mode != 'zeros':
+            raise ValueError('Only "zeros" padding mode is supported for {}'.format(self.__class__.__name__))
+
+        super(_ConvTransposeNd, self).__init__( dims, in_channels, out_channels, kernel_size, stride,  padding, dilation, True, output_padding,
+            groups, bias, padding_mode, weight_init)
+    
+
+class ConvTranspose1d(_ConvTransposeNd):
+    def __init__(self, 
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, List[int]],
+                 stride: Union[int, List[int]]=1,
+                 padding: Union[int, List[int]]=0,
+                 dilation: Union[int, List[int]]=1,
+                 groups: Union[int, List[int]]=1,
+                 bias: bool=False,
+                 padding_mode: str='zeros',
+                 weight_init: str='xavier_uniform') -> None
+        super(ConvTranspose1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, output_padding,
+            groups, bias, padding_mode, weight_init)
+
+class ConvTranspose2d(_ConvTransposeNd):
+    def __init__(self, 
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, List[int]],
+                 stride: Union[int, List[int]]=1,
+                 padding: Union[int, List[int]]=0,
+                 dilation: Union[int, List[int]]=1,
+                 groups: Union[int, List[int]]=1,
+                 bias: bool=False,
+                 padding_mode: str='zeros',
+                 weight_init: str='xavier_uniform') -> None
+        super(ConvTranspose1d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, output_padding,
+            groups, bias, padding_mode, weight_init)
+
+
+   
+class ConvTranspose3d(_ConvTransposeNd):
+    def __init__(self, 
+                 in_channels: int,
+                 out_channels: int,
+                 kernel_size: Union[int, List[int]],
+                 stride: Union[int, List[int]]=1,
+                 padding: Union[int, List[int]]=0,
+                 dilation: Union[int, List[int]]=1,
+                 groups: Union[int, List[int]]=1,
+                 bias: bool=False,
+                 padding_mode: str='zeros',
+                 weight_init: str='xavier_uniform') -> None
+        super(ConvTranspose1d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation, output_padding,
+            groups, bias, padding_mode, weight_init)
