@@ -42,7 +42,7 @@ class TestModules(unittest.TestCase):
         t1 = madml.tensor(a)
         self.assertTrue((t1.host_data == a).all())
 
-        module = nn.Linear(5, 5)
+        module = nn.linear(5, 5)
 
         t2 = module.forward_cpu(t1)
         y = t2.host_data
@@ -74,7 +74,7 @@ class TestModules(unittest.TestCase):
 
         t1 = madml.tensor(x)
 
-        module = nn.Conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
+        module = nn.conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
         t2 = module.forward_cpu(t1)
         y = t2.host_data
         self.assertTrue((y == y_with_padding).all())
@@ -83,7 +83,7 @@ class TestModules(unittest.TestCase):
         y_without_padding = np.array([[[[54., 63., 72.],
                                         [99., 108., 117.],
                                         [144., 153., 162.]]]]).astype(np.float32).reshape([1, 1, 3, 3])
-        module2 = nn.Conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
+        module2 = nn.conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
         t3 = module2.forward_cpu(t1)
         y2 = t3.host_data
         self.assertTrue((y2 == y_without_padding).all())
@@ -114,7 +114,7 @@ class TestModules(unittest.TestCase):
         x = np.arange(0, 100).astype(np.float32).reshape([2, 2, 5, 5])
 
         t1 = madml.tensor(x)
-        module = nn.MaxPool2d(kernel_shape, stride, padding, dilation)
+        module = nn.maxpool2d(kernel_shape, stride, padding, dilation)
         t2 = module.forward_cpu(t1)
         y = t2.host_data
 
@@ -134,7 +134,7 @@ class TestModules(unittest.TestCase):
 
         t1 = madml.tensor(x)
         target = madml.tensor(labels)
-        module = nn.CrossEntropyLoss()
+        module = nn.crossentropyloss()
 
         loss = module.forward_cpu(t1, target)
 
@@ -147,7 +147,7 @@ class TestModules(unittest.TestCase):
 
         x = np.random.uniform(-2, 2, size=81).reshape([9, 9])
         t1 = madml.tensor(x)
-        module = nn.ReLU()
+        module = nn.relu()
         logit = module.forward_cpu(t1)
         logit.gradient.host_data = x
         y = logit.host_data
@@ -223,16 +223,16 @@ class TestModels(unittest.TestCase):
         class cnn_mnist_model(nn.Module):
             def __init__(self):
                 super(cnn_mnist_model, self).__init__()
-                self.conv1 = nn.Conv2d(1, 32, 3, padding=1)
-                self.pool = nn.MaxPool2d(2, 2)
-                self.conv2 = nn.Conv2d(32, 48, 3)
-                self.fc1 = nn.Linear(48 * 2 * 2, 120) # (599, 192)
-                self.fc2 = nn.Linear(120, 84)
-                self.fc3 = nn.Linear(84, 10)
-                self.relu1 = nn.ReLU()
-                self.relu2 = nn.ReLU()
-                self.relu3 = nn.ReLU()
-                self.relu4 = nn.ReLU()
+                self.conv1 = nn.conv2d(1, 32, 3, padding=1)
+                self.pool = nn.maxpool2d(2, 2)
+                self.conv2 = nn.conv2d(32, 48, 3)
+                self.fc1 = nn.linear(48 * 2 * 2, 120) # (599, 192)
+                self.fc2 = nn.linear(120, 84)
+                self.fc3 = nn.linear(84, 10)
+                self.relu1 = nn.relu()
+                self.relu2 = nn.relu()
+                self.relu3 = nn.relu()
+                self.relu4 = nn.relu()
 
             def forward(self, X):
                 X = self.conv1(X)
@@ -263,8 +263,8 @@ class TestModels(unittest.TestCase):
         t_x = madml.tensor(x / 1.)
         t_y = madml.tensor(y).onehot(label_count=10)
         # loss_fn = nn.MSELoss()
-        loss_fn = nn.CrossEntropyLoss(with_logit=True)
-        optim = optimizer.Adam(model.parameters(), lr=1e-3)
+        loss_fn = nn.crossentropyloss(with_logit=True)
+        optim = optimizer.adam(model.parameters(), lr=1e-3)
         train_loop(model, loss_fn, optim, t_x, t_y, epochs=30)
 
         test_x = madml.tensor(tx / 1.)
@@ -281,10 +281,10 @@ class TestModels(unittest.TestCase):
         class dnn_mnist_model(nn.Module):
             def __init__(self):
                 super(dnn_mnist_model, self).__init__()
-                self.fc1 = nn.Linear(8 * 8, 256)
-                self.fc2 = nn.Linear(256, 10)
-                self.relu1 = nn.ReLU()
-                self.relu2 = nn.ReLU()
+                self.fc1 = nn.linear(8 * 8, 256)
+                self.fc2 = nn.linear(256, 10)
+                self.relu1 = nn.relu()
+                self.relu2 = nn.relu()
 
             def forward(self, X):
                 X = self.fc1(X)
@@ -307,8 +307,8 @@ class TestModels(unittest.TestCase):
         t_x = madml.tensor(x / 1.)
         t_y = madml.tensor(y).onehot(label_count=10)
         # loss_fn = nn.MSELoss()
-        loss_fn = nn.CrossEntropyLoss(with_logit=True)
-        optim = optimizer.Adam(model.parameters(), lr=1e-3)
+        loss_fn = nn.crossentropyloss(with_logit=True)
+        optim = optimizer.adam(model.parameters(), lr=1e-3)
         train_loop(model, loss_fn, optim, t_x, t_y, epochs=30)
 
         test_x = madml.tensor(tx / 1.)
@@ -325,8 +325,8 @@ class TestModels(unittest.TestCase):
         class identity_model(nn.Module):
             def __init__(self):
                 super(identity_model, self).__init__()
-                self.fc1 = nn.Linear(32, 32)
-                self.fc2 = nn.Linear(32, 32)
+                self.fc1 = nn.linear(32, 32)
+                self.fc2 = nn.linear(32, 32)
 
             def forward(self, X):
                 X = self.fc1(X)
@@ -339,8 +339,8 @@ class TestModels(unittest.TestCase):
         x = np.ones((2, 32))
         t_x = madml.tensor(x)
         t_y = madml.tensor(x.copy())
-        loss_fn = nn.MSELoss()
-        optim = optimizer.Adam(model.parameters(), lr=1e-2)
+        loss_fn = nn.mseloss()
+        optim = optimizer.adam(model.parameters(), lr=1e-2)
 
         for i in range(100):
             optim.zero_grad()
@@ -383,12 +383,12 @@ class TestModels(unittest.TestCase):
         class spiral_model(nn.Module):
             def __init__(self):
                 super(spiral_model, self).__init__()
-                self.fc1 = nn.Linear(2, 16)
-                self.fc2 = nn.Linear(16, 16)
-                self.fc3 = nn.Linear(16, 2)
+                self.fc1 = nn.linear(2, 16)
+                self.fc2 = nn.linear(16, 16)
+                self.fc3 = nn.linear(16, 2)
                 self.tanh1 = nn.tanh()
                 self.tanh2 = nn.tanh()
-                self.sig = nn.ReLU()
+                self.sig = nn.relu()
 
             def forward(self, X):
                 X = self.fc1(X)
@@ -409,9 +409,9 @@ class TestModels(unittest.TestCase):
         t_y = t_y.onehot(2)
         t_y.reshape([800, 2])
 
-        loss_fn = nn.CrossEntropyLoss(with_logit=True)
+        loss_fn = nn.crossentropyloss(with_logit=True)
         # loss_fn = nn.MSELoss()
-        optim = optimizer.Adam(model.parameters(), lr=1e-2)
+        optim = optimizer.adam(model.parameters(), lr=1e-2)
         logits = None
 
         for i in range(100):

@@ -1,8 +1,8 @@
-from .activation import ReLU, Dropout
-from .convolution import Conv1d, Conv2d, Conv3d
-from .linear import Linear
-from .loss import CrossEntropyLoss, MSELoss
-from .math import tanh
+from .activation import relu, dropout, softmax
+from .convolution import conv1d, conv2d, Conv3d
+from .linear import linear
+from .loss import crossentropyloss, mseloss
+from .math import tanh, sigmoid
 from .module import Module, Parameter
-from .pooling import MaxPool1d, MaxPool2d, MaxPool3d
+from .pooling import maxpool1d, maxpool2d, maxpool3d
 from .transform import transpose

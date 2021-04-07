@@ -197,7 +197,7 @@ class ConvNd(Module):
     def test(self) -> None:
         return
 
-class Conv1d(ConvNd):
+class conv1d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
@@ -209,10 +209,10 @@ class Conv1d(ConvNd):
                  bias: bool=False,
                  padding_mode: str='zeros',
                  weight_init: str='kaiming_uniform') -> None:
-        super(Conv1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
+        super(conv1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
-class Conv2d(ConvNd):
+class conv2d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
@@ -224,7 +224,7 @@ class Conv2d(ConvNd):
                  bias: bool=False,
                  padding_mode: str='zeros',
                  weight_init: str='xavier_uniform') -> None:
-        super(Conv2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
+        super(conv2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
    

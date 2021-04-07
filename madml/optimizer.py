@@ -85,7 +85,7 @@ class SGD(Optimizer):
             if DEBUG:
                 print_p(p)
 
-class Adam(Optimizer):
+class adam(Optimizer):
     def __init__(self, params: List[Parameter], lr: float=1e-3, betas: List[float]=(0.9, 0.999),
                  eps: float=1e-8, weight_decay: float=0.0, amsgrad: bool=False) -> None:
         if not 0.0 <= lr:
@@ -102,7 +102,7 @@ class Adam(Optimizer):
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, amsgrad=amsgrad)
 
         self.counter = 1
-        super(Adam, self).__init__(params, defaults)
+        super(adam, self).__init__(params, defaults)
 
         for p in self.params:
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=True),

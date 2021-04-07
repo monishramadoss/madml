@@ -6,7 +6,7 @@ import numpy as np
 def test_linear():
     a = np.random.ranf([3, 5]).astype(np.float32)
     t1 = madml.tensor(a)
-    module = nn.Linear(5, 5, use_gpu=True)
+    module = nn.linear(5, 5, use_gpu=True)
 
     t2 = module.forward_cpu(t1)
     y = t2.host_data
@@ -38,7 +38,7 @@ def test_convolution():
 
     t1 = madml.tensor(x)
     
-    module = nn.Conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
+    module = nn.conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
 
     t2 = module.forward_cpu(t1)
     y = t2.host_data
@@ -58,7 +58,7 @@ def test_maxpool():
     x = np.arange(0, 100).astype(np.float32).reshape([2, 2, 5, 5])
 
     t1 = madml.tensor(x)
-    module = nn.MaxPool2d(kernel_shape, stride, padding, dilation)
+    module = nn.maxpool2d(kernel_shape, stride, padding, dilation)
     t2 = module.forward_cpu(t1)
     y = t2.host_data
     print(y)
@@ -71,7 +71,7 @@ def test_maxpool():
 def test_relu():
     x = np.random.uniform(-2, 2, size=81).reshape([9, 9])
     t1 = madml.tensor(x)
-    module = nn.ReLU()
+    module = nn.relu()
     t3 = module.forward_gpu(t1)
     y_hat = t3.download()
     print(y_hat)

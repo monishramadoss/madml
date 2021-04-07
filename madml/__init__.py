@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 
 from .tensor import tensor
 from .init import zeros, zeros_like, ones, full_like, fill
-from .optimizer import SGD, Adam, Nadam, Adagrad, RMSprop
+from .optimizer import SGD, adam, Nadam, Adagrad, RMSprop
 
 def test_import_vknn():
     try:

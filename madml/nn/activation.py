@@ -10,12 +10,12 @@ from .module import Module
 from .testing import relu_forward, relu_backward, dropout_forward, dropout_backward
 import vknn
 
-class ReLU(Module):
+class relu(Module):
     __constants__ = ['inplace']
     inplace : bool
 
     def __init__(self, inplace: bool=False) -> None:
-        super(ReLU, self).__init__()
+        super(relu, self).__init__()
         self.inplace = inplace
         self.out = None
         self.kernel = vknn.relu(inplace, False)
@@ -73,7 +73,7 @@ class ReLU(Module):
 
     def print_l(self) -> None:
         x, t, y = self.cache
-        super(ReLU, self).print_l()
+        super(relu, self).print_l()
         print('\tmax input:', x.host_data.max(), 'g', x.gradient.host_data.max(),
               ' output:', y.host_data.max(), 'g', y.gradient.host_data.max())
         print('\tmin input:', x.host_data.min(), 'g', x.gradient.host_data.min(),
@@ -88,35 +88,30 @@ class ReLU(Module):
         assert ((_dx == x.gradient.host_data).all())
 
 
-
-
-
-
-
-
-
-class Dropout(Module):
+class dropout(Module):
     __constants__ = ['prob']
     prob : float
 
     def __init__(self, probability: float=0.1, seed: int=None) -> None:
-        super(Dropout, self).__init__()
+        super(dropout, self).__init__()
         if seed:
             np.random.seed(seed)
         self.prob = probability
         self.mask = None
 
     def forward_cpu(self, x: tensor) -> tensor:
-        y = zeros_like(x)
+        if self.y is None:
+            self.y = zeros_like(x)
         self.mask = tensor(np.random.rand(*x.shape), x.shape)
         self.mask.host_data = self.mask.host_data < self.prob
         tmp = x.host_data / (1 - self.prob)
         tmp[self.mask.host_data] = 0
-        self.cache = [x, y]
-        return y
+        self.cache = [x]
+        return self.y
 
     def backward_cpu(self) -> tensor:
-        x, y = self.cache
+        x = self.cache[0]
+        y = self.y
         dx, dy = x.gradient, y.gradient
         dx = dy / (1 - self.prob)
         dx[self.mask.host_data] = 0
@@ -129,3 +124,27 @@ class Dropout(Module):
         _dx = dropout_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
+
+
+class softmax(Module):
+    __constants__ = ['axis']
+    axis: int
+
+    def __init__(self, axis: int=1):
+        super(softmax, self).__init__()    
+        self.axis = axis
+
+    def forward_cpu(self, x: tensor) -> tensor:
+        if self.y is None:
+            self.y = zeros_like(x)
+        x = x.host_data
+        ex = np.exp((x.T - np.max(x, self.axis)).T)
+        self.y.host_data = (ex.T / ex.sum(axis=self.axis)).T
+        self.cache = [x]
+        return self.y
+    
+    def backward_cpu(self) -> tensor:
+        x = self.ca
+
+
+        return x

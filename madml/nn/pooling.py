@@ -159,7 +159,7 @@ class _MaxPoolNd(Module):
               ' output:', y.host_data.min(), 'g', y.gradient.host_data.min())
 
 
-class MaxPool1d(_MaxPoolNd):
+class maxpool1d(_MaxPoolNd):
     kernel_size : int
     stride : int
     padding : int
@@ -168,7 +168,7 @@ class MaxPool1d(_MaxPoolNd):
     def __init__(self, kernel_size: int, stride: Optional[int]=None,
                  padding: int=0, dilation: int=1,
                  return_indices: bool=False, ceil_mode: bool=False) -> None:
-        super(MaxPool1d, self).__init__(1, kernel_size, stride, padding, dilation, return_indices, ceil_mode)
+        super(maxpool1d, self).__init__(1, kernel_size, stride, padding, dilation, return_indices, ceil_mode)
 
   
 class MaxPool2d(_MaxPoolNd):
@@ -182,7 +182,7 @@ class MaxPool2d(_MaxPoolNd):
                  return_indices: bool=False, ceil_mode: bool=False) -> None:
         super(MaxPool2d, self).__init__(2, kernel_size, stride, padding, dilation, return_indices, ceil_mode)
 
-class MaxPool3d(_MaxPoolNd):
+class maxpool3d(_MaxPoolNd):
     kernel_size : Union[int, List[int]]
     stride : Union[int, List[int]]
     padding : Union[int, List[int]]
@@ -191,4 +191,4 @@ class MaxPool3d(_MaxPoolNd):
     def __init__(self, kernel_size: Union[int, List[int]], stride: Optional[Union[int, List[int]]]=None,
                  padding: Union[int, List[int]]=0, dilation: Union[int, List[int]]=1,
                  return_indices: bool=False, ceil_mode: bool=False) -> None:
-        super(MaxPool3d, self).__init__(3, kernel_size, stride, padding, dilation, return_indices, ceil_mode)
+        super(maxpool3d, self).__init__(3, kernel_size, stride, padding, dilation, return_indices, ceil_mode)

@@ -14,13 +14,13 @@ from .testing import fc_forward, fc_backward
 
 import vknn
 
-class Linear(Module):
+class linear(Module):
     __constants__ = ['in_features', 'out_features']
     in_features : int
     out_features : int
 
     def __init__(self, in_features: int, out_features: int, bias: bool=False, use_gpu=False) -> None:
-        super(Linear, self).__init__()
+        super(linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.weight = Parameter(kaiming_uniform(a=math.sqrt(5), nonlinearity='linear'), [in_features, out_features])
@@ -79,7 +79,7 @@ class Linear(Module):
 
     def print_l(self) -> None:
         x, y = self.cache[0], self.y
-        super(Linear, self).print_l()
+        super(linear, self).print_l()
         print('\tmax input:', x.host_data.max(), 'g', x.gradient.host_data.max(),
               ' weight:', self.weight.param.host_data.max(), 'g', self.weight.param.gradient.host_data.max(),
               ' output:', y.host_data.max(), 'g', y.gradient.host_data.max())

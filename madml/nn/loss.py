@@ -28,7 +28,7 @@ def l1_reg(w: tensor, lam: float=1e-3) -> float:
 def l2_reg(w: tensor, lam: float=1e-3) -> float:
     return .5 * lam * np.sum(w.host_data * w.host_data)
 
-class _Loss(Module, ABC):
+class _Loss(Module):
     reduction : Optional[str]
 
     def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
@@ -61,18 +61,18 @@ class _Loss(Module, ABC):
     def accuracy(self):
         raise NotImplementedError
 
-class _WeightedLoss(_Loss, ABC):
+class _WeightedLoss(_Loss):
     def __init__(self, weight=None, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(_WeightedLoss, self).__init__(size_average, reduce, reduction)
         self.weight = weight
 
-class CrossEntropyLoss(_WeightedLoss):
+class crossentropyloss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
     ignore_index : int
 
     def __init__(self, weight=None, size_average=None, ignore_index: int=None,
                  reduce=None, reduction: str='mean', with_logit: bool=False) -> None:
-        super(CrossEntropyLoss, self).__init__(weight, size_average, reduce, reduction)
+        super(crossentropyloss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.with_logit = with_logit
         self.batchsize = 1
@@ -145,11 +145,11 @@ class CrossEntropyLoss(_WeightedLoss):
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())
 
-class MSELoss(_Loss):
+class mseloss(_Loss):
     __constants__ = ['reduction']
 
     def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
-        super(MSELoss, self).__init__(size_average, reduce, reduction)
+        super(mseloss, self).__init__(size_average, reduce, reduction)
 
     def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
         if logit.shape != target.shape:
