@@ -47,9 +47,9 @@ class rnnbase(Module):
             self.gate_size = 1
         else:
             raise ValueError("Unrecognized RNN mode: " + mode)
-        
-        self.kernels = []
 
+        self.kernels = []
+        self.output = []
         for layer in range(num_layers):
             directions = []
             for direction in range(num_directions):
@@ -58,9 +58,10 @@ class rnnbase(Module):
                 for gate in self.gate_size:
                     w_ih = linear(layer_intput_size, hidden_size, bias=self.bias)
                     w_hh = linear(hidden_size, hidden_size, bias=self.bias)
-                    a_ih_hh = add()
-                    gates.append([w_ih, w_hh, a_ih_hh]) 
 
+                    a_ih_hh = add()
+                    gates.append([w_ih, w_hh, a_ih_hh])
+                self.output.append(linear(hidden_size, hidden_size, bias=self.bias))
                 directions.append(gates)
             self.kernels.append(directions)
 
@@ -80,59 +81,57 @@ class rnnbase(Module):
                 hx = zeros([self.num_layers * num_directions, max_batch_size, self.hidden_size])
             if cx is None and self.mode == 'LSTM':
                 cx = zeros([self.num_layers * num_directions, max_batch_size, self.hidden_size])
-            
+
             for layer in range(self.num_layers):
                 for direction in range(num_directions):
                     gates = []
-                    for gate in range(self.gates-1):
+                    for gate in range(self.gates - 1):
                         tx = self.kernel[layer][direction][gate][0].forward_cpu(x)
-                        th = self.kernel[layer][direction][gate][1].forward_cpu(hx[layer*num_directions + direction])
+                        th = self.kernel[layer][direction][gate][1].forward_cpu(hx[layer * num_directions + direction])
                         thx = self.kernel[layer][direction][gate][2].forward_cpu(tx, th)
                         tha = self.activation1.forward_cpu(thx)
                         gates.append(tha)
 
                     if self.mode == 'LSTM':
                         tx = self.kernel[layer][direction][-1][0].forward_cpu(x)
-                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer*num_directions + direction])
+                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer * num_directions + direction])
                         thx = self.kernel[layer][direction][-1][2].forward_cpu(tx, th)
                         tha = self.activation2(thx.host_data)
-                        c = cx.host_data[layer * num_directions  + direction]
+                        c = cx.host_data[layer * num_directions + direction]
                         hi = gates[0].host_data
                         hf = gates[1].host_data
                         ho = gates[2].host_data
                         hg = tha
                         c = hf * c + hi * hg
                         h = ho * self.activation2(c)
-                        yx = np.matmul(h, x.host_data)
-                        hx.host_data[layer* num_direction + direction] = h
-                        cx.host_data[layer* num_direction + direction] = c
+                        hx.host_data[layer * num_direction + direction] = h
+                        cx.host_data[layer * num_direction + direction] = c
+                        yx = self.output[layer * num_directions + direction].forward_cpu(hx)
 
                     elif self.mode == 'GRU':
                         hr = gates[0].host_data
                         hz = gates[1].host_data
                         tx = self.kernel[layer][direction][-1][0].forward_cpu(x)
-                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer*num_directions + direction])
+                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer * num_directions + direction])
                         th.host_data = hr * th.host_data
                         thx = self.kernel[layer][direction][-1][2].forward_cpu(tx, th)
                         tha = self.activation2(thx.host_data)
-                        h = (1 - hz) * hn + hz * hx[layer*num_directions + direction]
-                        yx = np.matmul(h, x.host_data)
-                        hx.host_data[layer*num_directions + direction] = h                    
+                        h = (1 - hz) * hn + hz * hx[layer * num_directions + direction]
+                        hx.host_data[layer * num_directions + direction] = h                                            yx = self.output[layer * num_directions + direction].forward_cpu(hx)
 
                     else:
                         tx = self.kernel[layer][direction][-1][0].forward_cpu(x[0])
-                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer*num_directions + direction])
+                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer * num_directions + direction])
                         thx = self.kernel[layer][direction][-1][2].forward_cpu(tx, th)
                         thx.host_data = self.activation2(thx.host_data)
-                        yx = np.matmul(thx.host_data, x.host_data)
-                        hx.host_data[layer*num_directions + direction] = thx.host_data
-                        
+                        hx.host_data[layer * num_directions + direction] = thx.host_data
+                        yx = self.output[layer * num_directions + direction].forward_cpu(hx)
+
                     gates.clear()
-            
+
         if self.mode == 'LSTM':
             return self.y, hx, cx
         return self.y, hx
-
 
 class RNN(RNNBase):
     def __init__(self, input_size: int, hidden_size: int,

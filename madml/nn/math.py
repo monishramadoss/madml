@@ -56,7 +56,6 @@ class tanh(Module):
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
 
-
 class sigmoid(Module):
     __constants__ = ['inplace']
 

@@ -212,6 +212,7 @@
     <ClCompile Include="loss.cpp" />
     <ClCompile Include="math.cpp" />
     <ClCompile Include="normalization.cpp" />
+    <ClCompile Include="optimizer.cpp" />
     <ClCompile Include="pooling.cpp" />
     <ClCompile Include="rnn.cpp" />
     <ClCompile Include="spv_shader.cpp" />
@@ -225,6 +226,7 @@
     <ClInclude Include="loss.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="normalization.h" />
+    <ClInclude Include="optimizer.h" />
     <ClInclude Include="pooling.h" />
     <ClInclude Include="rnn.h" />
     <ClInclude Include="spv_shader.h" />
@@ -238,8 +240,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\col2vol.comp" />
+    <None Include="..\shaders\d_max_reduce.comp" />
     <None Include="..\shaders\d_relu.comp" />
     <None Include="..\shaders\gemm.comp" />
+    <None Include="..\shaders\max_reduce.comp">
+      <FileType>Discomap</FileType>
+    </None>
+    <None Include="..\shaders\mse.comp" />
     <None Include="..\shaders\relu.comp" />
     <None Include="..\shaders\transpose.comp" />
     <None Include="..\shaders\vol2col.comp" />

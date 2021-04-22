@@ -35,13 +35,16 @@ layer::~layer()
         vkDestroyPipeline(m_device, m_pipeline, nullptr);
     if (m_pipeline_layout != nullptr)
         vkDestroyPipelineLayout(m_device, m_pipeline_layout, nullptr);
+
+    ///if (m_device != nullptr && kDevices.size() == 0)
+    //    vkDestroyDevice(m_device, nullptr);
 }
 
 void layer::initVulkanThing(int buffer_num)
 {
     createDescriptorSetLayout(buffer_num);
     createDescriptorSet(buffer_num);
-    createCommandBuffer();    
+    createCommandBuffer();
 }
 
 void layer::createDescriptorSetLayout(int buffer_num)
@@ -121,7 +124,7 @@ void layer::createPipeline(uint32_t push_constants_size, VkSpecializationInfo* s
 
     VkPipelineLayoutCreateInfo pipeline_layout_create_info = {};
     pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-   
+
     if (push_constants_size != 0)
     {
         pipeline_layout_create_info.pushConstantRangeCount = 1;
@@ -153,16 +156,10 @@ void layer::createCommandBuffer()
 
 void layer::recordCommandBuffer(void* push_constants, uint32_t push_constants_size)
 {
-    for (size_t i = 0; i < m_futures.size(); ++i){
-        if (m_futures[i].valid())
-            m_futures[i].wait();
-    }
-    
-
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    
+
     kContextMtx.lock();
     VK_CHECK_RESULT(vkBeginCommandBuffer(m_cmd_buffer, &beginInfo));
     if (push_constants)
@@ -170,10 +167,9 @@ void layer::recordCommandBuffer(void* push_constants, uint32_t push_constants_si
     vkCmdBindPipeline(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline);
     vkCmdBindDescriptorSets(m_cmd_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, m_pipeline_layout, 0, 1, &m_descriptor_set, 0, nullptr);
     vkCmdDispatch(m_cmd_buffer, m_group_x, m_group_y, m_group_z);
-    VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));   
+    VK_CHECK_RESULT(vkEndCommandBuffer(m_cmd_buffer));
     kContextMtx.unlock();
 }
-
 
 void layer::bindtensor(tensor& t, uint32_t binding)
 {
@@ -182,7 +178,6 @@ void layer::bindtensor(tensor& t, uint32_t binding)
     desc_buffer_info.offset = 0;
     desc_buffer_info.range = t.size();
 
-
     VkWriteDescriptorSet write_descriptor_set = {};
     write_descriptor_set.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write_descriptor_set.dstSet = m_descriptor_set;
@@ -190,10 +185,9 @@ void layer::bindtensor(tensor& t, uint32_t binding)
     write_descriptor_set.descriptorCount = 1;
     write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
     write_descriptor_set.pBufferInfo = &desc_buffer_info;
-
-    kDesciptorMtx.lock();
+    kContextMtx.lock();
     vkUpdateDescriptorSets(m_device, 1, &write_descriptor_set, 0, nullptr);
-    kDesciptorMtx.unlock();
+    kContextMtx.unlock();
 }
 
 int layer::runCommandBuffer()
@@ -221,4 +215,3 @@ int layer::runCommandBuffer()
     vkDestroyFence(m_device, fence, nullptr);
     return 1;
 }
-

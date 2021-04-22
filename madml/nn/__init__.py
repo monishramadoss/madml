@@ -1,5 +1,5 @@
 from .activation import relu, dropout, softmax
-from .convolution import conv1d, conv2d, Conv3d
+from .convolution import conv1d, conv2d, conv3d
 from .linear import linear
 from .loss import crossentropyloss, mseloss
 from .math import tanh, sigmoid

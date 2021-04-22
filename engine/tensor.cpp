@@ -71,7 +71,7 @@ tensor tensor::reshape(const char* data, const std::vector<int>& shape, bool all
     if (m_shape != shape) m_shape = shape;
     if (checkFormat(fmt) && fmt != m_format) m_format = fmt;
     const size_t new_size = shapeCount(m_shape) * elementSize(m_format);
-    if (alloc || new_size > m_size_in_byte)
+    if (alloc || m_size_in_byte == 0)
         alloc = true;
     m_size_in_byte = new_size;
     if (alloc)
@@ -114,4 +114,3 @@ char* tensor::toHost() const
     unMap(); // m_buffer.reset();
     return host;
 }
-

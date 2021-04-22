@@ -47,7 +47,7 @@ protected:
 
     int m_device_id;
 
-    std::string m_type;    
+    std::string m_type;
     std::future<void> m_future;
     std::vector<std::future<void>> m_futures;
 };

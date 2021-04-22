@@ -61,5 +61,3 @@ inline int shapeCount(const Shape& shape, int start = -1, int end = -1)
 
     return elems;
 }
-
-

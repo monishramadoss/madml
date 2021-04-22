@@ -26,40 +26,81 @@ def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
 def _download(host: np.ndarray, device: vknn.tensor) -> None:
     if host.dtype == np.float32:
         return vknn.tensor_to_np_float(device, host)
+    elif host.dtype == np.float64:
+        host = host.astype(np.float32)
+        return _download(host, device)
+    elif host.dtype == np.int32 or host.dtype == np.uint32:
+        return vknn.tensor_to_np_int(device, host)
+    elif host.dtype == np.uint64:
+        host = host.astype(np.uint32)
+        return _download(host, device)
+    elif host.dtype == np.int64:
+        host = host.astype(np.int32)
+        return _download(host, device)
     else:
         raise TypeError(" dtype: {0} is not implement.".format(host.dtype))
 
 def _upload(host: np.ndarray, device: vknn.tensor) -> None:
     if host.dtype == np.float32:
         return vknn.np_to_tensor_float(device, host)
+    elif host.dtype == np.float64:
+        host = host.astype(np.float32)
+        return _upload(host, device)
+    elif host.dtype == np.int32 or host.dtype == np.uint32:
+        return vknn.np_to_tensor_int(device, host)
+    elif host.dtype == np.uint64:
+        host = host.astype(np.uint32)
+        return _upload(host, device)
+    elif host.dtype == np.int64:
+        host = host.astype(np.int32)
+        return _upload(host, device)
     else:
         raise TypeError(" dtype: {0} is not Implemented".format(host.dtype))
 
 class gpu_tensor(object):
     def __init__(self, data: np.ndarray):
-        if data.dtype != np.float32:
+        if data.dtype == np.float32:
+            self.data = vknn.init_float(data)
+        elif data.dtype == np.int32 or data.dtype == np.uint32:
+            self.data = vknn.init_int(data)
+        elif data.dtype == np.bool:
+            self.data = vknn.init_bool(data)
+        elif data.dtype == np.float64:
+            data = data.astype(np.float32)
+            self.data = vknn.init_float(data)
+        elif data.dtype == np.int64 or data.dtype == np.uint64:
+            data = data.astype(np.int32)
+            self.data = vknn.init_int(data)
+        elif data.dtype == np.uint64:
+            data = data.astype(np.uint32)
+            self.data = vknn.init_int(data)
+        elif data.dtype == np.bytes or data.dtype == np.uint8:
+            self.data = vknn.init_char(data)
+        else:
             raise TypeError(" dtype: {1} is not implement.".format(data.dtype))
-        lst_data = data.astype(float)
-        self.data = vknn.init_float(lst_data)
+
+    def reshape(self, new_shape):
+        self.data.reshape(new_shape)
 
 class tensor(object):
     shape : List[int]
     _init_shape : List[int]
     _host_memory : np.ndarray
     _device_memory : gpu_tensor
-    gpu_access: bool
-    cpu_access: bool
+    gpu_access : bool
+    cpu_access : bool
     id : int
+    device_id : int
 
     def __init__(self, data: Union[List[Union[float, int, bytes, bool]], np.ndarray], shape=None,
-                 requires_grad: bool=True, dtype=float) -> None:
+                 requires_grad: bool=True, dtype=float, device_id=-1) -> None:
         if shape is None:
             shape = []
         if isinstance(data, np.ndarray):
-            self._host_memory = data.astype(np.float32)
+            self._host_memory = data.astype(dtype)
             self.shape = list(data.shape)
         else:
-            self._host_memory = np.array(data).reshape(shape).astype(np.float32)
+            self._host_memory = np.array(data).reshape(shape).astype(dtype)
             self.shape = shape
 
         self._device_memory = gpu_tensor(self._host_memory)
@@ -72,17 +113,22 @@ class tensor(object):
         for s in self.shape:
             self.size *= s
 
-        self.parent = []
-        self.children = []
+        self.previous = []
+        self.next = []
+
         self.id = id(self)
-        if requires_grad:
-            self._grad = tensor([0 for i in range(self.size)], self.shape, requires_grad=False)
-        else:
-            self._grad = None
+        self.requires_grad = requires_grad
         assert (len(self.shape) > 0)
         assert (self._host_memory.size == self.size)
         self._future_obj = None
         self.executor = TENSOR_EXECUTOR
+        self.m_type = 'tensor'
+
+        num_devices = vknn.number_physcial_devices()
+        if num_devices != 0:
+            device_id = 0
+        self.device_id = device_id
+        self._grad = None
 
     def __copy__(self):
         new = tensor(self._host_memory, self._init_shape, requires_grad=False)
@@ -96,6 +142,7 @@ class tensor(object):
         assert len(self.shape) == 2
         self._host_memory = self._host_memory.T
         self.shape = list(self._host_memory.shape)
+
         return self
 
     def numpy(self) -> np.ndarray:
@@ -113,14 +160,22 @@ class tensor(object):
         self._host_memory[key] = value.host_data
 
     def reshape(self, shape: List[int]) -> None:
-        self._host_memory = self._host_memory.reshape(shape)
-        assert (self._host_memory.size == self.size)
-        self.shape = list(self._host_memory.shape)
-        if self._grad is not None:
-            self._grad.reshape(self.shape)
+        if self.shape != shape:
+            self._host_memory = self._host_memory.reshape(shape)
+            if (self._host_memory.size != self.size):
+                raise Exception("reshape: cannot reshape size {(0},) does not match size ({1},)".format(self._host_memory.size, self.size))
+            self.shape = list(self._host_memory.shape)
+            self._device_memory.reshape(self.shape)
+            if self._grad is not None:
+                self._grad.reshape(self.shape)
 
     @property
     def gradient(self):
+        if self._grad is None and self.requires_grad:
+            self._grad = tensor([0 for i in range(self.size)], self.shape, requires_grad=False)
+        elif not self.requires_grad:
+            raise Exception("gradient: should not be asking for gradient")
+
         return self._grad
 
     @gradient.setter
@@ -148,7 +203,7 @@ class tensor(object):
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
         self.upload()
-        
+
     @property
     def device_data(self) -> vknn.tensor:
         if self.cpu_access:
@@ -162,31 +217,25 @@ class tensor(object):
         self._device_memory.data = value
         _download(self._host_memory, self._device_memory.data)
 
-    def backward(self) -> None:
-        for x in reversed(self.parent):
-            if not x.visited[self.id]:
-                y = x.backward()
-                x.visited[self.id] = True
-                if isinstance(y, tensor):
-                    y.backward()
-        self.parent.clear()
-        self.children.clear()
+    def forward(self, *args, **kwargs):
+        for n in self.next:
+            n.forward(None)
+        return self
+
+    def backward(self):
+        for n in self.previous:
+            n.backward()
+        return self._grad
 
     def reset_shape(self) -> None:
-        self._host_memory = self._host_memory.reshape(self._init_shape)
-        self.shape = self._init_shape
-        if self._grad is not None:
-            self._grad.reshape(self._init_shape)
+        self.reshape(self._init_shape)
 
     def flatten(self) -> None:
-        self._host_memory = self._host_memory.reshape([self.shape[0], -1])
-        if self._grad is not None:
-            self._grad.host_data = self._grad.host_data.reshape([self.shape[0], -1])
-        self.shape = list(self._host_memory.shape)
+        self.reshape([self.shape[0], -1])
 
     def transpose(self, axis: List[int]) -> None:
         self._host_memory = self._host_memory.transpose(axis)
-        self.shape = list(self._host_memory.shape)
+        self.reshape(self._host_memory.shape)
 
     def zero_grad(self):
         if self._grad is not None:
@@ -211,10 +260,9 @@ class tensor(object):
     def download(self) -> np.ndarray:
         _download(self._host_memory, self._device_memory.data)
         return self._host_memory
-    
+
     def upload(self) -> None:
         _upload(self._host_memory, self._device_memory.data)
-
 
     def squeeze(axis:int=None) -> None:
         new_shape = self.shape
@@ -233,3 +281,7 @@ class tensor(object):
         new_shape = self.shape
         new_shape.insert(axis, 1)
         self.reshape(new_shape)
+
+    def to(idx:int):
+        self.device_id = idx
+        return self

@@ -17,7 +17,7 @@ layout(push_constant) uniform pushBlock {
 		uint dilation_w;
 		uint dilation_d;
 		uint height_col;
-		uint width_col;  
+		uint width_col;
 		uint depth_col;
 		uint height_vol;
 		uint width_vol;
@@ -58,7 +58,7 @@ void col2vol(){
 				uint w_vol = w_col * stride_w - pad_w + w_offset * dilation_w;
 				if (0 <= h_vol && h_vol < height_vol && 0 <= w_vol && w_vol < width_vol && 0 <= d_vol && d_vol < depth_vol){
 					uint data_col_idx = uint(floor(data_col + ((c_col * depth_col + d_col) * height_col + h_col) * width_col + w_col));
-					uint data_vol_idx = uint(floor(data_vol + ((c_vol * depth_vol + d_vol) * height_vol + h_vol) * width_vol + w_vol));	
+					uint data_vol_idx = uint(floor(data_vol + ((c_vol * depth_vol + d_vol) * height_vol + h_vol) * width_vol + w_vol));
 					B[data_vol_idx] += A[data_col_idx];
 				}
 			}

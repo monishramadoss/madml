@@ -17,7 +17,7 @@ layout(push_constant) uniform pushBlock {
 		uint dilation_w;
 		uint dilation_d;
 		uint height_col;
-		uint width_col;  
+		uint width_col;
 		uint depth_col;
 		uint height_vol;
 		uint width_vol;

@@ -3,8 +3,6 @@
 #include "vknn.h"
 #include "../engine/layer.h"
 
-
-
 struct gemm_param
 {
     uint32_t total;
@@ -24,8 +22,8 @@ class gemm : public layer
     bool m_transpose_w;
 
 public:
-    explicit gemm(float alpha, float beta, bool use_bias, bool transpose_x=false, bool transpose_w=false);
-    void forward(tensor& y,tensor& x, tensor& w, tensor& b);
+    explicit gemm(float alpha, float beta, bool use_bias, bool transpose_x = false, bool transpose_w = false);
+    void forward(tensor& y, tensor& x, tensor& w, tensor& b);
 };
 
 extern void test_gemm();

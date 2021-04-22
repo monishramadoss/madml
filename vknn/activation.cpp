@@ -2,7 +2,7 @@
 #include "../engine/utils.h"
 #include "activation.h"
 
-relu::relu(bool in_place, bool derivative): m_inplace(in_place), m_derivative(derivative)
+relu::relu(bool in_place, bool derivative) : m_inplace(in_place), m_derivative(derivative)
 {
     m_future = std::async(&relu::initVulkanThing, &*this, 3);
     m_param.alpha = 1.f;
@@ -27,14 +27,13 @@ void relu::forward(tensor& y, tensor& x, tensor& w)
         createPipeline(sizeof(single_param));
     }
 
-    m_futures[0] = std::async(&relu::bindtensor, &*this, x, 0);
-    m_futures[1] = std::async(&relu::bindtensor, &*this, w, 1);
+    bindtensor(x, 0);
+    bindtensor(w, 1);
 
     if (m_inplace)
-        m_futures[2] = std::async(&relu::bindtensor, &*this, x, 2);
+        bindtensor(x, 2);
     else
-        m_futures[2] = std::async(&relu::bindtensor, &*this, y, 2);
+        bindtensor(y, 2);
 
-    m_future = std::async(&relu::recordCommandBuffer, &*this,  static_cast<void*>(&m_param), sizeof(single_param));
-    runCommandBuffer();
+    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(single_param));
 }

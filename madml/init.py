@@ -17,8 +17,8 @@ def _size(shape: List[int]) -> int:
         size *= s
     return size
 
-def zeros(shape: List[int]) -> tensor:
-    data = np.zeros(shape=shape)
+def zeros(shape: List[int], dtype=float) -> tensor:
+    data = np.zeros(shape=shape).astype(dtype)
     return tensor(data, shape)
 
 def zeros_like(t: tensor) -> tensor:

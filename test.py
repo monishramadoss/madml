@@ -17,7 +17,6 @@ class TestImports(unittest.TestCase):
         except:
             self.assertTrue(False)
 
-   
     def test_vknn(self):
         from madml import test_import_vknn
         self.assertTrue(test_import_vknn())
@@ -44,15 +43,17 @@ class TestModules(unittest.TestCase):
 
         module = nn.linear(5, 5)
 
-        t2 = module.forward_cpu(t1)
+        t2 = module.forward(t1)
         y = t2.host_data
-
-        t3 = module.forward_gpu(t1)
+        module.to(0)
+        t3 = module.forward(t1)
         y_hat = t3.download()
         self.assertTrue((y == y_hat).all())
-
         t2.gradient.host_data = a
-        self.assertTrue(True)
+        dx = module.backward()
+        dx_hat = dx.download()
+
+        self.assertTrue((dx_hat == y_hat).all())
 
     def test_conv(self):
         import madml
@@ -75,7 +76,7 @@ class TestModules(unittest.TestCase):
         t1 = madml.tensor(x)
 
         module = nn.conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
-        t2 = module.forward_cpu(t1)
+        t2 = module.forward(t1)
         y = t2.host_data
         self.assertTrue((y == y_with_padding).all())
 
@@ -84,7 +85,7 @@ class TestModules(unittest.TestCase):
                                         [99., 108., 117.],
                                         [144., 153., 162.]]]]).astype(np.float32).reshape([1, 1, 3, 3])
         module2 = nn.conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
-        t3 = module2.forward_cpu(t1)
+        t3 = module2.forward(t1)
         y2 = t3.host_data
         self.assertTrue((y2 == y_without_padding).all())
 
@@ -98,7 +99,7 @@ class TestModules(unittest.TestCase):
                          [6., 13., 21., 15., 8.]]]]).reshape([1, 1, 5, 5])
 
         t3.gradient.host_data = dy
-        _ = module2.backward_cpu()
+        _ = module2.backward()
         y3 = t1.gradient.host_data
         self.assertTrue((y3 == dx).all())
 
@@ -115,13 +116,13 @@ class TestModules(unittest.TestCase):
 
         t1 = madml.tensor(x)
         module = nn.maxpool2d(kernel_shape, stride, padding, dilation)
-        t2 = module.forward_cpu(t1)
+        t2 = module.forward(t1)
         y = t2.host_data
 
         test = x[..., 1:, 1:]
         self.assertTrue((test == y).all())
         t2.gradient.host_data = y
-        _x = module.backward_cpu()
+        _x = module.backward()
         dx = t1.gradient.host_data[..., 1:, 1:]
         self.assertTrue(True)
 
@@ -136,9 +137,9 @@ class TestModules(unittest.TestCase):
         target = madml.tensor(labels)
         module = nn.crossentropyloss()
 
-        loss = module.forward_cpu(t1, target)
+        loss = module.forward(t1, target)
 
-        dx = module.backward_cpu()
+        dx = module.backward()
         print(loss.host_data, dx.gradient.host_data)
 
     def test_relu(self):
@@ -148,10 +149,10 @@ class TestModules(unittest.TestCase):
         x = np.random.uniform(-2, 2, size=81).reshape([9, 9])
         t1 = madml.tensor(x)
         module = nn.relu()
-        logit = module.forward_cpu(t1)
+        logit = module.forward(t1)
         logit.gradient.host_data = x
         y = logit.host_data
-        dx = module.backward_cpu().gradient.host_data
+        dx = module.backward().gradient.host_data
         self.assertTrue((np.sum(y) == np.sum(dx)).all())
 
 def load_mnist():

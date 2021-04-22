@@ -19,66 +19,50 @@ class relu(Module):
         self.inplace = inplace
         self.out = None
         self.kernel = vknn.relu(inplace, False)
-        self.kernel_backward = vknn.relu(inplace, True)
+        self.kernel_dx = vknn.relu(inplace, True)
         self.tmp = None
 
     def extra_repr(self) -> str:
         inplace_str = 'inplace=True' if self.inplace else ''
         return inplace_str
 
-    def forward_cpu(self, x: tensor) -> tensor:
-        tmp = x.host_data > 0
-        data = x.host_data * tmp
-        if self.inplace:
-            self.cache = [x, tmp, x]
-            x.host_data = data
-            return x
-        else:
-            if self.y is None:
+    def setup_forward(self, x: tensor) -> None:
+        if self.tmp is None:
+            if self.device_id != -1:
+                self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool))
+            else:
+                self.tmp = x.host_data > 0
+        if self.y is None:
+            if self.inplace:
+                self.y = x
+            else:
                 self.y = zeros_like(x)
 
-            self.cache = [x, tmp]
-            self.y.host_data = data
-            return self.y
+    def forward_cpu(self, x: tensor) -> tensor:
+        self.setup_forward(x)
+        data = x.host_data * self.tmp
+        self.y.host_data = data
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('y', self.y)
+        return self.y
 
     def forward_gpu(self, x: tensor) -> tensor:
-        if self.tmp is None:
-            self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool))       
-        if self.y is None and not self.inplace:
-            self.y = zeros_like(x)
-        elif self.inplace:
-            self.y = x
-
+        self.setup_forward(x)
         self.kernel.forward(self.y.device_data, x.device_data, self.tmp)
-        self.cache = [x]
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('y', self.y)
         return self.y
-      
 
-    def backward_cpu(self) -> tensor:
-        x, tmp = self.cache
-        y = self.y
+    def backward_cpu(self, x: tensor, y: tensor) -> tensor:
         dx, dy = x.gradient, y.gradient
-        arr = dy.host_data.reshape(x.shape) * tmp
-        x.gradient.host_data = arr.reshape(x.shape)
-        if not self.inplace:
-            y.zero_grad()
-        return x
+        arr = dy.host_data.reshape(dx.shape) * self.tmp
+        dx.host_data = arr.reshape(dx.shape)
+        return dx
 
-    def backward_gpu(self) -> tensor:
-        x = self.cache[0]
-        dx, dy = x.gradient, self.y.gradient
-        self.kernel_backward.forward(dx, dy, self.tmp)
-        return x
-
-
-    def print_l(self) -> None:
-        x, t, y = self.cache
-        super(relu, self).print_l()
-        print('\tmax input:', x.host_data.max(), 'g', x.gradient.host_data.max(),
-              ' output:', y.host_data.max(), 'g', y.gradient.host_data.max())
-        print('\tmin input:', x.host_data.min(), 'g', x.gradient.host_data.min(),
-              ' output:', y.host_data.min(), 'g', y.gradient.host_data.min())
-        self.test()
+    def backward_gpu(self, x: tensor, y: tensor) -> tensor:
+        dx, dy = x.gradient, y.gradient
+        self.kernel_dx.forward(dx.device_data, dy.device_data, self.tmp)
+        return dx
 
     def test(self):
         x, tmp, y = self.cache
@@ -86,7 +70,6 @@ class relu(Module):
         _dx = relu_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
-
 
 class dropout(Module):
     __constants__ = ['prob']
@@ -125,13 +108,12 @@ class dropout(Module):
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
 
-
 class softmax(Module):
     __constants__ = ['axis']
-    axis: int
+    axis : int
 
     def __init__(self, axis: int=1):
-        super(softmax, self).__init__()    
+        super(softmax, self).__init__()
         self.axis = axis
 
     def forward_cpu(self, x: tensor) -> tensor:
@@ -140,11 +122,7 @@ class softmax(Module):
         x = x.host_data
         ex = np.exp((x.T - np.max(x, self.axis)).T)
         self.y.host_data = (ex.T / ex.sum(axis=self.axis)).T
-        self.cache = [x]
         return self.y
-    
+
     def backward_cpu(self) -> tensor:
-        x = self.ca
-
-
-        return x
+        return self.y

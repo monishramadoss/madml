@@ -3,12 +3,10 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-
 from madml import tensor
 from madml.init import kaiming_uniform, zeros, ones, xavier_uniform
 from .module import Module, Parameter
 import vknn
-
 
 def _dim_fix(arr, arg_arr, pi):
     def parse(x):
@@ -40,15 +38,13 @@ class _NormBase(Module):
         self.affine = affine
         self.track_running_stats = track_running_stats
         if self.affine:
-            self.weight = Parameter(zeros, [num_features])
-            self.bias = Parameter(zeros, [num_features])
+            self.weight = register_weight(zeros, [num_features])
+            self.bias = register_bias(True, zeros, [num_features])
         if self.track_running_stats:
-            self.running_mean = Parameter(zeros, [num_features])
-            self.running_var = Parameter(zeros, [num_features])
+            self.running_mean = register_weight(zeros, [num_features])
+            self.running_var = register_weight(zeros, [num_features])
             self.num_batches_tracked = 0
 
-        
-            
 #mu = np.mean(X, axis=0)
 #var = np.var(X, axis=0)
 
@@ -59,7 +55,6 @@ class _NormBase(Module):
 
 #running_mean = exp_running_avg(running_mean, mu, momentum)
 #running_var = exp_running_avg(running_var, var, momentum)
-
 
 class BatchNorm(_NormBase):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=True, track_running_stat: bools=True):
@@ -72,30 +67,36 @@ class BatchNorm(_NormBase):
         mu = np.mean(x.host_data, axis=0)
         var = np.var(x.host_data, axis=0)
         x_norm = (x.host_data - mu) / np.sqrt(var + self.esp)
-        self.y.host_data = self.weight.param.host_data * x_norm + self.bias.param.host_data
 
-        self.running_mean.param.host_data = self.momentum * self.running_mean.param.host_data + (1. - self.momentum) * mu
-        self.running_var.param.host_data = self.momentum * self.running_var.param.host_data + (1. - self.momentum) * var
+        self.y.host_data = self.weight.host_data * x_norm + self.bias.host_data
+        self.running_mean.host_data = self.momentum * self.running_mean.host_data + (1. - self.momentum) * mu
+        self.running_var.host_data = self.momentum * self.running_var.host_data + (1. - self.momentum) * var
         self.num_batches.tracked += 1
 
-        self.cache = [x, x_norm, mu, var]
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('dx', x.gradient)
+        self.register_backward_arg('dy', self.y.gradient)
+
         return self.y
 
-    def backward_cpu(self, dy):
-        x, x_norm, mu, var = self.cache
+    def backward_cpu(self, x: tensor,  dx:tensor, dy: tensor):
+        mu = np.mean(x.host_data, axis=0)
+        var = np.var(x.host_data, axis=0)
+        x_norm = (x.host_data - mu) / np.sqrt(var + self.esp)
+
         N, C = x.shape[:2]
-        dx, dy = x.gradient, self.y.gradient
         x_mu = x.host_data - mu
 
         std_inv = 1. / np.sqrt(var + self.eps)
-        dx_norm = dx.host_data * self.weight.param.host_data
+        dx_norm = dx.host_data * self.weight.host_data
         dvar = np.sum(dx_norm * x_mu, axis=0) * -.5 * std_inv ** 3
         dmu = np.sum(dx_norm * -std_inv, axis=0) + dvar * np.mean(-2. * x_mu, axis=0)
-        dx.host_dat = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
+
+        dx.host_data = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
         self.weight.gradient.host_data = np.sum(dy.host_data * x_norm, axis=0)
         self.bias.gradient.host_data = np.sum(dy.host_data, axis=0)
 
-        return x
+        return dx
 
 class BatchNorm1d(BatchNorm):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=True, track_running_stat: bools=True):
@@ -109,7 +110,6 @@ class BatchNorm3d(BatchNorm):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=True, track_running_stat: bools=True):
         super(BatchNorm3d, self).__init__(num_features, eps, momentum, affine, track_running_stats)
 
-
 class InstanceNorm(_NormBase):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=False, track_running_stats: bool=False) -> None:
         super(InstanceNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
@@ -118,7 +118,6 @@ class InstanceNorm(_NormBase):
         if self.y is None:
             self.y = zeros(x.shape)
         return self.y
-
 
 class InstanceNorm1d(_NormBase):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=False, track_running_stats: bool=False) -> None:
@@ -131,4 +130,3 @@ class InstanceNorm2d(_NormBase):
 class InstanceNorm3d(_NormBase):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=False, track_running_stats: bool=False) -> None:
         super(InstanceNorm3d, self).__init__(num_features, eps, momentum, affine, track_running_stats)
-

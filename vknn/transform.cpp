@@ -2,7 +2,6 @@
 #include "../engine/utils.h"
 #include "transform.h"
 
-
 std::vector<int> prepareStrides(const Shape& shape_before, const Shape& shape_after, Shape& stride)
 {
     size_t dims = shape_before.size();
@@ -17,7 +16,6 @@ std::vector<int> prepareStrides(const Shape& shape_before, const Shape& shape_af
     return stride;
 }
 
-
 transpose::transpose(std::vector<int>& order)
 {
     m_future = std::async(&transpose::initVulkanThing, &*this, 3);
@@ -28,17 +26,17 @@ transpose::transpose(std::vector<int>& order)
     m_futures.resize(3);
 }
 
-
 void transpose::forward(tensor& y, tensor& x)
 {
     if (m_pipeline == nullptr)
     {
-        std::vector<int> new_shape;
+        std::vector<int> new_shape(x.dimNum());
         std::vector<int> old_shape = x.getShape();
         for (int i = 0; i < old_shape.size(); ++i)
         {
             new_shape[i] = old_shape[m_stride[i]];
         }
+
         m_stride = prepareStrides(old_shape, new_shape, m_stride);
         m_stride_tensor = tensor((char*)m_stride.data(), std::vector<int>{m_param.num_axes * 3}, Format::kFormatInt32);
         m_param.total = x.count();
@@ -51,11 +49,9 @@ void transpose::forward(tensor& y, tensor& x)
         createPipeline(sizeof(transpose_param));
     }
 
-    m_futures[0] = std::async(&transpose::bindtensor, &*this, x, 0);
-    m_futures[1] = std::async(&transpose::bindtensor, &*this, m_stride_tensor, 1);
-    m_futures[2] = std::async(&transpose::bindtensor, &*this, y, 2);
-    m_future = std::async(&transpose::recordCommandBuffer, &*this, static_cast<void*>(&m_param), sizeof(transpose_param));
+    bindtensor(x, 0);
+    bindtensor(m_stride_tensor, 1);
+    bindtensor(y, 2);
+    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(transpose_param));
     runCommandBuffer();
 }
-
-

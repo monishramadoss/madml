@@ -18,4 +18,3 @@ public:
     explicit transpose(std::vector<int>& order);
     void forward(tensor& y, tensor& x);
 };
-

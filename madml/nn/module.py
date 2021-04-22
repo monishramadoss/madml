@@ -7,109 +7,177 @@ from __future__ import unicode_literals
 import os
 from typing import List, Optional
 from concurrent.futures import ThreadPoolExecutor
-from madml import tensor
+
+from madml import tensor, zeros
 import vknn
 
 DEBUG = False
 
-global parameter_cache
-parameter_cache = []
-
 global MODULE_EXECUTOR
-MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=1)
+MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
+insert_dict = lambda dict, name, obj : (dict.update({name: obj}))
+def register_arg(executor, dict, name, obj):
+    return executor.submit(insert_dict, dict, name, obj)
 
-class Parameter(object):
-    param : tensor
+def run_sys(executor, kernel, *args, **kwargs):
+    return executor.submit(kernel, *args, **kwargs)
+
+class Parameter(tensor):
     optimizer_stuff : Optional[List[tensor]]
     shared_devices : bool
 
-    def __init__(self, init_fn, shape: List[int], shared_devices: bool=False) -> None:
-        self.param = init_fn(shape)
+    def __init__(self, init_fn, shape: List[int], shared_devices: bool=False, bias: bool=False, dtype=float) -> None:
+        super(Parameter, self).__init__(init_fn(shape).host_data, shape, dtype=dtype)
         self.optimizer_stuff = []
         self.shared_devices = shared_devices
-        parameter_cache.append(self)
+        self.bias = bias
 
     def zero_grad(self,) -> None:
-        for i in range(self.param.size):
-            self.param.grad_data[i] = 0
-
-    def reshape(self, shape: List[int]) -> None:
-        self.param.reshape(shape)
+        for i in range(self.size):
+            self.grad_data[i] = 0
+        self.gradient.upload()
 
 class Module(object):
-    def __init__(self):
-        self.cache = []
+    def __init__(self, device_id: int=-1):
         self.registered = False
-        self.visited = {}
         self.id = id(self)
-        self.y = None
         self.print_out_flag = False
-        self.use_gpu = False
+        self.use_bias = False
         self.executor = MODULE_EXECUTOR
         self._empty_gpu_tensor_obj = vknn.tensor([0.], [1])
-        self.y = None
         self.m_type = type(self).__name__
+        self.previous = []
+        self.next = []
+        self.parameter_cache = []
+        self.device_id = device_id
 
+        self.y = None
+
+        self.backward_args = {}
+        self.backward_arg_futures = []
+        self.input_registry = []
+        self.output_registry = []
+        self.weight_registry = []
+        self.kernel_registry = []
+        self.module_registry = []
 
     def forward(self, *args, **kwargs) -> tensor:
-        if  self.use_gpu:
-            return self.forward_gpu(*args, **kwargs)
-        return self.forward_cpu(*args, **kwargs)
-
-    def backward(self):
-        if self.use_gpu:
-            x = self.backward_gpu()
+        if self.device_id != -1:
+            y = self.forward_gpu(*args, **kwargs)
         else:
-            x = self.backward_cpu()
+            y = self.forward_cpu(*args, **kwargs)
+        if self.use_bias:
+            self.bias_call()
 
-        if isinstance(x, tensor):
-            x.reset_shape()
-
-        if DEBUG:
-            self.print_l()
-
-        return x
-
-    def forward_cpu(self, *args, **kwargs) -> tensor:
-        pass
-
-    def backward_cpu(self) -> tensor:
-        pass
-
-    def forward_gpu(self, *args, **kwargs) -> tensor:
-        pass
-
-    def backward_gpu(self) -> tensor:
-        pass
-
-    def __call__(self, *args, **kwargs):
-        
-        y = self.forward(*args, **kwargs)
-        if isinstance(y, tuple) or isinstance(y, list):
-            for x in y:
-                self.visited[x.id] = False
-                if self not in x.parent:
-                    x.parent += [self]
-                x.zero_grad()
-        else:
-            self.visited[y.id] = False
-            if self not in y.parent:
-                y.parent += [self]
-            y.zero_grad()
-        for x in args:
-            self.visited[x.id] = False
-            if self not in x.children:
-                x.children += [self]
-            x.zero_grad()
-
-        if not self.registered:
-            self.registered = True         
+        for x in self.next:
+            x.forward()
         return y
 
-    @staticmethod
-    def parameters() -> List[Parameter]:
-        return parameter_cache
+    def backward(self):
+        if self.use_bias:
+            self.d_bias_call()
+        if self.device_id != -1:
+            dx = self.backward_gpu(**self.backward_args)
+        else:
+            dx = self.backward_cpu(**self.backward_args)
+
+        for x in self.previous:
+            x.backward()
+        return dx
+
+    def setup(self, *args, **kwargs) -> None:
+        pass
+
+    def forward_cpu(self, *args, **kwargs) -> tensor:
+        return self._empty_gpu_tensor_obj
+
+    def backward_cpu(self, *args, **kwargs) -> tensor:
+        return self._empty_gpu_tensor_obj
+
+    def forward_gpu(self, *args, **kwargs) -> tensor:
+        return self._empty_gpu_tensor_obj
+
+    def backward_gpu(self, *args, **kwargs) -> tensor:
+        return self._empty_gpu_tensor_obj
+
+    def __call__(self, *args, **kwargs):
+        if not self.registered:
+            self.input_registry = [None for _ in range(len(args))]
+
+        for i, x in enumerate(args):
+            self.register_input(x, i)
+        y = self.forward(*(self.input_registry + self.weight_registry), **kwargs)
+
+        if not self.registered:
+            if isinstance(y, list) or isinstance(y, tuple):
+                self.output_registry = [None for _ in range(len(y))]
+                for i, y in enumerate(args):
+                    self.register_output(x, i)
+            else:
+                self.output_registry = [None]
+                self.register_output(y, 0)
+            self.registered = True
+
+        return y
+
+    def bias_call(self):
+        for i in range(self.y.shape[0]):
+            self.y.host_data[i] += self.bias.host_data
+
+    def d_bias_call(self):
+        self.bias.gradient.host_data = np.sum(dy.host_data, axis=0)
+
+    def parameters(self) -> List[Parameter]:
+        parameters = self.parameter_cache
+        for k, v in self.__dict__.items():
+            if isinstance(v, Module):
+                parameters += v.parameters()
+            elif isinstance(v, list) or isinstance(v, tuple):
+                for x in v:
+                    if isinstance(x, Module):
+                         parameters += x.parameters()
+        return  parameters
+
+    def to(self, device_id: int):
+        self.device_id = device_id
+        for m in self.module_registry:
+            m.to(device_id)
+        return self
+
+    def register_weight(self, init_fn, shape: List[int], shared_devices: bool=False):
+        self.parameter_cache.append(Parameter(init_fn, shape, shared_devices, False))
+        if self.parameter_cache[-1] not in self.weight_registry:
+            self.weight_registry += tuple([self.parameter_cache[-1]])
+        return self.parameter_cache[-1]
+
+    def register_bias(self, bias, init_fn, shape: List[int], shared_devices: bool=False):
+        if bias:
+            self.parameter_cache.append(Parameter(init_fn, shape, shared_devices, True))
+        else:
+            self.parameter_cache.append(Parameter(zeros, [1], False, True))
+        self.use_bias = bias
+        return self.parameter_cache[-1]
+
+    def register_output(self, output: tensor, idx: int=-1):
+        if output not in self.output_registry and idx != -1:
+            self.output_registry[idx] = output
+            output.next += [self]
+
+    def register_input(self, input: tensor, idx: int=-1):
+        if input not in self.input_registry and idx != -1:
+            self.input_registry[idx] = input
+            input.next += [self]
+
+    def register_backward_arg(self, name: str, value: tensor):
+        self.backward_arg_futures.append(register_arg(self.executor, self.backward_args, name, value))
+
+    def register_kernel(self, kernel, *args, **kwargs):
+        self.kernel_registry += [kernel(*args, **kwargs)]
+        return self.kernel_registry[-1]
+    def register_module(self, module, *args, **kwargs):
+        self.module_registry += [module(*args, **kwargs)]
+        return self.module_registry[-1]
 
     def print_l(self):
         print(type(self), end=': ')
@@ -117,4 +185,3 @@ class Module(object):
             if isinstance(t, tensor):
                 print(t.shape, end=' ')
         print()
-        pass

@@ -18,6 +18,7 @@ enum class Format
 
 typedef std::vector<int> Shape;
 bool isAvailable();
+size_t number_devices();
 
 //TODO need work on deallocations
 //TODO work on static members

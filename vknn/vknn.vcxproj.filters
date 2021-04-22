@@ -51,6 +51,9 @@
     <ClCompile Include="spv_shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="optimizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="activation.h">
@@ -86,6 +89,9 @@
     <ClInclude Include="spv_shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="optimizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\col2vol.comp">
@@ -110,6 +116,15 @@
       <Filter>Shader FIles</Filter>
     </None>
     <None Include="..\shaders\d_relu.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\max_reduce.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\d_max_reduce.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\mse.comp">
       <Filter>Shader FIles</Filter>
     </None>
   </ItemGroup>

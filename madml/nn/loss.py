@@ -37,7 +37,7 @@ class _Loss(Module):
             self.reduction = None  # _Reduction.legacy_get_string(size_average, reduce)
         else:
             self.reduction = reduction
-        self.loss = tensor([0], [1])
+        self.y = tensor([0], [1])
         self.losses = []
 
     def regularize(self) -> float:
@@ -76,8 +76,8 @@ class crossentropyloss(_WeightedLoss):
         self.ignore_index = ignore_index
         self.with_logit = with_logit
         self.batchsize = 1
-
-    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
+        self.p = None
+    def forward_cpu(self, logit: tensor, target: tensor, *arg, **kwargs) -> tensor:
         assert (len(logit.shape) != 1)
         self.batchsize = logit.shape[0]
         N = self.batchsize
@@ -90,8 +90,8 @@ class crossentropyloss(_WeightedLoss):
 
         max_x = np.max(x, axis=1, keepdims=True)
         exp_x = np.exp(x - max_x)
-        p = exp_x / np.sum(exp_x, axis=1, keepdims=True)
-        inp = p
+        self.p = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+        inp = self.p
 
         # gather_weight = None
         # if self.weight is not None:
@@ -122,26 +122,21 @@ class crossentropyloss(_WeightedLoss):
             loss = np.sum(loss)
         reg = self.regularize()
 
-        self.loss.host_data = (loss + reg) / self.batchsize
-        self.cache = [logit, target, p]
+        self.y.host_data = (loss + reg) / self.batchsize
+
+        self.register_backward_arg('x', logit)
+        self.register_backward_arg('t', target)
+        self.register_backward_arg('dx', logit.gradient)
+
         self.losses.append((loss, reg))
-        return self.loss
+        return self.y
 
-    def backward_cpu(self) -> tensor:
-        x, t, p = self.cache
-        self.visited[self.loss.id] = True
-        self.visited[t.id] = True
-        dx = (p - t.host_data) / self.batchsize
-        x.gradient.host_data = dx
-        return x
-
-    def test(self):
-        x, t, p = self.cache
-        # _dx = dcross_entropy(x.host_data, t.host_data)
-        # assert ((x.gradient.host_data == _dx).all())
+    def backward_cpu(self, x: tensor, t: tensor, dx: tensor) -> tensor:
+        dx.host_data = (self.p - t.host_data) / self.batchsize
+        return dx
 
     def accuracy(self):
-        x, t, p = self.cache
+        x, t, p = self.backward_args['x'], self.backward_args['t'], self.p
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())
 
@@ -164,19 +159,23 @@ class mseloss(_Loss):
             loss = np.sum(data_loss)
 
         reg = self.regularize()
-        self.loss.host_data = loss + reg
+        self.y.host_data = loss + reg
 
-        self.cache = [logit, target, m]
+        self.register_backward_arg('x', logit)
+        self.register_backward_arg('t', target)
+
         self.losses.append((loss, reg))
-        return self.loss
+        return self.y
 
-    def backward_cpu(self) -> tensor:
-        x, t, m = self.cache
-        grad_y = (x.host_data - t.host_data)
+    def backward_cpu(self, x:tensor, t:tensor) -> tensor:
+        m = x.shape[0]
+        grad_y = m * (x.host_data - t.host_data)
         x.gradient.host_data = grad_y
-        return x
+        return x.gradient
 
     def accuracy(self):
-        x, t, m = self.cache
+        x = self.backward_args['x']
+        t = self.backward_args['t']
+        m = x.shape[0]
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())

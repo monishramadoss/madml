@@ -3,21 +3,30 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 from collections import defaultdict
 from typing import Dict, List
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Lock, Value
 
 import numpy as np
 
 from .tensor import tensor
 from .nn import Parameter
+import vknn
+
+global OPTIMIZER_EXECUTOR
+OPTIMIZER_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
 DEBUG = False
 
 def print_p(p: Parameter) -> None:
-    print('\tdata', p.param.host_data.max(),
-          '\n\tgrad', p.param.gradient.host_data.max())
+    print('Parameter:\n\tdata', p.host_data.max(),
+          '\n\tgrad', p.gradient.host_data.max())
     for i, x in enumerate(p.optimizer_stuff):
-        print('\n\toptmizer_value:', i, x.host_data.max())
+        print('\toptmizer_value:', i, x.host_data.max())
+    print()
 
 def dl1_reg(w: np.ndarray, lam: float=1e-3, esp: float=1e-8) -> np.ndarray:
     return w * lam / np.abs(w + esp)
@@ -36,15 +45,27 @@ class Optimizer(object):
         self.state = defaultdict(dict)
         self.params = params
         self._use_velocity = False
+        self.executor = OPTIMIZER_EXECUTOR
+        self.futures = [None for _ in range(len(self.params))]
+        self.lock = Lock()
+        self.counter = 1
 
     def zero_grad(self) -> None:
         if DEBUG:
             print('parameter#', len(self.params))
+        if self.futures[0] is not None:
+            for future in self.futures:
+                future.result()
         for t in self.params:
             t.zero_grad()
 
-    def step(self):
-        raise NotImplementedError
+    def step_cpu(self, p: Parameter, closure=None):
+        pass
+
+    def step(self, closure=None):
+        for i, p in enumerate(self.params):
+            self.step_cpu(p, closure)
+        self.counter += 1
 
 class SGD(Optimizer):
     def __init__(self, params: List[Parameter], lr: float=1e-3, momentum: float=0.0, dampening: int=0,
@@ -63,27 +84,26 @@ class SGD(Optimizer):
 
         if momentum > 0.0:
             for p in self.params:
-                p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=nesterov)]
+                p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=nesterov)]
 
-    def step(self, closure=None) -> None:
-        for p in self.params:
-            p.param.reset_shape()
-            p.param.gradient.host_data += dl2_reg(p.param.host_data, self.defaults['lr'])
+    def step_cpu(self, p: Parameter, closure=None) -> None:
+        p.reset_shape()
+        p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
-            if self.defaults['momentum'] > 0.0:
-                v = p.optimizer_stuff[0].host_data
-                v = self.defaults['momentum'] * v - self.defaults['lr'] * p.param.gradient.host_data
-                p.optimizer_stuff[0].host_data = v
-                p.param.host_data += v
-            elif self.defaults['nesterov'] and self.defaults['momentum'] >= 0.0:
-                v = p.optimizer_stuff[0].host_data
-                v = self.defaults['momentum'] * v - self.defaults['lr'] * p.param.gradient.host_data
-                p.param.host_data += self.defaults['momentum'] * v - self.defaults['lr'] * p.param.gradient.host_data
-            else:
-                p.param.host_data -= self.defaults['lr'] * p.param.gradient.host_data
+        if self.defaults['momentum'] > 0.0:
+            v = p.optimizer_stuff[0].host_data
+            v = self.defaults['momentum'] * v - self.defaults['lr'] * p.gradient.host_data
+            p.optimizer_stuff[0].host_data = v
+            p.host_data += v
+        elif self.defaults['nesterov'] and self.defaults['momentum'] >= 0.0:
+            v = p.optimizer_stuff[0].host_data
+            v = self.defaults['momentum'] * v - self.defaults['lr'] * p.gradient.host_data
+            p.host_data += self.defaults['momentum'] * v - self.defaults['lr'] * p.gradient.host_data
+        else:
+            p.host_data -= self.defaults['lr'] * p.gradient.host_data
 
-            if DEBUG:
-                print_p(p)
+        if DEBUG:
+            print_p(p)
 
 class adam(Optimizer):
     def __init__(self, params: List[Parameter], lr: float=1e-3, betas: List[float]=(0.9, 0.999),
@@ -101,43 +121,39 @@ class adam(Optimizer):
 
         defaults = dict(lr=lr, betas=betas, eps=eps, weight_decay=weight_decay, amsgrad=amsgrad)
 
-        self.counter = 1
         super(adam, self).__init__(params, defaults)
 
         for p in self.params:
-            p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=True),
-                                 tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=True)]
+            p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=True),
+                                 tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=True)]
 
-    def step(self, closure=None) -> None:
-        for p in self.params:
-            p.param.reset_shape()
-            p.param.gradient.host_data += dl2_reg(p.param.host_data, self.defaults['lr'])
+    def step_cpu(self, p: Parameter, closure=None) -> None:
+        p.reset_shape()
+        p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
-            m = p.optimizer_stuff[0].host_data
-            r = p.optimizer_stuff[1].host_data
+        m = p.optimizer_stuff[0].host_data
+        r = p.optimizer_stuff[1].host_data
 
-            m = exp_running_avg(m, p.param.gradient.host_data, self.defaults['betas'][0])
-            r = exp_running_avg(r, p.param.gradient.host_data ** 2, self.defaults['betas'][1])
+        m = exp_running_avg(m, p.gradient.host_data, self.defaults['betas'][0])
+        r = exp_running_avg(r, p.gradient.host_data ** 2, self.defaults['betas'][1])
 
-            m_k_hat = m / (1. - self.defaults['betas'][0] ** self.counter)
+        m_k_hat = m / (1. - self.defaults['betas'][0] ** self.counter)
 
-            if self.defaults['amsgrad']:
-                r_k_hat = p.optimizer_stuff[1].gradient.host_data
-                r_k_hat = np.max(r, r_k_hat)
-                p.param.host_data -= self.defaults['lr'] / (np.sqrt(r_k_hat) + self.defaults['eps']) * m
+        if self.defaults['amsgrad']:
+            r_k_hat = p.optimizer_stuff[1].gradient.host_data
+            r_k_hat = np.max(r, r_k_hat)
+            p.host_data -= self.defaults['lr'] / (np.sqrt(r_k_hat) + self.defaults['eps']) * m
 
-            else:
-                r_k_hat = r / (1. - self.defaults['betas'][1] ** self.counter)
-                p.param.host_data -= self.defaults['lr'] * m_k_hat / (np.sqrt(r_k_hat) + self.defaults['eps'])
+        else:
+            r_k_hat = r / (1. - self.defaults['betas'][1] ** self.counter)
+            p.host_data -= self.defaults['lr'] * m_k_hat / (np.sqrt(r_k_hat) + self.defaults['eps'])
 
-            p.optimizer_stuff[0].host_data = m
-            p.optimizer_stuff[1].host_data = r
-            p.optimizer_stuff[0].gradient.host_data = m_k_hat
-            p.optimizer_stuff[1].gradient.host_data = r_k_hat
-
-            if DEBUG:
-                print_p(p)
-        self.counter += 1
+        p.optimizer_stuff[0].host_data = m
+        p.optimizer_stuff[0].gradient.host_data = m_k_hat
+        p.optimizer_stuff[1].host_data = r
+        p.optimizer_stuff[1].gradient.host_data = r_k_hat
+        if DEBUG:
+            print_p(p)
 
 class Adagrad(Optimizer):
     def __init__(self, params: List[Parameter], lr: float=1e-2, lr_decay: float=0.,
@@ -159,22 +175,21 @@ class Adagrad(Optimizer):
         super(Adagrad, self).__init__(params, defaults)
 
         for p in self.params:
-            p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False)]
+            p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False)]
 
-    def step(self, closure=None) -> None:
-        for p in self.params:
-            p.param.reset_shape()
-            p.param.gradient.host_data += dl2_reg(p.param.host_data, self.defaults['lr'])
+    def step_cpu(self, p: Parameter, closure=None) -> None:
+        p.reset_shape()
+        p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
-            v = p.optimizer_stuff[0].host_data
-            v = v + p.param.gradient.host_data
+        v = p.optimizer_stuff[0].host_data
+        v = v + p.gradient.host_data
 
-            p.param.host_data -= self.defaults['lr'] * (np.sqrt(v + self.defaults['eps'])) * p.param.gradient.host_data
+        p.host_data -= self.defaults['lr'] * (np.sqrt(v + self.defaults['eps'])) * p.gradient.host_data
 
-            p.optimizer_stuff[0].host_data = v
+        p.optimizer_stuff[0].host_data = v
 
-            if DEBUG:
-                print_p(p)
+        if DEBUG:
+            print_p(p)
 
 class RMSprop(Optimizer):
     def __init__(self, params: List[Parameter], lr: float=1e-2, alpha: float=0.99, eps: float=1e-8,
@@ -196,22 +211,21 @@ class RMSprop(Optimizer):
         super(RMSprop, self).__init__(params, defaults)
 
         for x, p in self.params.items():
-            p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False)]
+            p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False)]
 
-    def step(self, closure=None) -> None:
-        for k, p in self.params.items():
-            p.param.reset_shape()
-            p.param.gradient.host_data += dl2_reg(p.param.host_data, self.defaults['lr'])
+    def step_cpu(self, p: Parameter, closure=None) -> None:
+        p.reset_shape()
+        p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
-            v = p.optimizer_stuff[0].host_data
-            v = self.defaults['alpha'] * v + (1 - self.defaults['alpha']) * p.param.gradient.host_data ** 2
+        v = p.optimizer_stuff[0].host_data
+        v = self.defaults['alpha'] * v + (1 - self.defaults['alpha']) * p.gradient.host_data ** 2
 
-            p.param.host_data -= self.defaults['lr'] * (np.sqrt(v + self.defaults['eps'])) * p.param.gradient.host_data
+        p.host_data -= self.defaults['lr'] * (np.sqrt(v + self.defaults['eps'])) * p.gradient.host_data
 
-            p.optimizer_stuff[0].host_data = v
+        p.optimizer_stuff[0].host_data = v
 
-            if DEBUG:
-                print_p(p)
+        if DEBUG:
+            print_p(p)
 
 class Nadam(Optimizer):
     def __init__(self, params: Dict[int, Parameter], lr: float=1e-2, lr_decay: float=0.,
@@ -235,29 +249,28 @@ class Nadam(Optimizer):
         super(Nadam, self).__init__(params, defaults)
 
         for x, p in self.params.items():
-            p.optimizer_stuff = [tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False),
-                                 tensor([0.0 for _ in range(p.param.size)], p.param.shape, requires_grad=False)]
+            p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False),
+                                 tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False)]
 
-    def step(self, closure=None) -> None:
-        for k, p in self.params.items():
-            p.param.reset_shape()
-            p.param.gradient.host_data += dl2_reg(p.param.host_data, self.defaults['lr'])
+    def step_cpu(self, p: Parameter, closure=None) -> None:
+        p.reset_shape()
+        p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
-            m = p.optimizer_stuff[0].host_data
-            r = p.optimizer_stuff[1].host_data
+        m = p.optimizer_stuff[0].host_data
+        r = p.optimizer_stuff[1].host_data
 
-            m = exp_running_avg(m, p.param.host_data, self.defaults['betas'][0])
-            r = exp_running_avg(r, p.param.host_data ** 2, self.defaults['betas'][1])
+        m = exp_running_avg(m, p.host_data, self.defaults['betas'][0])
+        r = exp_running_avg(r, p.host_data ** 2, self.defaults['betas'][1])
 
-            m_k_hat = m / (1. - self.defaults['betas'][0] ** self.counter)
-            r_k_hat = r / (1. - self.defaults['betas'][1] ** self.counter)
+        m_k_hat = m / (1. - self.defaults['betas'][0] ** self.counter)
+        r_k_hat = r / (1. - self.defaults['betas'][1] ** self.counter)
 
-            w = self.defaults['lr'] / (np.sqrt(r_k_hat) + self.defaults['eps'])
-            w *= self.defaults['betas'][0] * m_k_hat + (1 - self.defaults['betas'][0]) / (1 - self.defaults['betas'][8] ** self.counter)
-            p.param.host_data -= w
+        w = self.defaults['lr'] / (np.sqrt(r_k_hat) + self.defaults['eps'])
+        w *= self.defaults['betas'][0] * m_k_hat + (1 - self.defaults['betas'][0]) / (1 - self.defaults['betas'][8] ** self.counter)
+        p.host_data -= w
 
-            p.optimizer_stuff[0].host_data = m
-            p.optimizer_stuff[1].host_data = r
+        p.optimizer_stuff[0].host_data = m
+        p.optimizer_stuff[1].host_data = r
 
-            if DEBUG:
-                print_p(p)
+        if DEBUG:
+            print_p(p)

@@ -6,6 +6,7 @@ std::shared_ptr<context> kCtx;
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
+
 // const bool enableValidationLayers = true
 const bool enableValidationLayers = false;
 #endif
@@ -21,7 +22,6 @@ VkDebugReportCallbackEXT kDebugReportCallback;
 uint32_t kQueueFamilyIndex;
 std::vector<const char*> kEnabledLayers;
 std::mutex kContextMtx;
-
 
 static uint32_t getComputeQueueFamilyIndex(VkPhysicalDevice& physicalDevice)
 {
@@ -65,7 +65,6 @@ static uint32_t getGraphicsQueueFamiliyIndex(VkPhysicalDevice& physicalDevice)
     return i;
 }
 
-
 bool checkExtensionAvailability(const char* extension_name,
     const std::vector<VkExtensionProperties>& available_extensions)
 {
@@ -108,6 +107,12 @@ bool isAvailable()
     return true;
 }
 
+size_t number_devices()
+{
+    //createContext();
+    return kPhysicalDevices.size();
+}
+
 context::context()
 {
     std::vector<const char*> enabledExtensions;
@@ -132,7 +137,7 @@ context::context()
 
         if (!foundLayer)
             throw std::runtime_error("Layer VK_LAYER_KHRONOS_validation not supported\n");
-        
+
         kEnabledLayers.push_back("VK_LAYER_KHRONOS_validation");
 
         uint32_t extensionCount;
@@ -152,7 +157,7 @@ context::context()
         }
 
         if (!foundExtension)
-            throw std::runtime_error( "Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
+            throw std::runtime_error("Extension VK_EXT_DEBUG_REPORT_EXTENSION_NAME not supported\n");
         enabledExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
 
@@ -163,7 +168,7 @@ context::context()
     applicationInfo.pEngineName = "madml";
     applicationInfo.engineVersion = 0;
     applicationInfo.apiVersion = VK_API_VERSION_1_2;
-    
+
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.flags = 0;
@@ -194,14 +199,14 @@ context::context()
 
     uint32_t deviceCount;
     vkEnumeratePhysicalDevices(kInstance, &deviceCount, nullptr);
-    
+
     if (deviceCount == 0)
     {
         throw std::runtime_error("could not find a device with vulkan support");
     }
 
     kPhysicalDevices.resize(deviceCount);
-    vkEnumeratePhysicalDevices(kInstance, &deviceCount, kPhysicalDevices.data());    
+    vkEnumeratePhysicalDevices(kInstance, &deviceCount, kPhysicalDevices.data());
 
     for (VkPhysicalDevice PDevice : kPhysicalDevices)
     {
@@ -225,7 +230,7 @@ context::context()
         deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
         deviceCreateInfo.queueCreateInfoCount = 1;
         deviceCreateInfo.pEnabledFeatures = &deviceFeatures;
-        
+
         VkDevice Device;
         VK_CHECK_RESULT(vkCreateDevice(PDevice, &deviceCreateInfo, nullptr, &Device));
         VkQueue Queue;
@@ -242,7 +247,6 @@ context::context()
         kQueues.push_back(Queue);
         kCmdPools.push_back(CmdPool);
     }
-
 }
 
 context::~context()
@@ -254,7 +258,6 @@ context::~context()
 
         if (kDevices[i] != nullptr)
             vkDestroyDevice(kDevices[i], nullptr);
-
     }
 
     if (enableValidationLayers)

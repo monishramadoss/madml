@@ -5,23 +5,33 @@ PYBIND11_MODULE(vknn, m)
 {
     py::class_<gemm, std::shared_ptr<gemm>>(m, "gemm")
         .def(py::init<float&, float&, bool&, bool&, bool&>())
-        .def("forward", &gemm::forward);
-    
+        .def("forward", &gemm::forward)
+        .def("run", &gemm::runCommandBuffer);
+
     py::class_<vol2col>(m, "vol2col")
         .def(py::init<std::vector<int>&>())
-        .def("forward", &vol2col::forward);
+        .def("forward", &vol2col::forward)
+        .def("run", &vol2col::runCommandBuffer);
 
     py::class_<col2vol>(m, "col2vol")
         .def(py::init<std::vector<int>&>())
-        .def("forward", &col2vol::forward);
-  
+        .def("forward", &col2vol::forward)
+        .def("run", &col2vol::runCommandBuffer);
+
     py::class_<relu>(m, "relu")
         .def(py::init<bool&, bool&>())
-        .def("forward", &relu::forward);
+        .def("forward", &relu::forward)
+        .def("run", &relu::runCommandBuffer);
 
     py::class_<transpose>(m, "transpose")
         .def(py::init<std::vector<int>&>())
-        .def("forward", &transpose::forward);
+        .def("forward", &transpose::forward)
+        .def("run", &transpose::runCommandBuffer);
+
+    py::class_<max_reduce>(m, "max_reduce")
+        .def(py::init<int&, int&, bool&>())
+        .def("forward", &max_reduce::forward)
+        .def("run", &max_reduce::runCommandBuffer);
 
     py::class_<tensor>(m, "tensor")
         .def(py::init<std::vector<float>&, const std::vector<int>&>())
@@ -33,6 +43,7 @@ PYBIND11_MODULE(vknn, m)
         .def("toHost", &tensor::toHost)
         .def("toDevice", &tensor::toDevice);
 
+    m.def("number_physcial_devices", &number_devices);
 
     m.def("init_float", &init_tensor<float>);
     m.def("init_int", &init_tensor<int>);
@@ -55,14 +66,14 @@ PYBIND11_MODULE(vknn, m)
     m.def("list_to_tensor_float", &list_to_tensor<float>);
     m.def("list_to_tensor_int", &list_to_tensor<int>);
     m.def("list_to_tensor_char", &list_to_tensor<char>);
+
     // m.def("list_to_tensor_bool", &list_to_tensor<bool>);
     m.def("list_to_tensor_double", &list_to_tensor<double>);
 
     m.def("tensor_to_list_float", &tensor_to_list<float>);
     m.def("tensor_to_list_int", &tensor_to_list<int>);
     m.def("tensor_to_list_char", &tensor_to_list<char>);
+
     // m.def("tensor_to_list_bool", &tensor_to_list<bool>);
     m.def("tensor_to_list_double", &tensor_to_list<double>);
-
-
 }

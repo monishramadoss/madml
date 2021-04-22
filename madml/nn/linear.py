@@ -19,80 +19,65 @@ class linear(Module):
     in_features : int
     out_features : int
 
-    def __init__(self, in_features: int, out_features: int, bias: bool=False, use_gpu=False) -> None:
+    def __init__(self, in_features: int, out_features: int, bias: bool=False, use_gpu=True) -> None:
         super(linear, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.weight = Parameter(kaiming_uniform(a=math.sqrt(5), nonlinearity='linear'), [in_features, out_features])
-        self.use_gpu = use_gpu
-        if bias:
-            self.bias = Parameter(zeros, [out_features])
-        else:
-            self.bias = None
+        self.weight = self.register_weight(kaiming_uniform(a=math.sqrt(5), nonlinearity='linear'), [in_features, out_features])
+        self.bias = self.register_bias(bias, zeros, [out_features])
+        self.kernel_y = vknn.gemm(1., 1., bias, False, False)
+        self.kernel_dw = vknn.gemm(1., 1., False, True, False)
+        self.kernel_dx = vknn.gemm(1., 1., False, False, True)
 
-        self.gpu_forward = vknn.gemm(1., 1., bias, False, False)
-        self.gpu_backward1 = vknn.gemm(1., 1., False, True, False)
-        self.gpu_backward2 = vknn.gemm(1., 1., False, False, True)
-        
-
-    def forward_cpu(self, x: tensor) -> tensor:
+    def forward_cpu(self, x: tensor, w: tensor) -> tensor:
         assert len(x.shape) == 2
         if self.y is None:
             self.y = zeros([x.shape[0], self.out_features])
+
         for i in range(x.shape[0]):
-            self.y.host_data[i] = np.matmul(x.host_data[i], self.weight.param.host_data)
-            if self.bias is Parameter:
-                self.y.host_data[i] += self.bias.param.host_data
-        self.cache = [x]
+            self.y.host_data[i] = np.matmul(x.host_data[i], w.host_data)
+
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('w', w)
+        self.register_backward_arg('y', self.y)
+
         return self.y
 
-    def forward_gpu(self, x: tensor) -> tensor:
+    def forward_gpu(self, x: tensor, w: tensor) -> tensor:
         assert len(x.shape) == 2
-        y = zeros([x.shape[0], self.out_features])
-        if self.bias is Parameter:
-            self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self.bias.param.device_data)
-        else:
-            self.gpu_forward.forward(y.device_data, x.device_data, self.weight.param.device_data, self._empty_gpu_tensor_obj)
-        self.cache = [x, y]
-        return y
+        if self.y is None:
+            self.y = zeros([x.shape[0], self.out_features])
 
-    def backward_cpu(self) -> tensor:
-        x, y = self.cache[0], self.y
-        dx, dy = x.gradient, y.gradient
-        if self.bias is Parameter:
-            self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
-        self.weight.param.gradient.host_data = np.matmul(x.host_data.T, dy.host_data)
+        self.kernel_y.forward(self.y.device_data, x.device_data, w.device_data, self.bias.device_data)
+        self.kernel_y.run()
+
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('w', w)
+        self.register_backward_arg('y', self.y)
+        return self.y
+
+    def backward_cpu(self, x: tensor, w: tensor, y: tensor) -> tensor:
+        dx, dw, dy = x.gradient, w.gradient, y.gradient
+        dw.host_data = np.matmul(x.host_data.T, dy.host_data)
         for i in range(x.shape[0]):
-            x.gradient.host_data[i] = np.matmul(dy.host_data[i], self.weight.param.host_data.T)
-        y.zero_grad()
-        return x
-    
-    def backward_gpu(self) -> tensor:
-        x, y = self.cache[0], self.y
-        dx, dy = x.gradient, y.gradient
-        if self.bias is Parameter:
-            self.bias.param.gradient.host_data = np.sum(dy.host_data, axis=0)
-        self.weight.param.gradient.device_data = self.gpu_backward1.forward(self.weight.param.gradient.device_data, x.device_data, dy.device_data, self._empty_gpu_tensor_obj) # Trans X
-        x.gradient.device_data = self.gpu_backward2.forward(x.gradient.device_data, dy.device_data, self.weight.param.device_data,  self._empty_gpu_tensor_obj) # Trans W
-        y.zero_grad()
-        return x
+            x.gradient.host_data[i] = np.matmul(dy.host_data[i], self.weight.host_data.T)
+        return dx
 
-    def print_l(self) -> None:
-        x, y = self.cache[0], self.y
-        super(linear, self).print_l()
-        print('\tmax input:', x.host_data.max(), 'g', x.gradient.host_data.max(),
-              ' weight:', self.weight.param.host_data.max(), 'g', self.weight.param.gradient.host_data.max(),
-              ' output:', y.host_data.max(), 'g', y.gradient.host_data.max())
-        print('\tmin input:', x.host_data.min(), 'g', x.gradient.host_data.min(),
-              ' weight:', self.weight.param.host_data.min(), 'g', self.weight.param.gradient.host_data.min(),
-              ' output:', y.host_data.max(), 'g', y.gradient.host_data.min())
-        self.test()
+    def backward_gpu(self, x: tensor, w: tensor, y: tensor) -> tensor:
+        dx, dw, dy = x.gradient, w.gradient, y.gradient
+
+        self.gemm_dx.forward(dx.device_data, dy.device_data, w.device_data, self._empty_gpu_tensor_obj)
+        self.gemm_dw.forward(dw.device_data, x.device_data, dy.device_data, self._empty_gpu_tensor_obj)
+       
+        self.gemm_dx.run()
+        self.gemm_dw.run()
+        return dx
 
     def test(self):
         x, y = self.cache[0], self.y
-        _y, c = fc_forward(x.host_data, self.weight.param.host_data, self.bias.param.host_data)
+        _y, c = fc_forward(x.host_data, self.weight.host_data, self.bias.host_data)
         _dx, _dw, _db = fc_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
-        assert ((_dw == self.weight.param.gradient.host_data).all())
-        assert ((_db == self.bias.param.gradient.host_data).all())
+        assert ((_dw == self.weight.gradient.host_data).all())
+        assert ((_db == self.bias.gradient.host_data).all())

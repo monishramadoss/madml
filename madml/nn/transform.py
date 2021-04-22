@@ -44,39 +44,40 @@ class vol2col(Module):
             self.index_length *= c
             self._c *= c
         self.col = zeros([self.n_output_plane, self.output_length])
-        self.kernel = vknn.vol2col([batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol,])
-        self.kernel_backward = vknn.col2vol([batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol,])
-
+        self.vol_col = vknn.vol2col([batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol,])
+        self.col_vol = vknn.col2vol([batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol,])
 
     def forward_cpu(self, x: tensor) -> tensor:
         _vol2col(x.host_data.ravel(), self.col.host_data.ravel(), self.batch_size, self.in_channels,
                  self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
                  nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
-        self.cache = [x]
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('y', self.col)
         return self.col
 
     def forward_gpu(self, x: tensor) -> tensor:
-        self.kernel.forward(x.device_data, self.col.device_data)
-        self.cache = [x]
+        self.vol_col.forward(x.device_data, self.col.device_data)
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('y', self.col)
         return self.col
 
-    def backward_cpu(self):
-        x = self.cache[0]
-        dx = x.gradient.host_data.ravel()
-        dcol = self.col.gradient.host_data.ravel()
-        _col2vol(dx, dcol, self.batch_size, self.in_channels,
+    def backward_cpu(self, x:tensor, y: tensor):
+        dx = x.gradient
+        npdx = x.gradient.host_data.ravel()
+        dcol = y.gradient.host_data.ravel()
+        _col2vol(npdx, dcol, self.batch_size, self.in_channels,
                  self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
                  nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
-        x.gradient.host_data = dx.reshape(x.shape)
+        dx.host_data = npdx.reshape(x.shape)
         self.col = zeros([self.n_output_plane, self.output_length])
-        return x
+        return dx
 
-    def backward_gpu(self):
-        x = self.cache[0]
-        dx = x.gradient.device_data
-        dcol = self.col.gradient.device_data
-        self.kernel_backward.forward(dx, dcol)
-        return x
+    def backward_gpu(self, x:tensor, y: tensor):
+        dx = x.gradient
+        dcol = y .gradient
+        self.col_vol.forward(dx.device_data, dcol.device_data)
+        self.col_vol.run()
+        return dx
 
     def print_l(self):
         x, y = self.cache[0], self.col
@@ -93,12 +94,14 @@ class transpose(Module):
     old_shape : List
     new_shape : List
 
-    def __init__(self, axes: List) -> None:
+    def __init__(self, axes: List[int], in_place: bool) -> None:
         super(transpose, self).__init__()
         self.axes = axes
         self.old_shape = []
         self.new_shape = []
         self.stride = [1 for _ in range(len(axes) * 3)]
+        self.in_place = in_place
+        self.kernel = vknn.transpose(self.axes)
 
     def forward_cpu(self, x: tensor) -> tensor:
         assert (len(x.shape) == len(self.axes))
@@ -107,32 +110,41 @@ class transpose(Module):
             self.new_shape = [self.old_shape[self.axes[i]] for i in range(len(self.axes))]
             self.prepare_stride(self.old_shape, self.new_shape)
 
-        y = zeros(self.new_shape)
-        for i in range(x.size):
-            old_pos = 0
-            new_pos = i
-            for j in range(len(x.shape)):
-                order = self.stride[j]
-                old_pos += (new_pos / self.stride[len(x.shape) + j] * self.stride[len(x.shape) * 2 + order])
-                new_pos %= self.stride[len(x.shape) + j]
+        if self.in_place:
+            self.y = x
+        elif self.y is None :
+            self.y = zeros(self.new_shape)
 
-            y.host_data[i] = x.host_data[old_pos]
-        self.cache.append(x)
-        self.cache.append(y)
-        return y
+        self.y.host_data = np.transpose(x.host_data, self.axes)
+        self.register_backward_arg('dx', x.gradient)
+        self.register_backward_arg('dy', self.y.gradient)
+        return self.y
 
-    def backward_cpu(self) -> None:
-        x, y = self.cache
-        self.prepare_stride(self.new_shape, self.old_shape)
-        for i in range(x.size):
-            old_pos = 0
-            new_pos = i
-            for j in range(len(x.shape)):
-                order = self.stride[j]
-                old_pos += (new_pos / self.stride[len(x.shape) + j] * self.stride[len(x.shape) * 2 + order])
-                new_pos %= self.stride[len(x.shape) + j]
-            x.gradient.host_data[i] = y.gradient.host_data[old_pos]
-        return x
+    def forward_gpu(self, x: tensor) -> tensor:
+        assert (len(x.shape) == len(self.axes))
+        if self.in_place:
+            self.y = x
+        elif self.y is None :
+            self.y = zeros(self.new_shape)
+        if self.new_shape == []:
+            self.old_shape = [s for s in x.shape]
+            self.new_shape = [self.old_shape[self.axes[i]] for i in range(len(self.axes))]
+        self.kernel.forward(self.y.device_data, x.device_data)
+        self.y.reshape(self.new_shape)
+        self.kernel.run()
+
+        self.register_backward_arg('dx', x.gradient)
+        self.register_backward_arg('dy', self.y.gradient)
+        return self.y
+
+    def backward_cpu(self, dx: tensor, dy:tensor) -> tensor:
+        dx.host_data = np.transpose(dy.host_data, self.axes)
+        return dx
+
+    def backward_gpu(self, dx: tensor, dy: tensor) -> tensor:
+        self.kernel.forward(dx.device_data, dy.device_data)
+        self.kernel.run()
+        return dx
 
     def prepare_stride(self, shape_before: List, shape_after: List) -> None:
         dims = len(self.axes)

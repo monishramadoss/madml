@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{320fdf89-2633-425c-bbf8-b1851dd81824}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>module.py</StartupFile>
+    <StartupFile>mod.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|VisualStudio|madml_testing</InterpreterId>
     <TestFramework>unittest</TestFramework>
-    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Name>python</Name>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -25,6 +25,25 @@
     <Content Include="CMakeLists.txt" />
     <Content Include="cmake_madml\CMakeLists.txt" />
     <Compile Include="compile_shaders.py" />
+    <Resource Include="shaders\col2vol.comp">
+      <Publish>False</Publish>
+    </Resource>
+    <Resource Include="shaders\d_max_reduce.comp">
+      <SubType>Code</SubType>
+    </Resource>
+    <Resource Include="shaders\d_relu.comp" />
+    <Resource Include="shaders\gemm.comp" />
+    <Content Include="shaders\max_reduce.comp">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="shaders\mse.comp">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="shaders\relu.comp" />
+    <Content Include="shaders\transpose.comp" />
+    <Content Include="shaders\vol2col.comp" />
+    <Content Include="shaders\wt_gemm.comp" />
+    <Content Include="shaders\xt_gemm.comp" />
     <Content Include="vknn\CMakeLists.txt" />
     <Content Include="vknn\x64\Debug\vknn.vcxproj.FileListAbsolute.txt" />
   </ItemGroup>
@@ -48,7 +67,7 @@
     <Compile Include="madml\tensor.py" />
     <Compile Include="madml\worker.py" />
     <Compile Include="madml\__init__.py" />
-    <Compile Include="module.py">
+    <Compile Include="mod.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="setup.py" />
@@ -58,6 +77,7 @@
     <Folder Include="cmake_madml" />
     <Folder Include="madml" />
     <Folder Include="madml\nn" />
+    <Folder Include="shaders\" />
     <Folder Include="vknn" />
     <Folder Include="vknn\x64\" />
     <Folder Include="vknn\x64\Debug" />
