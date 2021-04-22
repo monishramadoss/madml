@@ -1,0 +1,21 @@
+#version 450
+
+layout(push_constant) uniform pushBlock {
+	uint total;
+	bool reduction;
+};
+
+layout (local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
+layout (binding = 0) writeonly buffer ssbA { float loss[]; }; // 96 16
+layout (binding = 1) readonly buffer ssbB { float l[]; }; // 96 4 16
+layout (binding = 2) readonly buffer ssbC { float t[]; }; // 96 16
+layout (binding = 3) buffer ssbD { float dx[]; };
+
+void main(){
+	for(uint tid = gl_GlobalInvocationID.x; tid < total; tid += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+		dx[tid] = t[tid] - l[tid];
+		float ls = (t[tid] - l[tid]) * (t[tid] - l[tid]);
+	}
+	loss[0] = dx[0];
+	return;
+}

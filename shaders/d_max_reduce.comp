@@ -1,0 +1,21 @@
+#version 450
+
+layout(push_constant) uniform pushBlock {
+	uint y_size;
+	uint channel_offset; // col middle index
+	uint out_size; // col last index
+};
+
+layout (local_size_x = 4, local_size_y = 16, local_size_z = 1) in;
+layout (binding = 0) readonly buffer ssbA { float y[]; }; // 96 16
+layout (binding = 1) writeonly buffer ssbB { float col[]; }; // 96 4 16
+layout (binding = 2) buffer ssbC { int max_idx[]; }; // 96 16
+
+void main(){
+	for(uint tid = gl_GlobalInvocationID.x; tid < y_size; tid += gl_NumWorkGroups.x * gl_WorkGroupSize.x){
+		for (uint i = gl_GlobalInvocationID.y; i < out_size; i += gl_NumWorkGroups.y * gl_WorkGroupSize.y){
+			int idx = max_idx[tid * out_size + i];
+			col[tid * channel_offset * out_size + idx * out_size + i] = y[tid * out_size + i];
+		}
+	}
+}
