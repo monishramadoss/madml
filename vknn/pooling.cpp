@@ -35,7 +35,5 @@ void max_reduce::forward(tensor& y, tensor& col, tensor& max_idx)
     bindtensor(col, 1);
     bindtensor(max_idx, 2);
 
-    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(max_reduce_param));
-    runCommandBuffer();
-    return;
+    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(max_reduce_param));   
 }

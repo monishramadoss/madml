@@ -77,7 +77,17 @@ class crossentropyloss(_WeightedLoss):
         self.with_logit = with_logit
         self.batchsize = 1
         self.p = None
-    def forward_cpu(self, logit: tensor, target: tensor, *arg, **kwargs) -> tensor:
+
+
+    def forward(self, logit: tensor, target:tensor) -> tensor:
+        sefl.register_output_shape([1])        
+        self.register_backward_arg('x', logit)
+        self.register_backward_arg('t', target)
+        self.register_backward_arg('dx', logit.gradient)
+
+        return self.y
+
+    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
         assert (len(logit.shape) != 1)
         self.batchsize = logit.shape[0]
         N = self.batchsize
@@ -123,11 +133,6 @@ class crossentropyloss(_WeightedLoss):
         reg = self.regularize()
 
         self.y.host_data = (loss + reg) / self.batchsize
-
-        self.register_backward_arg('x', logit)
-        self.register_backward_arg('t', target)
-        self.register_backward_arg('dx', logit.gradient)
-
         self.losses.append((loss, reg))
         return self.y
 
@@ -145,11 +150,19 @@ class mseloss(_Loss):
 
     def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
         super(mseloss, self).__init__(size_average, reduce, reduction)
-
-    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
+        
+    def forward(self, logit: tensor, target: tensor) -> tensor:
         if logit.shape != target.shape:
             raise ValueError("logit and target shapes must be the same got: {}, {}".format(logit.shape, target.shape))
+        self.register_output_shape([1])
+        self.register_forward_arg('logit', logit)
+        self.register_forward_arg('target', target)
+        self.register_backward_arg('logit', logit)
+        self.register_backward_arg('target', target)
+        super(mseloss, self).forward(logit, target)
+        return self.y
 
+    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:      
         m = logit.shape[0]
         data_loss = 0.5 * (np.square(logit.host_data - target.host_data)).mean(axis=0)
 
@@ -160,22 +173,18 @@ class mseloss(_Loss):
 
         reg = self.regularize()
         self.y.host_data = loss + reg
-
-        self.register_backward_arg('x', logit)
-        self.register_backward_arg('t', target)
-
         self.losses.append((loss, reg))
         return self.y
 
-    def backward_cpu(self, x:tensor, t:tensor) -> tensor:
-        m = x.shape[0]
-        grad_y = m * (x.host_data - t.host_data)
-        x.gradient.host_data = grad_y
-        return x.gradient
+    def backward_cpu(self, logit: tensor, target: tensor) -> tensor:
+        m = logit.shape[0]
+        grad_y = m * (logit.host_data - target.host_data)
+        logit.gradient.host_data = grad_y
+        return logit.gradient
 
     def accuracy(self):
-        x = self.backward_args['x']
-        t = self.backward_args['t']
+        x = self.backward_args['logit']
+        t = self.backward_args['target']
         m = x.shape[0]
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())

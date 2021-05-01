@@ -101,49 +101,48 @@ class ConvNd(Module):
         self.transpose_y = self.register_module(transpose, self._TP, True)
         self.output_shape = []
 
-    def forward_setup(self, x: tensor, w: tensor) -> None:
+    def forward(self, x: tensor, w: tensor) -> None:
+        self.batch_size = x.shape[0]
+        self._col = [1 for _ in range(MAX_DIMS)]
+        self._vol = [1 for _ in range(MAX_DIMS)]
+        for i in range(1, self.dims+1):
+            self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
+            self._vol[-i] = x.shape[-i]
+        self.output_shape = [self._col[i] for i in range(-1, -(self.dims+1), -1)]
+        self.bias = self.register_bias(self.use_bias, zeros, [self.out_channels, *self.output_shape])
+        self.register_output_shape([self.batch_size, self.out_channels, *self.output_shape])
+
         if self.vol_col is None:
-            self.batch_size = x.shape[0]
-            self._col = [1 for _ in range(MAX_DIMS)]
-            self._vol = [1 for _ in range(MAX_DIMS)]
-            for i in range(1, self.dims+1):
-                self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
-                self._vol[-i] = x.shape[-i]
             self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
-            self.output_shape = [self._col[i] for i in range(-1, -(self.dims+1), -1)]
-            self.bias = self.register_bias(self.use_bias, zeros, [self.out_channels, *self.output_shape])
-            self.y = zeros([self.batch_size, self.out_channels, *self.output_shape])
-        w.reshape([w.shape[0], -1])
-        self.y.reshape([self.weight.shape[0], -1])
+
+        self.col = self.vol_col(x)
+        self.register_forward_arg('x', x)
+        self.register_forward_arg('w', w)
+
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('w', w)
+        self.register_backward_arg('y', self.y)
+        self.register_backward_arg('col', self.col)       
+        
+        super(ConvNd, self).forward(x, w)
+        return self.y            
 
 
     def forward_cpu(self, x: tensor, w: tensor) -> tensor:
-        self.forward_setup(x, w)
-        col = self.vol_col.forward(x)
-        
-        self.y.host_data = np.matmul(w.host_data, col.host_data)
+        w.reshape([w.shape[0], -1])
+        self.y.reshape([self.weight.shape[0], -1])       
+        self.y.host_data = np.matmul(w.host_data, self.col.host_data)
         self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
         self.transpose_y.forward(self.y)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', col)
         return self.y
 
     def forward_gpu(self, x: tensor, w: tensor) -> tensor:
-        self.forward_setup(x, w)
-        col = self.vol_col.forward(x)        
-        self.gemm_y.forward(self.y.device_data, w.device_data, col.device_data, self.bias.device_data)        
-
+        w.reshape([w.shape[0], -1])
+        self.y.reshape([self.weight.shape[0], -1])
+        self.gemm_y.forward(self.y.device_data, w.device_data, self.col.device_data, self.bias.device_data)        
         self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
         self.gemm_y.run()
         self.transpose_y.forward(self.y)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', col)
         return self.y
 
     def backward_cpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:

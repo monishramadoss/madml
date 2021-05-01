@@ -17,6 +17,7 @@ std::vector<VkPhysicalDevice> kPhysicalDevices;
 std::vector<VkDevice> kDevices;
 std::vector<VkQueue> kQueues;
 std::vector<VkCommandPool> kCmdPools;
+std::vector<VkPhysicalDeviceProperties> kLimits;
 
 VkDebugReportCallbackEXT kDebugReportCallback;
 uint32_t kQueueFamilyIndex;
@@ -109,8 +110,18 @@ bool isAvailable()
 
 size_t number_devices()
 {
-    //createContext();
-    return kPhysicalDevices.size();
+    if (kCtx)
+        return kPhysicalDevices.size();
+    else
+        return 0;
+}
+
+size_t avalible_memory(int device_id)
+{
+    if (kCtx && device_id != -1 && device_id < kLimits.size())
+        return kLimits[device_id].limits.maxStorageBufferRange;
+    else
+        return 0;
 }
 
 context::context()
@@ -210,8 +221,9 @@ context::context()
 
     for (VkPhysicalDevice PDevice : kPhysicalDevices)
     {
+        VkPhysicalDeviceProperties device_properties = {};
+        vkGetPhysicalDeviceProperties(PDevice, &device_properties);
         kQueueFamilyIndex = getComputeQueueFamilyIndex(PDevice);
-
         VkDeviceQueueCreateInfo queueCreateInfo = {};
         queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueCreateInfo.queueFamilyIndex = kQueueFamilyIndex;
@@ -246,6 +258,7 @@ context::context()
         kDevices.push_back(Device);
         kQueues.push_back(Queue);
         kCmdPools.push_back(CmdPool);
+        kLimits.push_back(device_properties);
     }
 }
 

@@ -16,6 +16,7 @@ global TENSOR_EXECUTOR
 TENSOR_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
 # from .nn.module import module_cache, execution_order
+
 def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
     ret_data = []
     ret_data.extend([bytearray(arr[i:i + 4]) for i in range(0, size, 4)])
@@ -120,15 +121,15 @@ class tensor(object):
         self.requires_grad = requires_grad
         assert (len(self.shape) > 0)
         assert (self._host_memory.size == self.size)
-        self._future_obj = None
-        self.executor = TENSOR_EXECUTOR
+        self._future = None
         self.m_type = 'tensor'
 
         num_devices = vknn.number_physcial_devices()
         if num_devices != 0:
-            device_id = 0
+            device_id = -1
         self.device_id = device_id
         self._grad = None
+
 
     def __copy__(self):
         new = tensor(self._host_memory, self._init_shape, requires_grad=False)
@@ -161,14 +162,28 @@ class tensor(object):
 
     def reshape(self, shape: List[int]) -> None:
         if self.shape != shape:
-            self._host_memory = self._host_memory.reshape(shape)
-            if (self._host_memory.size != self.size):
+            self.host_data = self.host_data.reshape(shape)
+            if (self.host_data.size != self.size):
                 raise Exception("reshape: cannot reshape size {(0},) does not match size ({1},)".format(self._host_memory.size, self.size))
             self.shape = list(self._host_memory.shape)
-            self._device_memory.reshape(self.shape)
+            self.device_data.reshape(self.shape)
             if self._grad is not None:
                 self._grad.reshape(self.shape)
 
+    @property
+    def future(self):
+        if self._future is None:
+            return None
+        return self._future
+
+    @future.setter
+    def future(self, value) -> None:
+        if self._future is None:
+            self._future = value
+        else:
+            _ = self._future.result()
+            self._future = value
+        
     @property
     def gradient(self):
         if self._grad is None and self.requires_grad:
@@ -191,6 +206,8 @@ class tensor(object):
 
     @property
     def host_data(self) -> np.ndarray:
+        if self.future is not None and not self.future.done():
+            self.future.result()
         if self.gpu_access:
             self.download()
             self.gpu_acess = False
@@ -199,6 +216,8 @@ class tensor(object):
 
     @host_data.setter
     def host_data(self, value: np.ndarray) -> None:
+        if self.future is not None and not self.future.done():
+            self.future.result()
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
@@ -206,6 +225,9 @@ class tensor(object):
 
     @property
     def device_data(self) -> vknn.tensor:
+        if self.future is not None and not self.future.done():
+            self.future.result()
+
         if self.cpu_access:
             self.upload()
             self.cpu_access = False
@@ -214,12 +236,18 @@ class tensor(object):
 
     @device_data.setter
     def device_data(self, value: vknn.tensor) -> None:
+        if self.future is not None and not self.future.done():
+            self.future.result()
+
         self._device_memory.data = value
-        _download(self._host_memory, self._device_memory.data)
+        self.download()
 
     def forward(self, *args, **kwargs):
         for n in self.next:
-            n.forward(None)
+            if type(n) == type(self):
+                n.forward(None)
+            else:
+                n.forward()
         return self
 
     def backward(self):
@@ -230,14 +258,10 @@ class tensor(object):
     def reset_shape(self) -> None:
         self.reshape(self._init_shape)
 
-    def flatten(self) -> None:
-        self.reshape([self.shape[0], -1])
-
-    def transpose(self, axis: List[int]) -> None:
-        self._host_memory = self._host_memory.transpose(axis)
-        self.reshape(self._host_memory.shape)
-
     def zero_grad(self):
+        if self.future is not None and not self.future.done():
+            self.future.result()
+
         if self._grad is not None:
             self.gradient.host_data = np.zeros_like(self.gradient.host_data)
 
@@ -285,3 +309,4 @@ class tensor(object):
     def to(idx:int):
         self.device_id = idx
         return self
+

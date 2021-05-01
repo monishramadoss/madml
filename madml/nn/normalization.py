@@ -38,11 +38,11 @@ class _NormBase(Module):
         self.affine = affine
         self.track_running_stats = track_running_stats
         if self.affine:
-            self.weight = register_weight(zeros, [num_features])
-            self.bias = register_bias(True, zeros, [num_features])
+            self.weight = self.register_weight(zeros, [num_features])
+            self.bias = self.register_bias(True, zeros, [num_features])
         if self.track_running_stats:
-            self.running_mean = register_weight(zeros, [num_features])
-            self.running_var = register_weight(zeros, [num_features])
+            self.running_mean = self.register_weight(zeros, [num_features])
+            self.running_var = self.register_weight(zeros, [num_features])
             self.num_batches_tracked = 0
 
 #mu = np.mean(X, axis=0)
@@ -60,23 +60,25 @@ class BatchNorm(_NormBase):
     def __init__(self, num_features: int, eps: float=1e-5, momentum: float=0.1, affine: bool=True, track_running_stat: bools=True):
         super(BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stats)
 
-    def forward_cpu(self, x: tensor) -> tensor:
-        if self.y is None:
-            self.y = zeros(x.shape)
+    def forward(self, x: tensor) -> tensor:
+        self.register_output_shape(x.shape)
+        self.register_forward_arg('x', x)
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('dx', x.gradient)
+        self.register_backward_arg('dy', self.y.gradient)
+        return self.y
 
+    def forward_cpu(self, x: tensor) -> tensor:
+        
         mu = np.mean(x.host_data, axis=0)
         var = np.var(x.host_data, axis=0)
         x_norm = (x.host_data - mu) / np.sqrt(var + self.esp)
 
-        self.y.host_data = self.weight.host_data * x_norm + self.bias.host_data
         self.running_mean.host_data = self.momentum * self.running_mean.host_data + (1. - self.momentum) * mu
         self.running_var.host_data = self.momentum * self.running_var.host_data + (1. - self.momentum) * var
         self.num_batches.tracked += 1
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('dx', x.gradient)
-        self.register_backward_arg('dy', self.y.gradient)
-
+        self.y.host_data = self.weight.host_data * x_norm
+        
         return self.y
 
     def backward_cpu(self, x: tensor,  dx:tensor, dy: tensor):
@@ -94,7 +96,7 @@ class BatchNorm(_NormBase):
 
         dx.host_data = (dx_norm * std_inv) + (dvar * 2 * x_mu / N) + (dmu / N)
         self.weight.gradient.host_data = np.sum(dy.host_data * x_norm, axis=0)
-        self.bias.gradient.host_data = np.sum(dy.host_data, axis=0)
+   
 
         return dx
 

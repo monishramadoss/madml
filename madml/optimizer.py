@@ -37,6 +37,9 @@ def dl2_reg(w: np.ndarray, lam: float=1e-3) -> np.ndarray:
 def exp_running_avg(running, new, gamma=.9):
     return gamma * running + (1. - gamma) * new
 
+def _optimizer_step_wrapper(fn, *args, **kwargs):
+    fn(*args, **kwargs)
+    
 class Optimizer(object):
     _use_velocity : bool
 
@@ -45,26 +48,27 @@ class Optimizer(object):
         self.state = defaultdict(dict)
         self.params = params
         self._use_velocity = False
-        self.executor = OPTIMIZER_EXECUTOR
         self.futures = [None for _ in range(len(self.params))]
         self.lock = Lock()
         self.counter = 1
+        self.device_id = -1
+        self._kernels = []
 
     def zero_grad(self) -> None:
         if DEBUG:
             print('parameter#', len(self.params))
-        if self.futures[0] is not None:
-            for future in self.futures:
-                future.result()
         for t in self.params:
             t.zero_grad()
 
-    def step_cpu(self, p: Parameter, closure=None):
+    def step_cpu(self, i, p: Parameter, closure=None):
         pass
 
     def step(self, closure=None):
         for i, p in enumerate(self.params):
-            self.step_cpu(p, closure)
+            if self.device_id == -1:
+                p.future = OPTIMIZER_EXECUTOR.submit(self.step_cpu, i, p, closure)
+            else:
+                p.future = OPTIMIZER_EXECUTOR.submit(self.step_gpu, i, p, closure)
         self.counter += 1
 
 class SGD(Optimizer):
@@ -86,7 +90,13 @@ class SGD(Optimizer):
             for p in self.params:
                 p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=nesterov)]
 
-    def step_cpu(self, p: Parameter, closure=None) -> None:
+    def step_gpu(self, i: int, p: Parameter, closure=None) -> None:
+        if len(self._kernels) <= i:
+            self._kernels.append(vknn.sgd(self.defaults['lr'], self.defaults['momentum'], self.defaults['dampening'], self.defaults['weight_decay'], self.defaults['nestrov']))
+        self._kernels[i].forward(p.device_data, p.gradient.device_data, p.optimizer_stuff[0].device_data)
+
+
+    def step_cpu(self, i: int,  p: Parameter, closure=None) -> None:
         p.reset_shape()
         p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
@@ -126,8 +136,16 @@ class adam(Optimizer):
         for p in self.params:
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=True),
                                  tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=True)]
+    
+    def step_gpu(self, i: int, p: Parameter, closure=None) -> None:
+        if len(self._kernels) <= i:
+            self._kernels.append(vknn.adam(self.defaults['lr'], self.defaults['betas'][0], self.defaults['betas'][1],
+                                           self.defaults['eps'], self.defaults['weight_decay'], self.defaults['asmgrad']))
+        self._kernels[i].forward(p.device_data, p.gradient.device_data, p.optimizer_stuff[0].device_data, p.optimizer_stuff[1].device_data,
+                              p.optimizer_stuff[0].gradient.device_data, p.optimizer_stuff[1].gradient.device_data)
 
-    def step_cpu(self, p: Parameter, closure=None) -> None:
+
+    def step_cpu(self, i: int, p: Parameter, closure=None) -> None:
         p.reset_shape()
         p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
@@ -173,21 +191,18 @@ class Adagrad(Optimizer):
         defaults = dict(lr=lr, lr_decay=lr_decay, eps=eps, weight_decay=weight_decay,
                         initial_accumulator_value=initial_accumulator_value)
         super(Adagrad, self).__init__(params, defaults)
-
+        self.counter = inital_accumulator_value
         for p in self.params:
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False)]
 
-    def step_cpu(self, p: Parameter, closure=None) -> None:
+    def step_cpu(self, i: int, p: Parameter, closure=None) -> None:
         p.reset_shape()
         p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
         v = p.optimizer_stuff[0].host_data
         v = v + p.gradient.host_data
-
         p.host_data -= self.defaults['lr'] * (np.sqrt(v + self.defaults['eps'])) * p.gradient.host_data
-
         p.optimizer_stuff[0].host_data = v
-
         if DEBUG:
             print_p(p)
 
@@ -213,7 +228,7 @@ class RMSprop(Optimizer):
         for x, p in self.params.items():
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False)]
 
-    def step_cpu(self, p: Parameter, closure=None) -> None:
+    def step_cpu(self, i: int, p: Parameter, closure=None) -> None:
         p.reset_shape()
         p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
 
@@ -223,54 +238,6 @@ class RMSprop(Optimizer):
         p.host_data -= self.defaults['lr'] * (np.sqrt(v + self.defaults['eps'])) * p.gradient.host_data
 
         p.optimizer_stuff[0].host_data = v
-
-        if DEBUG:
-            print_p(p)
-
-class Nadam(Optimizer):
-    def __init__(self, params: Dict[int, Parameter], lr: float=1e-2, lr_decay: float=0.,
-                 weight_decay: float=0, initial_accumulator_value: int=1, eps: float=1e-10) -> None:
-
-        if not 0.0 <= lr:
-            raise ValueError("Invalid learning rate: {}".format(lr))
-        if not 0.0 <= lr_decay:
-            raise ValueError("Invalid lr_decay value: {}".format(lr_decay))
-        if not 0.0 <= weight_decay:
-            raise ValueError("Invalid weight_decay value: {}".format(weight_decay))
-        if not 0.0 <= initial_accumulator_value:
-            raise ValueError("Invalid initial_accumulator_value value: {}".format(initial_accumulator_value))
-        if not 0.0 <= eps:
-            raise ValueError("Invalid epsilon value: {}".format(eps))
-
-        defaults = dict(lr=lr, lr_decay=lr_decay, eps=eps, weight_decay=weight_decay,
-                        initial_accumulator_value=initial_accumulator_value)
-
-        self.counter = initial_accumulator_value
-        super(Nadam, self).__init__(params, defaults)
-
-        for x, p in self.params.items():
-            p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False),
-                                 tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=False)]
-
-    def step_cpu(self, p: Parameter, closure=None) -> None:
-        p.reset_shape()
-        p.gradient.host_data += dl2_reg(p.host_data, self.defaults['lr'])
-
-        m = p.optimizer_stuff[0].host_data
-        r = p.optimizer_stuff[1].host_data
-
-        m = exp_running_avg(m, p.host_data, self.defaults['betas'][0])
-        r = exp_running_avg(r, p.host_data ** 2, self.defaults['betas'][1])
-
-        m_k_hat = m / (1. - self.defaults['betas'][0] ** self.counter)
-        r_k_hat = r / (1. - self.defaults['betas'][1] ** self.counter)
-
-        w = self.defaults['lr'] / (np.sqrt(r_k_hat) + self.defaults['eps'])
-        w *= self.defaults['betas'][0] * m_k_hat + (1 - self.defaults['betas'][0]) / (1 - self.defaults['betas'][8] ** self.counter)
-        p.host_data -= w
-
-        p.optimizer_stuff[0].host_data = m
-        p.optimizer_stuff[1].host_data = r
 
         if DEBUG:
             print_p(p)

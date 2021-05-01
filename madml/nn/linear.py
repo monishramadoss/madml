@@ -25,35 +25,29 @@ class linear(Module):
         self.out_features = out_features
         self.weight = self.register_weight(kaiming_uniform(a=math.sqrt(5), nonlinearity='linear'), [in_features, out_features])
         self.bias = self.register_bias(bias, zeros, [out_features])
-        self.kernel_y = vknn.gemm(1., 1., bias, False, False)
-        self.kernel_dw = vknn.gemm(1., 1., False, True, False)
-        self.kernel_dx = vknn.gemm(1., 1., False, False, True)
+        self.kernel_y = self.register_kernel(vknn.gemm, 1., 1., bias, False, False)
+        self.kernel_dw = self.register_kernel(vknn.gemm,1., 1., False, True, False)
+        self.kernel_dx = self.register_kernel(vknn.gemm,1., 1., False, False, True)
 
-    def forward_cpu(self, x: tensor, w: tensor) -> tensor:
-        assert len(x.shape) == 2
-        if self.y is None:
-            self.y = zeros([x.shape[0], self.out_features])
-
-        for i in range(x.shape[0]):
-            self.y.host_data[i] = np.matmul(x.host_data[i], w.host_data)
-
+    def forward(self, x: tensor, w: tensor) -> tensor:
+        self.register_output_shape([x.shape[0], self.out_features])
+        self.register_forward_arg('x', x)
+        self.register_forward_arg('w', w)
         self.register_backward_arg('x', x)
         self.register_backward_arg('w', w)
         self.register_backward_arg('y', self.y)
+        super(linear, self).forward(x, w)
+        return self.y
 
+
+    def forward_cpu(self, x: tensor, w: tensor) -> tensor:
+        for i in range(x.shape[0]):
+            self.y.host_data[i] = np.matmul(x.host_data[i], w.host_data)
         return self.y
 
     def forward_gpu(self, x: tensor, w: tensor) -> tensor:
-        assert len(x.shape) == 2
-        if self.y is None:
-            self.y = zeros([x.shape[0], self.out_features])
-
         self.kernel_y.forward(self.y.device_data, x.device_data, w.device_data, self.bias.device_data)
         self.kernel_y.run()
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
         return self.y
 
     def backward_cpu(self, x: tensor, w: tensor, y: tensor) -> tensor:

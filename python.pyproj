@@ -33,6 +33,12 @@
     </Resource>
     <Resource Include="shaders\d_relu.comp" />
     <Resource Include="shaders\gemm.comp" />
+    <Content Include="shaders\adagrad.comp">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="shaders\adam.comp">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="shaders\max_reduce.comp">
       <SubType>Code</SubType>
     </Content>
@@ -40,6 +46,12 @@
       <SubType>Code</SubType>
     </Content>
     <Content Include="shaders\relu.comp" />
+    <Content Include="shaders\rmsprop.comp">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="shaders\sgd.comp">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="shaders\transpose.comp" />
     <Content Include="shaders\vol2col.comp" />
     <Content Include="shaders\wt_gemm.comp" />

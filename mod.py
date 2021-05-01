@@ -164,13 +164,13 @@ def test_mnst_cnn():
             self.relu3 = nn.relu()
             self.relu4 = nn.relu()
 
-            self.fc3.to(0)
-            self.fc2.to(0)
-            self.fc1.to(0)
+            #self.fc3.to(0)
+            #self.fc2.to(0)
+            #self.fc1.to(0)
 
-            self.conv1.to(0)
-            self.conv2.to(0)
-            self.conv3.to(0)
+            #self.conv1.to(0)
+            #self.conv2.to(0)
+            #self.conv3.to(0)
 
         def forward(self, X):
             X = self.conv1(X)
@@ -178,7 +178,7 @@ def test_mnst_cnn():
             X = self.conv2(X)
             X = self.conv3(X)
             X = self.relu2(X)
-            X.flatten()
+            X = madml.flatten(X)
             X = self.fc1(X)
             X = self.relu3(X)
             X = self.fc2(X)

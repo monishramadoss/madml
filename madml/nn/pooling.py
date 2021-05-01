@@ -54,27 +54,36 @@ class _MaxPoolNd(Module):
         self.vol_col = None
         self.max_idx = []
 
-    def setup_forward(self, x: tensor) -> None:
+    def forward(self, x: tensor) -> tensor:        
+        self.batch_size = x.shape[0]
+        self.in_channels = x.shape[1]
+        self._col = [1 for _ in range(MAX_DIMS)]
+        self._vol = [1 for _ in range(MAX_DIMS)]
+        for i in range(1, self.dims + 1):
+            self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
+            self._vol[-i] = x.shape[-i]
+            self.channel_offset *= self.kernel_size[i]
+        self.output_shape = [self._col[i] for i in range(-1, -(self.dims + 1), -1)]
+        self.register_output_shape([self.batch_size, self.in_channels, *self.output_shape])
+        
+        out_size = np.prod(self.output_shape)
+        max_idx_size = self.in_channels * self.batch_size * out_size
+        self.max_idx = tensor([0 for i in range(max_idx_size)], [self.in_channels * self.batch_size, out_size], dtype=int)
+        
+        self.pool_kernel = self.register_kernel(vknn.max_reduce, self.in_channels, self.batch_size, False)
+        self.pool_kernel_dcol = self.register_kernel(vknn.max_reduce, self.in_channels, self.batch_size, True)
+        
         if self.vol_col is None:
-            self.batch_size = x.shape[0]
-            self.in_channels = x.shape[1]
-            self._col = [1 for _ in range(MAX_DIMS)]
-            self._vol = [1 for _ in range(MAX_DIMS)]
-            for i in range(1, self.dims + 1):
-                self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
-                self._vol[-i] = x.shape[-i]
-                self.channel_offset *= self.kernel_size[i]
             self.vol_col = vol2col(self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
-            self.output_shape = [self._col[i] for i in range(-1, -(self.dims + 1), -1)]
-            self.y = zeros([self.batch_size, self.in_channels, *self.output_shape])
-            out_size = np.prod(self.output_shape)
-            max_idx_size = self.in_channels * self.batch_size * out_size
-            self.max_idx = tensor([0 for i in range(max_idx_size)], [self.in_channels * self.batch_size, out_size], dtype=int)
-            self.pool_kernel = vknn.max_reduce(self.in_channels, self.batch_size, False)
-            self.pool_kernel_dcol = vknn.max_reduce(self.in_channels, self.batch_size, True)
-
+        
+        self.register_forward_arg('x', x)
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('y', self.y)
+        self.register_backward_arg('col', col)
+        super(_MaxPoolNd, self).forward(x)
+        return self.y
+            
     def forward_cpu(self, x: tensor) -> tensor:
-        self.setup_forward(x)
         col = self.vol_col.forward_cpu(x)
         col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
 
@@ -88,16 +97,10 @@ class _MaxPoolNd(Module):
             y[i] = tmp
 
         self.y.host_data = y
-        self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', col)
-
+        self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])  
         return self.y
 
     def forward_gpu(self, x: tensor) -> tensor:
-        self.setup_forward(x)
         col = self.vol_col.forward_gpu(x)
         col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
         col.download()
@@ -105,11 +108,6 @@ class _MaxPoolNd(Module):
         self.y.reshape([self.in_channels * self.batch_size, -1])
         self.pool_kernel.forward(self.y.device_data, col.device_data, self.max_idx.device_data)
         self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', col)
-
         return self.y
 
     def backward_cpu(self, x: tensor, y: tensor, col: tensor) -> tensor:

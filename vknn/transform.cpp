@@ -19,7 +19,7 @@ std::vector<int> prepareStrides(const Shape& shape_before, const Shape& shape_af
 transpose::transpose(std::vector<int>& order)
 {
     m_future = std::async(&transpose::initVulkanThing, &*this, 3);
-    m_param.num_axes = order.size();
+    m_param.num_axes = static_cast<int>(order.size());
     m_stride.resize(order.size() * 3);
     for (int i = 0; i < order.size(); ++i)
         m_stride[i] = order[i];
@@ -52,6 +52,5 @@ void transpose::forward(tensor& y, tensor& x)
     bindtensor(x, 0);
     bindtensor(m_stride_tensor, 1);
     bindtensor(y, 2);
-    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(transpose_param));
-    runCommandBuffer();
+    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(transpose_param));  
 }

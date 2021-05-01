@@ -19,6 +19,7 @@ enum class Format
 typedef std::vector<int> Shape;
 bool isAvailable();
 size_t number_devices();
+size_t avalible_memory(int device_id);
 
 //TODO need work on deallocations
 //TODO work on static members

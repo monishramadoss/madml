@@ -18,6 +18,7 @@ namespace py = pybind11;
 #include "pooling.h"
 #include "rnn.h"
 #include "transform.h"
+#include "optimizer.h"
 
 template<typename T>
 tensor init_tensor(py::array_t<T, py::array::c_style | py::array::forcecast> a)
