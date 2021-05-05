@@ -5,16 +5,17 @@ from __future__ import unicode_literals
 
 import numpy as np
 
-from madml import tensor, zeros_like
+import vknn
+from madml import tensor
 from .module import Module
 from .testing import relu_forward, relu_backward, dropout_forward, dropout_backward
-import vknn
+
 
 class relu(Module):
     __constants__ = ['inplace']
-    inplace : bool
+    inplace: bool
 
-    def __init__(self, inplace: bool=False) -> None:
+    def __init__(self, inplace: bool = False) -> None:
         super(relu, self).__init__()
         self.inplace = inplace
         self.out = None
@@ -28,7 +29,8 @@ class relu(Module):
 
     def forward(self, x: tensor) -> tensor:
         if self.tmp is None:
-            self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool)) if self.device_id != -1 else np.zeros(x.shape).astype(bool)
+            self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool)) if self.device_id != -1 else np.zeros(
+                x.shape).astype(bool)
         if self.y is None:
             if self.inplace:
                 self.y = x
@@ -40,25 +42,24 @@ class relu(Module):
         super(relu, self).forward(x)
         return self.y
 
-
-    def forward_cpu(self, x: tensor) -> tensor:
+    def _forward_cpu(self, x: tensor) -> tensor:
         self.tmp = x.host_data >= 0
         data = x.host_data * self.tmp
         self.y.host_data = data
         return self.y
 
-    def forward_gpu(self, x: tensor) -> tensor:
+    def _forward_gpu(self, x: tensor) -> tensor:
         self.kernel.forward(self.y.device_data, x.device_data, self.tmp)
         self.kernel.run()
         return self.y
 
-    def backward_cpu(self, x: tensor, y: tensor) -> tensor:
+    def _backward_cpu(self, x: tensor, y: tensor) -> tensor:
         dx, dy = x.gradient, y.gradient
         arr = dy.host_data.reshape(dx.shape) * self.tmp
         dx.host_data = arr.reshape(dx.shape)
         return dx
 
-    def backward_gpu(self, x: tensor, y: tensor) -> tensor:
+    def _backward_gpu(self, x: tensor, y: tensor) -> tensor:
         dx, dy = x.gradient, y.gradient
         self.kernel_dx.forward(dx.device_data, dy.device_data, self.tmp)
         self.kernel_dx.run()
@@ -71,11 +72,12 @@ class relu(Module):
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
 
+
 class dropout(Module):
     __constants__ = ['prob']
-    prob : float
+    prob: float
 
-    def __init__(self, probability: float=0.1, seed: int=None) -> None:
+    def __init__(self, probability: float = 0.1, seed: int = None) -> None:
         super(dropout, self).__init__()
         if seed:
             np.random.seed(seed)
@@ -91,7 +93,7 @@ class dropout(Module):
         super(dropout, self).forward(x)
         return self.y
 
-    def forward_cpu(self, x: tensor) -> tensor:
+    def _forward_cpu(self, x: tensor) -> tensor:
         self.mask.host_data = self.mask.host_data < self.prob
         tmp = x.host_data / (1 - self.prob)
         tmp[self.mask.host_data] = 0
@@ -99,8 +101,8 @@ class dropout(Module):
         self.cache = [x]
         return self.y
 
-    def backward_cpu(self, dx: tensor, dy: tensor) -> tensor:
-        dx = dy / (1 - self.prob)
+    def _backward_cpu(self, dx: tensor, dy: tensor) -> tensor:
+        dx.host_data = dy.host_data / (1 - self.prob)
         dx[self.mask.host_data] = 0
         return dx
 
@@ -111,11 +113,12 @@ class dropout(Module):
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
 
+
 class softmax(Module):
     __constants__ = ['axis']
-    axis : int
+    axis: int
 
-    def __init__(self, axis: int=1):
+    def __init__(self, axis: int = 1):
         super(softmax, self).__init__()
         self.axis = axis
 
@@ -125,11 +128,11 @@ class softmax(Module):
         super(softmax, self).forward(x)
         return self.y
 
-    def forward_cpu(self, x: tensor) -> tensor:
+    def _forward_cpu(self, x: tensor) -> tensor:
         x = x.host_data
         ex = np.exp((x.T - np.max(x, self.axis)).T)
         self.y.host_data = (ex.T / ex.sum(axis=self.axis)).T
         return self.y
 
-    def backward_cpu(self) -> tensor:
+    def _backward_cpu(self) -> tensor:
         return self.y

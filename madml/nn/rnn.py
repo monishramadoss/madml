@@ -5,27 +5,28 @@ from __future__ import unicode_literals
 
 from madml import tensor
 from madml import zeros
-from .module import Module, Parameter
-from .activation import  relu, softmax
-from .math import sigmoid, tanh, add
+from .activation import softmax
 from .linear import linear
+from .math import sigmoid, add
+from .module import Module
+
 
 class rnnbase(Module):
     __constants__ = ['mode', 'input_size', 'hidden_size', 'num_layers', 'bias',
                      'batch_first', 'dropout', 'bidirectional']
 
-    mode : str
-    input_size : int
-    hidden_size : int
-    num_layers : int
-    bias : bool
-    batch_first : bool
-    dropout : float
-    bidirectional : bool
+    mode: str
+    input_size: int
+    hidden_size: int
+    num_layers: int
+    bias: bool
+    batch_first: bool
+    dropout: float
+    bidirectional: bool
 
     def __init__(self, mode: str, input_size: int, hidden_size: int,
-                 num_layers: int=1, bias: bool=True, batch_first: bool=False,
-                 dropout: float=0., bidirectional: bool=False) -> None:
+                 num_layers: int = 1, bias: bool = True, batch_first: bool = False,
+                 dropout: float = 0., bidirectional: bool = False) -> None:
         super(rnnbase, self).__init__()
         self.mode = mode
         self.input_size = input_size
@@ -86,16 +87,16 @@ class rnnbase(Module):
                 for direction in range(num_directions):
                     gates = []
                     for gate in range(self.gates - 1):
-                        tx = self.kernel[layer][direction][gate][0].forward_cpu(x)
-                        th = self.kernel[layer][direction][gate][1].forward_cpu(hx[layer * num_directions + direction])
-                        thx = self.kernel[layer][direction][gate][2].forward_cpu(tx, th)
-                        tha = self.activation1.forward_cpu(thx)
+                        tx = self.kernel[layer][direction][gate][0]._forward_cpu(x)
+                        th = self.kernel[layer][direction][gate][1]._forward_cpu(hx[layer * num_directions + direction])
+                        thx = self.kernel[layer][direction][gate][2]._forward_cpu(tx, th)
+                        tha = self.activation1._forward_cpu(thx)
                         gates.append(tha)
 
                     if self.mode == 'LSTM':
-                        tx = self.kernel[layer][direction][-1][0].forward_cpu(x)
-                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer * num_directions + direction])
-                        thx = self.kernel[layer][direction][-1][2].forward_cpu(tx, th)
+                        tx = self.kernel[layer][direction][-1][0]._forward_cpu(x)
+                        th = self.kernel[layer][direction][-1][1]._forward_cpu(hx[layer * num_directions + direction])
+                        thx = self.kernel[layer][direction][-1][2]._forward_cpu(tx, th)
                         tha = self.activation2(thx.host_data)
                         c = cx.host_data[layer * num_directions + direction]
                         hi = gates[0].host_data
@@ -106,26 +107,27 @@ class rnnbase(Module):
                         h = ho * self.activation2(c)
                         hx.host_data[layer * num_direction + direction] = h
                         cx.host_data[layer * num_direction + direction] = c
-                        yx = self.output[layer * num_directions + direction].forward_cpu(hx)
+                        yx = self.output[layer * num_directions + direction]._forward_cpu(hx)
 
                     elif self.mode == 'GRU':
                         hr = gates[0].host_data
                         hz = gates[1].host_data
-                        tx = self.kernel[layer][direction][-1][0].forward_cpu(x)
-                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer * num_directions + direction])
+                        tx = self.kernel[layer][direction][-1][0]._forward_cpu(x)
+                        th = self.kernel[layer][direction][-1][1]._forward_cpu(hx[layer * num_directions + direction])
                         th.host_data = hr * th.host_data
-                        thx = self.kernel[layer][direction][-1][2].forward_cpu(tx, th)
+                        thx = self.kernel[layer][direction][-1][2]._forward_cpu(tx, th)
                         tha = self.activation2(thx.host_data)
                         h = (1 - hz) * hn + hz * hx[layer * num_directions + direction]
-                        hx.host_data[layer * num_directions + direction] = h                                            yx = self.output[layer * num_directions + direction].forward_cpu(hx)
+                        hx.host_data[layer * num_directions + direction] = h
+                        yx = self.output[layer * num_directions + direction]._forward_cpu(hx)
 
                     else:
-                        tx = self.kernel[layer][direction][-1][0].forward_cpu(x[0])
-                        th = self.kernel[layer][direction][-1][1].forward_cpu(hx[layer * num_directions + direction])
-                        thx = self.kernel[layer][direction][-1][2].forward_cpu(tx, th)
+                        tx = self.kernel[layer][direction][-1][0]._forward_cpu(x[0])
+                        th = self.kernel[layer][direction][-1][1]._forward_cpu(hx[layer * num_directions + direction])
+                        thx = self.kernel[layer][direction][-1][2]._forward_cpu(tx, th)
                         thx.host_data = self.activation2(thx.host_data)
                         hx.host_data[layer * num_directions + direction] = thx.host_data
-                        yx = self.output[layer * num_directions + direction].forward_cpu(hx)
+                        yx = self.output[layer * num_directions + direction]._forward_cpu(hx)
 
                     gates.clear()
 

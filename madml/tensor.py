@@ -5,15 +5,16 @@ from __future__ import unicode_literals
 
 import os
 import struct
-from typing import List, Union, Optional, Type
+from concurrent.futures import ThreadPoolExecutor
+from typing import List, Union, Optional
 
 import numpy as np
-import vknn
 
-from concurrent.futures import ThreadPoolExecutor
+import vknn
 
 global TENSOR_EXECUTOR
 TENSOR_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
+
 
 # from .nn.module import module_cache, execution_order
 
@@ -173,8 +174,10 @@ class tensor(object):
     @property
     def future(self):
         if self._future is None:
-            return None
-        return self._future
+            return True
+        else:
+            self._future.result()
+        return self._future.done()
 
     @future.setter
     def future(self, value) -> None:
@@ -190,7 +193,6 @@ class tensor(object):
             self._grad = tensor([0 for i in range(self.size)], self.shape, requires_grad=False)
         elif not self.requires_grad:
             raise Exception("gradient: should not be asking for gradient")
-
         return self._grad
 
     @gradient.setter
@@ -206,8 +208,7 @@ class tensor(object):
 
     @property
     def host_data(self) -> np.ndarray:
-        if self.future is not None and not self.future.done():
-            self.future.result()
+        self.future
         if self.gpu_access:
             self.download()
             self.gpu_acess = False
@@ -216,8 +217,6 @@ class tensor(object):
 
     @host_data.setter
     def host_data(self, value: np.ndarray) -> None:
-        if self.future is not None and not self.future.done():
-            self.future.result()
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
@@ -225,9 +224,7 @@ class tensor(object):
 
     @property
     def device_data(self) -> vknn.tensor:
-        if self.future is not None and not self.future.done():
-            self.future.result()
-
+        self.future
         if self.cpu_access:
             self.upload()
             self.cpu_access = False
@@ -236,9 +233,6 @@ class tensor(object):
 
     @device_data.setter
     def device_data(self, value: vknn.tensor) -> None:
-        if self.future is not None and not self.future.done():
-            self.future.result()
-
         self._device_memory.data = value
         self.download()
 

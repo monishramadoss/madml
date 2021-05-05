@@ -11,10 +11,10 @@ def test_linear():
     t1 = madml.tensor(a)
     module = nn.linear(5, 5, use_gpu=True)
 
-    t2 = module.forward_cpu(t1)
+    t2 = module._forward_cpu(t1)
     y = t2.host_data
 
-    t3 = module.forward_gpu(t1)
+    t3 = module._forward_gpu(t1)
     y_hat = t3.download()
 
     t1.gradient.host_data = a
@@ -43,10 +43,10 @@ def test_convolution():
 
     module = nn.conv2d(1, 1, kernel_shape, stride, padding, dilation, weight_init='ones')
 
-    t2 = module.forward_cpu(t1)
+    t2 = module._forward_cpu(t1)
     y = t2.host_data
 
-    t3 = module.forward_gpu(t1)
+    t3 = module._forward_gpu(t1)
     y_hat = t3.download()
 
     print(y_hat == y)
@@ -61,10 +61,11 @@ def test_maxpool():
     x = np.arange(0, 100).astype(np.float32).reshape([2, 2, 5, 5])
     t1 = madml.tensor(x)
     module = nn.maxpool2d(kernel_shape, stride, padding, dilation)
-    t2 = module.forward_cpu(t1)
+    t2 = module.forward(t1)
     y = t2.host_data
     print(y)
-    t3 = module.forward_gpu(t1)
+    module.to(1)
+    t3 = module.forward(t1)
     y_hat = t3.download()
     print()
     print(y_hat)
@@ -74,12 +75,12 @@ def test_relu():
     x = np.random.uniform(-2, 2, size=81).reshape([9, 9])
     t1 = madml.tensor(x)
     module = nn.relu()
-    t3 = module.forward_gpu(t1)
+    t3 = module._forward_gpu(t1)
     y_hat = t3.download()
     print(y_hat)
     print()
 
-    t2 = module.forward_cpu(t1)
+    t2 = module._forward_cpu(t1)
     y = t2.host_data
     print(y)
     input()
@@ -207,6 +208,8 @@ def test_mnst_cnn():
     #test_y = madml.tensor(ty)
     #acc = test_loop(model, test_x, test_y)
     #print(sum(acc) / len(acc))
+
 if __name__ == "__main__": 
-    test_mnst_cnn()
-    test_identity()
+    test_maxpool()
+    #test_mnst_cnn()
+    #test_identity()

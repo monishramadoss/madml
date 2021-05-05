@@ -8,12 +8,11 @@ from typing import Union, List, Optional
 
 import numpy as np
 
+import vknn
 from madml import tensor
 from madml.init import kaiming_uniform, zeros, ones, xavier_uniform
 from .module import Module, Parameter
-from .testing import conv_forward, conv_backward
 from .transform import vol2col, transpose
-import vknn
 
 MAX_DIMS = 3
 
@@ -30,23 +29,24 @@ def _dim_fix(arr, arg_arr, pi):
         j += 1
     return arr
 
+
 class ConvNd(Module):
     __constants__ = ['dims', 'stride', 'padding', 'dilation', 'groups', 'padding_mode', 'output_padding', 'in_channels',
                      'out_channels', 'kernel_size']
     __annotations__ = {'bias': Optional[List]}
-    dims : int
-    in_channels : int
-    out_channels : int
-    kernel_size : List[int]
-    stride : List[int]
-    padding : List[int]
-    dilation : List[int]
-    transposed : bool
-    output_padding : List[int]
-    groups : int
-    padding_mode : str
-    weight : Parameter
-    bias : Optional[Parameter]
+    dims: int
+    in_channels: int
+    out_channels: int
+    kernel_size: List[int]
+    stride: List[int]
+    padding: List[int]
+    dilation: List[int]
+    transposed: bool
+    output_padding: List[int]
+    groups: int
+    padding_mode: str
+    weight: Parameter
+    bias: Optional[Parameter]
 
     def __init__(self, dims, in_channels: int, out_channels: int, kernel_size: Union[int, List[int]],
                  stride: Union[int, List[int]], padding: Union[int, List[int]], dilation: Union[int, List[int]],
@@ -63,8 +63,9 @@ class ConvNd(Module):
             raise ValueError('out_channels must be divisible by groups')
         valid_padding_modes = {'zeros'}  # , 'reflect', 'replicate', 'circular'} # needs to be implemented
         if padding_mode not in valid_padding_modes:
-            raise ValueError("padding_mode must be one of {}, but got padding_mode='{}'".format(valid_padding_modes, padding_mode))
-        #self.use_gpu = True
+            raise ValueError(
+                "padding_mode must be one of {}, but got padding_mode='{}'".format(valid_padding_modes, padding_mode))
+        # self.use_gpu = True
         self.dims = dims
         self.in_channels = in_channels
         self.out_channels = out_channels
@@ -95,7 +96,7 @@ class ConvNd(Module):
 
         self.vol_col = None
         self._TP = [1, 0] + [i + 2 for i in range(dims)]
-        self.gemm_y = self.register_kernel(vknn.gemm, 1.0,1.0, bias, False, False)
+        self.gemm_y = self.register_kernel(vknn.gemm, 1.0, 1.0, bias, False, False)
         self.gemm_dw = self.register_kernel(vknn.gemm, 1.0, 1.0, False, False, True)
         self.gemm_dc = self.register_kernel(vknn.gemm, 1.0, 1.0, False, True, False)
         self.transpose_y = self.register_module(transpose, self._TP, True)
@@ -105,15 +106,18 @@ class ConvNd(Module):
         self.batch_size = x.shape[0]
         self._col = [1 for _ in range(MAX_DIMS)]
         self._vol = [1 for _ in range(MAX_DIMS)]
-        for i in range(1, self.dims+1):
-            self._col[-i] = int((x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) // self.stride[-i]) + 1
+        for i in range(1, self.dims + 1):
+            self._col[-i] = int(
+                (x.shape[-i] + 2 * self.padding[-i] - self.dilation[-i] * (self.kernel_size[-i] - 1) - 1) //
+                self.stride[-i]) + 1
             self._vol[-i] = x.shape[-i]
-        self.output_shape = [self._col[i] for i in range(-1, -(self.dims+1), -1)]
+        self.output_shape = [self._col[i] for i in range(-1, -(self.dims + 1), -1)]
         self.bias = self.register_bias(self.use_bias, zeros, [self.out_channels, *self.output_shape])
         self.register_output_shape([self.batch_size, self.out_channels, *self.output_shape])
 
         if self.vol_col is None:
-            self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col, self.kernel_size, self.stride, self.padding, self.dilation)
+            self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col,
+                                                self.kernel_size, self.stride, self.padding, self.dilation)
 
         self.col = self.vol_col(x)
         self.register_forward_arg('x', x)
@@ -122,30 +126,29 @@ class ConvNd(Module):
         self.register_backward_arg('x', x)
         self.register_backward_arg('w', w)
         self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', self.col)       
-        
+        self.register_backward_arg('col', self.col)
+
         super(ConvNd, self).forward(x, w)
-        return self.y            
+        return self.y
 
-
-    def forward_cpu(self, x: tensor, w: tensor) -> tensor:
+    def _forward_cpu(self, x: tensor, w: tensor) -> tensor:
         w.reshape([w.shape[0], -1])
-        self.y.reshape([self.weight.shape[0], -1])       
+        self.y.reshape([self.weight.shape[0], -1])
         self.y.host_data = np.matmul(w.host_data, self.col.host_data)
         self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
         self.transpose_y.forward(self.y)
         return self.y
 
-    def forward_gpu(self, x: tensor, w: tensor) -> tensor:
+    def _forward_gpu(self, x: tensor, w: tensor) -> tensor:
         w.reshape([w.shape[0], -1])
         self.y.reshape([self.weight.shape[0], -1])
-        self.gemm_y.forward(self.y.device_data, w.device_data, self.col.device_data, self.bias.device_data)        
+        self.gemm_y.forward(self.y.device_data, w.device_data, self.col.device_data, self.bias.device_data)
         self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
         self.gemm_y.run()
         self.transpose_y.forward(self.y)
         return self.y
 
-    def backward_cpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:
+    def _backward_cpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:
         y.reset_shape()
         dx, dw, dy, dcol = x.gradient, w.gradient, y.gradient, col.gradient
         _dy = self.transpose_y.backward()
@@ -155,12 +158,12 @@ class ConvNd(Module):
         w.reset_shape()
 
         w_reshaped = w.host_data.reshape([self.out_channels, -1])
-        dcol.host_data = np.matmul(w_reshaped.T, dy_reshaped)
+        dcol.host_data = np.matmul(w_reshaped.T, dy.host_data)
 
         _dx = self.vol_col.backward()
         return dx
 
-    def backward_gpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:
+    def _backward_gpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:
         y.reset_shape()
         dx, dw, dy, dcol = x.gradient, w.gradient, y.gradient, col.gradient
         _dy = self.transpose_y.backward()
@@ -168,26 +171,26 @@ class ConvNd(Module):
 
         self.gemm_dx.forward(dcol.device_data, w.device_data, dy.device_data, self._empty_gpu_tensor_obj)
         self.gemm_dw.forward(dw.device_data, dy.device_data, dcol.device_data, self._empty_gpu_tensor_obj)
-        
+
         self.gemm_dx.run()
         self.gemm_dw.run()
 
         _dx = self.vol_col.backward()
         return dx
-       
+
 
 class conv1d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]]=1,
-                 padding: Union[int, List[int]]=0,
-                 dilation: Union[int, List[int]]=1,
-                 groups: Union[int, List[int]]=1,
-                 bias: bool=False,
-                 padding_mode: str='zeros',
-                 weight_init: str='kaiming_uniform') -> None:
+                 stride: Union[int, List[int]] = 1,
+                 padding: Union[int, List[int]] = 0,
+                 dilation: Union[int, List[int]] = 1,
+                 groups: Union[int, List[int]] = 1,
+                 bias: bool = False,
+                 padding_mode: str = 'zeros',
+                 weight_init: str = 'kaiming_uniform') -> None:
         super(conv1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
@@ -197,87 +200,89 @@ class conv2d(ConvNd):
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]]=1,
-                 padding: Union[int, List[int]]=0,
-                 dilation: Union[int, List[int]]=1,
-                 groups: Union[int, List[int]]=1,
-                 bias: bool=False,
-                 padding_mode: str='zeros',
-                 weight_init: str='xavier_uniform') -> None:
+                 stride: Union[int, List[int]] = 1,
+                 padding: Union[int, List[int]] = 0,
+                 dilation: Union[int, List[int]] = 1,
+                 groups: Union[int, List[int]] = 1,
+                 bias: bool = False,
+                 padding_mode: str = 'zeros',
+                 weight_init: str = 'xavier_uniform') -> None:
         super(conv2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
-   
+
 class conv3d(ConvNd):
     def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]]=1,
-                 padding: Union[int, List[int]]=0,
-                 dilation: Union[int, List[int]]=1,
-                 groups: Union[int, List[int]]=1,
-                 bias: bool=False,
-                 padding_mode: str='zeros'):
+                 stride: Union[int, List[int]] = 1,
+                 padding: Union[int, List[int]] = 0,
+                 dilation: Union[int, List[int]] = 1,
+                 groups: Union[int, List[int]] = 1,
+                 bias: bool = False,
+                 padding_mode: str = 'zeros'):
         super(conv3d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode)
 
 
 class ConvTransposeNd(ConvNd):
     def __init__(self, dims, in_channels, out_channels, kernel_size, stride,
-                  padding, dilation, output_padding,
-                  groups, bias, padding_mode, weight_init):
+                 padding, dilation, output_padding,
+                 groups, bias, padding_mode, weight_init):
         if padding_mode != 'zeros':
             raise ValueError('Only "zeros" padding mode is supported for {}'.format(self.__class__.__name__))
 
-        super(ConvTransposeNd, self).__init__( dims, in_channels, out_channels, kernel_size, stride,  padding, dilation, True, output_padding,
-            groups, bias, padding_mode, weight_init)
-    
+        super(ConvTransposeNd, self).__init__(dims, in_channels, out_channels, kernel_size, stride, padding, dilation,
+                                              True, output_padding, groups, bias, padding_mode, weight_init)
+
 
 class convtranspose1d(ConvTransposeNd):
-    def __init__(self, 
+    def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]]=1,
-                 padding: Union[int, List[int]]=0,
-                 dilation: Union[int, List[int]]=1,
-                 groups: Union[int, List[int]]=1,
-                 bias: bool=False,
-                 padding_mode: str='zeros',
-                 weight_init: str='xavier_uniform') -> None:
-        super(convtranspose1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, output_padding,
-            groups, bias, padding_mode, weight_init)
+                 stride: Union[int, List[int]] = 1,
+                 padding: Union[int, List[int]] = 0,
+                 dilation: Union[int, List[int]] = 1,
+                 groups: Union[int, List[int]] = 1,
+                 bias: bool = False,
+                 output_padding: Union[int, List[int]] = 0,
+                 padding_mode: str = 'zeros',
+                 weight_init: str = 'xavier_uniform') -> None:
+        super(convtranspose1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation,
+                                              output_padding, groups, bias, padding_mode, weight_init)
 
 
 class convtranspose2d(ConvTransposeNd):
-    def __init__(self, 
+    def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]]=1,
-                 padding: Union[int, List[int]]=0,
-                 dilation: Union[int, List[int]]=1,
-                 groups: Union[int, List[int]]=1,
-                 bias: bool=False,
-                 padding_mode: str='zeros',
-                 weight_init: str='xavier_uniform') -> None:
-        super(convtranspose2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, output_padding,
-            groups, bias, padding_mode, weight_init)
+                 stride: Union[int, List[int]] = 1,
+                 padding: Union[int, List[int]] = 0,
+                 dilation: Union[int, List[int]] = 1,
+                 groups: Union[int, List[int]] = 1,
+                 bias: bool = False,
+                 output_padding: Union[int, List[int]] = 0,
+                 padding_mode: str = 'zeros',
+                 weight_init: str = 'xavier_uniform') -> None:
+        super(convtranspose2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation,
+                                              output_padding, groups, bias, padding_mode, weight_init)
 
 
-   
 class convtranspose3d(ConvTransposeNd):
-    def __init__(self, 
+    def __init__(self,
                  in_channels: int,
                  out_channels: int,
                  kernel_size: Union[int, List[int]],
-                 stride: Union[int, List[int]]=1,
-                 padding: Union[int, List[int]]=0,
-                 dilation: Union[int, List[int]]=1,
-                 groups: Union[int, List[int]]=1,
-                 bias: bool=False,
-                 padding_mode: str='zeros',
-                 weight_init: str='xavier_uniform') -> None:
-        super(convtranspose3d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation, output_padding,
-            groups, bias, padding_mode, weight_init)
+                 stride: Union[int, List[int]] = 1,
+                 padding: Union[int, List[int]] = 0,
+                 dilation: Union[int, List[int]] = 1,
+                 groups: Union[int, List[int]] = 1,
+                 bias: bool = False,
+                 output_padding: Union[int, List[int]] = 0,
+                 padding_mode: str = 'zeros',
+                 weight_init: str = 'xavier_uniform') -> None:
+        super(convtranspose3d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation,
+                                              output_padding, groups, bias, padding_mode, weight_init)

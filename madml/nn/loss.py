@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from abc import ABC
 from typing import List, Optional
 
 import numpy as np
@@ -11,27 +10,32 @@ import numpy as np
 from madml import tensor
 from .module import Module
 
+
 def _size(shape: List[int]) -> int:
     size = 1
     for s in shape:
         size *= s
     return size
 
+
 def softmax_util_cpu(x: tensor, y: tensor) -> tensor:
     eX = np.exp((x.host_data.T - np.max(x.host_data, axis=1)).T)
     y.host_data = (eX.T / eX.sum(axis=1)).T
     return y
 
-def l1_reg(w: tensor, lam: float=1e-3) -> float:
+
+def l1_reg(w: tensor, lam: float = 1e-3) -> float:
     return lam * np.sum(np.abs(w.host_data))
 
-def l2_reg(w: tensor, lam: float=1e-3) -> float:
+
+def l2_reg(w: tensor, lam: float = 1e-3) -> float:
     return .5 * lam * np.sum(w.host_data * w.host_data)
 
-class _Loss(Module):
-    reduction : Optional[str]
 
-    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
+class _Loss(Module):
+    reduction: Optional[str]
+
+    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super(_Loss, self).__init__()
         if size_average is not None or reduce is not None:
             self.reduction = None  # _Reduction.legacy_get_string(size_average, reduce)
@@ -61,42 +65,40 @@ class _Loss(Module):
     def accuracy(self):
         raise NotImplementedError
 
+
 class _WeightedLoss(_Loss):
-    def __init__(self, weight=None, size_average=None, reduce=None, reduction: str='mean') -> None:
+    def __init__(self, weight=None, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super(_WeightedLoss, self).__init__(size_average, reduce, reduction)
         self.weight = weight
 
+
 class crossentropyloss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
-    ignore_index : int
+    ignore_index: int
 
-    def __init__(self, weight=None, size_average=None, ignore_index: int=None,
-                 reduce=None, reduction: str='mean', with_logit: bool=False) -> None:
+    def __init__(self, weight=None, size_average=None, ignore_index: int = None,
+                 reduce=None, reduction: str = 'mean', with_logit: bool = False) -> None:
         super(crossentropyloss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.with_logit = with_logit
         self.batchsize = 1
         self.p = None
 
-
-    def forward(self, logit: tensor, target:tensor) -> tensor:
-        sefl.register_output_shape([1])        
+    def forward(self, logit: tensor, target: tensor) -> tensor:
+        sefl.register_output_shape([1])
         self.register_backward_arg('x', logit)
         self.register_backward_arg('t', target)
         self.register_backward_arg('dx', logit.gradient)
 
         return self.y
 
-    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:
+    def _forward_cpu(self, logit: tensor, target: tensor) -> tensor:
         assert (len(logit.shape) != 1)
         self.batchsize = logit.shape[0]
-        N = self.batchsize
         C = logit.shape[1]
         x = logit.host_data
-        t = target.host_data
         if not self.with_logit:
             target = target.onehot(label_count=C)
-            t = target.host_data
 
         max_x = np.max(x, axis=1, keepdims=True)
         exp_x = np.exp(x - max_x)
@@ -136,7 +138,7 @@ class crossentropyloss(_WeightedLoss):
         self.losses.append((loss, reg))
         return self.y
 
-    def backward_cpu(self, x: tensor, t: tensor, dx: tensor) -> tensor:
+    def _backward_cpu(self, x: tensor, t: tensor, dx: tensor) -> tensor:
         dx.host_data = (self.p - t.host_data) / self.batchsize
         return dx
 
@@ -145,12 +147,13 @@ class crossentropyloss(_WeightedLoss):
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())
 
+
 class mseloss(_Loss):
     __constants__ = ['reduction']
 
-    def __init__(self, size_average=None, reduce=None, reduction: str='mean') -> None:
+    def __init__(self, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super(mseloss, self).__init__(size_average, reduce, reduction)
-        
+
     def forward(self, logit: tensor, target: tensor) -> tensor:
         if logit.shape != target.shape:
             raise ValueError("logit and target shapes must be the same got: {}, {}".format(logit.shape, target.shape))
@@ -162,8 +165,7 @@ class mseloss(_Loss):
         super(mseloss, self).forward(logit, target)
         return self.y
 
-    def forward_cpu(self, logit: tensor, target: tensor) -> tensor:      
-        m = logit.shape[0]
+    def _forward_cpu(self, logit: tensor, target: tensor) -> tensor:
         data_loss = 0.5 * (np.square(logit.host_data - target.host_data)).mean(axis=0)
 
         if self.reduction == 'mean':
@@ -176,7 +178,7 @@ class mseloss(_Loss):
         self.losses.append((loss, reg))
         return self.y
 
-    def backward_cpu(self, logit: tensor, target: tensor) -> tensor:
+    def _backward_cpu(self, logit: tensor, target: tensor) -> tensor:
         m = logit.shape[0]
         grad_y = m * (logit.host_data - target.host_data)
         logit.gradient.host_data = grad_y
@@ -185,6 +187,5 @@ class mseloss(_Loss):
     def accuracy(self):
         x = self.backward_args['logit']
         t = self.backward_args['target']
-        m = x.shape[0]
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())
