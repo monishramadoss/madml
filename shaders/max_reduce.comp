@@ -7,8 +7,8 @@ layout(push_constant) uniform pushBlock {
 };
 
 layout (local_size_x = 4, local_size_y = 16, local_size_z = 1) in;
-layout (binding = 0) writeonly buffer ssbA { float y[]; }; // 96 16
-layout (binding = 1) readonly buffer ssbB { float col[]; }; // 96 4 16
+layout (binding = 0) buffer ssbA { float y[]; }; // 96 16
+layout (binding = 1) buffer ssbB { float col[]; }; // 96 4 16
 layout (binding = 2) buffer ssbC { int max_idx[]; }; // 96 16
 
 void main(){

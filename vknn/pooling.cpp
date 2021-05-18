@@ -30,7 +30,7 @@ void max_reduce::forward(tensor& y, tensor& col, tensor& max_idx)
             createShaderModule(max_reduce_spv, sizeof(max_reduce_spv));
         createPipeline(sizeof(max_reduce_param));
     }
-
+ 
     bindtensor(y, 0);
     bindtensor(col, 1);
     bindtensor(max_idx, 2);

@@ -140,6 +140,10 @@ class tensor(object):
     def __len__(self):
         return self.shape[0]
 
+    def __str__(self):
+        self.download()
+        return np.array2string(self._host_memory, formatter={'float_kind':lambda x: "%.4f" % x})
+
     def T(self):
         assert len(self.shape) == 2
         self._host_memory = self._host_memory.T
@@ -220,7 +224,7 @@ class tensor(object):
         assert (value.size == self._host_memory.size)
         self.shape = list(value.shape)
         self._host_memory = value.astype(self._host_memory.dtype)
-        self.upload()
+        self.cpu_access = True
 
     @property
     def device_data(self) -> vknn.tensor:
@@ -234,7 +238,7 @@ class tensor(object):
     @device_data.setter
     def device_data(self, value: vknn.tensor) -> None:
         self._device_memory.data = value
-        self.download()
+        self.gpu_access = True
 
     def forward(self, *args, **kwargs):
         for n in self.next:

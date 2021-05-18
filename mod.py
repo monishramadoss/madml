@@ -60,15 +60,26 @@ def test_maxpool():
 
     x = np.arange(0, 100).astype(np.float32).reshape([2, 2, 5, 5])
     t1 = madml.tensor(x)
+    print(t1, '\n----------------------\n')
+    
     module = nn.maxpool2d(kernel_shape, stride, padding, dilation)
+    module.to(1)
+    t3 = module(t1)
+    t3.gradient.host_data = t3.host_data    
+    dx = module.backward()
+    y_hat = t3.host_data
+    dx_hat = dx.host_data
+    print(y_hat, '\n\n', dx_hat, '\n\n')
+    print('---------------------')
+    
+    module.to(-1)   
     t2 = module.forward(t1)
     y = t2.host_data
-    print(y)
-    module.to(1)
-    t3 = module.forward(t1)
-    y_hat = t3.download()
-    print()
-    print(y_hat)
+    t2.gradient.host_data = y
+    dx = module.backward()
+    dx = dx.host_data
+    print(y, '\n\n', dx, '\n\n')
+  
     input()
 
 def test_relu():
@@ -211,5 +222,5 @@ def test_mnst_cnn():
 
 if __name__ == "__main__": 
     test_maxpool()
-    #test_mnst_cnn()
-    #test_identity()
+    test_mnst_cnn()
+    test_identity()

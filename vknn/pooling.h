@@ -20,6 +20,7 @@ struct max_reduce_param
     uint32_t out_size;
 };
 
+
 class max_reduce : public layer
 {
     max_reduce_param m_param;
