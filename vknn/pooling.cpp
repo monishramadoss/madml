@@ -4,11 +4,10 @@
 #include "pooling.h"
 #include <future>
 
-max_reduce::max_reduce(int in_channels, int batch_size, bool derivative)
+max_reduce::max_reduce(int in_channels, int batch_size, bool derivative) : m_derivative(derivative)
 {
     m_future = std::async(&max_reduce::initVulkanThing, &*this, 3);
     m_param.y_size = in_channels * batch_size;
-    m_derivative = derivative;
 }
 
 void max_reduce::forward(tensor& y, tensor& col, tensor& max_idx)
@@ -30,10 +29,9 @@ void max_reduce::forward(tensor& y, tensor& col, tensor& max_idx)
             createShaderModule(max_reduce_spv, sizeof(max_reduce_spv));
         createPipeline(sizeof(max_reduce_param));
     }
- 
-    bindtensor(y, 0);
-    bindtensor(col, 1);
-    bindtensor(max_idx, 2);
 
-    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(max_reduce_param));   
+    bindtensor(col, 0);
+    bindtensor(y, 1);
+    bindtensor(max_idx, 2);
+    recordCommandBuffer(static_cast<void*>(&m_param), sizeof(max_reduce_param));
 }

@@ -75,9 +75,7 @@ class _MaxPoolNd(Module):
 
             out_size = np.prod(self.output_shape)
             max_idx_size = self.in_channels * self.batch_size * out_size
-            self.max_idx = tensor([0 for _ in range(max_idx_size)], [self.in_channels * self.batch_size, out_size],
-                                  dtype=int)
-
+            self.max_idx = tensor([0 for _ in range(max_idx_size)], [self.in_channels * self.batch_size, out_size], dtype=int)
             self.pool_kernel = self.register_kernel(vknn.max_reduce, self.in_channels, self.batch_size, False)
             self.pool_kernel_dcol = self.register_kernel(vknn.max_reduce, self.in_channels, self.batch_size, True)
             self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col,
@@ -92,7 +90,6 @@ class _MaxPoolNd(Module):
 
     def _forward_cpu(self, x: tensor) -> tensor:
         self.col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
-
         y = self.y.host_data
         y = y.reshape([self.in_channels * self.batch_size, -1])
         for i in range(self.in_channels * self.batch_size):
@@ -101,19 +98,15 @@ class _MaxPoolNd(Module):
             self.max_idx.host_data[i] = m_idx
             tmp = self.col.host_data[i][m_idx, range(m_idx.size)]
             y[i] = tmp
-
         self.y.host_data = y
         self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
         return self.y
 
     def _forward_gpu(self, x: tensor) -> tensor:
         self.col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
-        self.col.download()
         self.y.reshape([self.in_channels * self.batch_size, -1])
         self.pool_kernel.forward(self.y.device_data, self.col.device_data, self.max_idx.device_data)
         self.pool_kernel.run()
-        self.y.download()
-        print(self.y)
         self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
         return self.y
 
@@ -122,12 +115,10 @@ class _MaxPoolNd(Module):
         dcol.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
         dy_col = dy.host_data
         dy_col = dy_col.reshape([self.in_channels * self.batch_size, -1])
-
         d_col = dcol.host_data
         for i in range(self.in_channels * self.batch_size):
             m_idx = self.max_idx.host_data[i]
             d_col[i][m_idx, range(m_idx.size)] = dy_col[i]
-
         dcol.host_data = d_col
         _dx = self.vol_col.backward()
         return dx
@@ -138,7 +129,7 @@ class _MaxPoolNd(Module):
         dy.reshape([self.in_channels * self.batch_size, -1])
         self.pool_kernel_dcol.forward(dy.device_data, dcol.device_data, self.max_idx.device_data)
         self.pool_kernel_dcol.run()
-        dx = self.vol_col.backward()
+        _dx = self.vol_col.backward()
         return dx
 
     def print_l(self) -> None:

@@ -222,5 +222,5 @@ def test_mnst_cnn():
 
 if __name__ == "__main__": 
     test_maxpool()
-    test_mnst_cnn()
-    test_identity()
+    #test_mnst_cnn()
+    #test_identity()

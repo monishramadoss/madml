@@ -65,6 +65,7 @@ class vol2col(Module):
 
     def _forward_gpu(self, x: tensor) -> tensor:
         self.vol_col.forward(self.y.device_data, x.device_data)
+        self.vol_col.run()
         return self.y
 
     def _backward_cpu(self, x: tensor, y: tensor):

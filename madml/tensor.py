@@ -18,6 +18,20 @@ TENSOR_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
 # from .nn.module import module_cache, execution_order
 
+def _convert_to_np_dtype(type):
+    if type == int:
+        return np.int32
+    elif type == float:
+        return np.float32
+    elif type == bool:
+        return np.bool
+    elif type == bytes:
+        return np.chararray
+    elif type == str:
+        return np.str
+    else:
+        return np.float32
+
 def _convert_to_float(size: int, arr: List[bytes]) -> List[float]:
     ret_data = []
     ret_data.extend([bytearray(arr[i:i + 4]) for i in range(0, size, 4)])
@@ -73,9 +87,6 @@ class gpu_tensor(object):
         elif data.dtype == np.int64 or data.dtype == np.uint64:
             data = data.astype(np.int32)
             self.data = vknn.init_int(data)
-        elif data.dtype == np.uint64:
-            data = data.astype(np.uint32)
-            self.data = vknn.init_int(data)
         elif data.dtype == np.bytes or data.dtype == np.uint8:
             self.data = vknn.init_char(data)
         else:
@@ -96,15 +107,15 @@ class tensor(object):
 
     def __init__(self, data: Union[List[Union[float, int, bytes, bool]], np.ndarray], shape=None,
                  requires_grad: bool=True, dtype=float, device_id=-1) -> None:
-        if shape is None:
-            shape = []
-        if isinstance(data, np.ndarray):
-            self._host_memory = data.astype(dtype)
-            self.shape = list(data.shape)
-        else:
-            self._host_memory = np.array(data).reshape(shape).astype(dtype)
-            self.shape = shape
+        if shape is None and not isinstance(data, np.ndarray):
+            raise AttributeError("shape is undefined: must initalize with np.ndarray or flat list with shape")
 
+        if not isinstance(data, np.ndarray):
+            data = np.array(data)
+        else:
+            shape = data.shape   
+        self.shape = [int(s) for s in shape]
+        self._host_memory = data.astype(_convert_to_np_dtype(dtype)).reshape(self.shape)
         self._device_memory = gpu_tensor(self._host_memory)
         self._init_shape = self.shape
         self.size = 1
