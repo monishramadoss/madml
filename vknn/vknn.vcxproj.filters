@@ -118,14 +118,28 @@
     <None Include="..\shaders\d_relu.comp">
       <Filter>Shader FIles</Filter>
     </None>
-    <None Include="..\shaders\max_reduce.comp">
-      <Filter>Shader FIles</Filter>
-    </None>
     <None Include="..\shaders\d_max_reduce.comp">
       <Filter>Shader FIles</Filter>
     </None>
     <None Include="..\shaders\mse.comp">
       <Filter>Shader FIles</Filter>
     </None>
+    <None Include="..\shaders\adagrad.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\adam.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\rmsprop.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+    <None Include="..\shaders\sgd.comp">
+      <Filter>Shader FIles</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\shaders\max_reduce.comp">
+      <Filter>Shader FIles</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -16,7 +16,6 @@ from .transform import vol2col, transpose
 
 MAX_DIMS = 3
 
-
 def _dim_fix(arr, arg_arr, pi):
     def parse(x):
         return [x for _ in range(pi)] if isinstance(x, int) else [x[t] for t in range(pi)]
@@ -28,7 +27,6 @@ def _dim_fix(arr, arg_arr, pi):
         arr[i] = arg_arr[j]
         j += 1
     return arr
-
 
 class ConvNd(Module):
     __constants__ = ['dims', 'stride', 'padding', 'dilation', 'groups', 'padding_mode', 'output_padding', 'in_channels',
@@ -88,11 +86,11 @@ class ConvNd(Module):
             weight_shape = [out_channels, in_channels // groups, *self.kernel_size]
 
         if weight_init == 'xavier_uniform':
-            self.weight = self.register_weight(xavier_uniform(), weight_shape)
+            self.w = self.register_weight(xavier_uniform(), weight_shape)
         elif weight_init == 'kaiming_uniform':
-            self.weight = self.register_weight(kaiming_uniform(a=math.sqrt(5), nonlinearity='conv3d'), weight_shape)
+            self.w = self.register_weight(kaiming_uniform(a=math.sqrt(5), nonlinearity='conv3d'), weight_shape)
         else:
-            self.weight = self.register_weight(ones, weight_shape)
+            self.w = self.register_weight(ones, weight_shape)
 
         self.vol_col = None
         self._TP = [1, 0] + [i + 2 for i in range(dims)]
@@ -102,8 +100,8 @@ class ConvNd(Module):
         self.transpose_y = self.register_module(transpose, self._TP, True)
         self.output_shape = []
 
-    def forward(self, x: tensor, w: tensor) -> None:
-        if self.vol_col is None:        
+    def forward(self, x: tensor) -> None:
+        if self.vol_col is None:
             self.batch_size = x.shape[0]
             self._col = [1 for _ in range(MAX_DIMS)]
             self._vol = [1 for _ in range(MAX_DIMS)]
@@ -117,43 +115,40 @@ class ConvNd(Module):
             self.register_output_shape([self.batch_size, self.out_channels, *self.output_shape])
             self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col,
                                                     self.kernel_size, self.stride, self.padding, self.dilation)
-
-        self.col = self.vol_col(x)
+        self.w.reshape([w.shape[0], -1])
+        self.y.reshape([self.w.shape[0], -1])
+        
+        self.col = self.vol_col.forward(x)
         self.register_forward_arg('x', x)
-        self.register_forward_arg('w', w)
+        self.register_forward_arg('w', self.w)
 
         self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
+        self.register_backward_arg('w', self.w)
         self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', self.col)
-
-        super(ConvNd, self).forward(x, w)
+        super(ConvNd, self).forward(x, self.w)
+        _ = self.transpose_y.forward(self.y)
+        self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
         return self.y
 
     def _forward_cpu(self, x: tensor, w: tensor) -> tensor:
-        w.reshape([w.shape[0], -1])
-        self.y.reshape([self.weight.shape[0], -1])
-        self.y.host_data = np.matmul(w.host_data, self.col.host_data)
-        self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
-        self.transpose_y.forward(self.y)
+        y = np.matmul(w.host_data, self.col.host_data)
+        self.y.host_data = y
+        self.y.upload()
         return self.y
 
     def _forward_gpu(self, x: tensor, w: tensor) -> tensor:
-        w.reshape([w.shape[0], -1])
-        self.y.reshape([self.weight.shape[0], -1])
         self.gemm_y.forward(self.y.device_data, w.device_data, self.col.device_data, self.bias.device_data)
-        self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])
         self.gemm_y.run()
-        self.transpose_y.forward(self.y)
         return self.y
 
-    def _backward_cpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:
+    def _backward_cpu(self, x: tensor, w: tensor, y: tensor) -> tensor:
+        dx, dw, dy = x.gradient, w.gradient, y.gradient
         y.reset_shape()
-        dx, dw, dy, dcol = x.gradient, w.gradient, y.gradient, col.gradient
         _dy = self.transpose_y.backward()
         dy.reshape([self.out_channels, -1])
+        dcol = self.col.gradient
 
-        dw.host_data = np.matmul(dy.host_data, col.host_data.T)
+        dw.host_data = np.matmul(dy.host_data, self.col.host_data.T)
         w.reset_shape()
 
         w_reshaped = w.host_data.reshape([self.out_channels, -1])
@@ -162,21 +157,20 @@ class ConvNd(Module):
         _dx = self.vol_col.backward()
         return dx
 
-    def _backward_gpu(self, x: tensor, w: tensor, y: tensor, col: tensor) -> tensor:
+    def _backward_gpu(self, x: tensor, w: tensor, y: tensor) -> tensor:
+        dx, dw, dy = x.gradient, w.gradient, y.gradient
         y.reset_shape()
-        dx, dw, dy, dcol = x.gradient, w.gradient, y.gradient, col.gradient
         _dy = self.transpose_y.backward()
         dy.reshape([self.out_channels, -1])
-
+        dcol = self.col.gradient
         self.gemm_dx.forward(dcol.device_data, w.device_data, dy.device_data, self._empty_gpu_tensor_obj)
-        self.gemm_dw.forward(dw.device_data, dy.device_data, dcol.device_data, self._empty_gpu_tensor_obj)
+        self.gemm_dw.forward(dw.device_data, dy.device_data, self.col.device_data, self._empty_gpu_tensor_obj)
 
         self.gemm_dx.run()
         self.gemm_dw.run()
 
         _dx = self.vol_col.backward()
         return dx
-
 
 class conv1d(ConvNd):
     def __init__(self,
@@ -193,7 +187,6 @@ class conv1d(ConvNd):
         super(conv1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
-
 class conv2d(ConvNd):
     def __init__(self,
                  in_channels: int,
@@ -209,7 +202,6 @@ class conv2d(ConvNd):
         super(conv2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode, weight_init)
 
-
 class conv3d(ConvNd):
     def __init__(self,
                  in_channels: int,
@@ -224,7 +216,6 @@ class conv3d(ConvNd):
         super(conv3d, self).__init__(3, in_channels, out_channels, kernel_size, stride, padding, dilation, False, 0,
                                      groups, bias, padding_mode)
 
-
 class ConvTransposeNd(ConvNd):
     def __init__(self, dims, in_channels, out_channels, kernel_size, stride,
                  padding, dilation, output_padding,
@@ -234,7 +225,6 @@ class ConvTransposeNd(ConvNd):
 
         super(ConvTransposeNd, self).__init__(dims, in_channels, out_channels, kernel_size, stride, padding, dilation,
                                               True, output_padding, groups, bias, padding_mode, weight_init)
-
 
 class convtranspose1d(ConvTransposeNd):
     def __init__(self,
@@ -252,7 +242,6 @@ class convtranspose1d(ConvTransposeNd):
         super(convtranspose1d, self).__init__(1, in_channels, out_channels, kernel_size, stride, padding, dilation,
                                               output_padding, groups, bias, padding_mode, weight_init)
 
-
 class convtranspose2d(ConvTransposeNd):
     def __init__(self,
                  in_channels: int,
@@ -268,7 +257,6 @@ class convtranspose2d(ConvTransposeNd):
                  weight_init: str = 'xavier_uniform') -> None:
         super(convtranspose2d, self).__init__(2, in_channels, out_channels, kernel_size, stride, padding, dilation,
                                               output_padding, groups, bias, padding_mode, weight_init)
-
 
 class convtranspose3d(ConvTransposeNd):
     def __init__(self,

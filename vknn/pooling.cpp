@@ -4,16 +4,16 @@
 #include "pooling.h"
 #include <future>
 
-max_reduce::max_reduce(int in_channels, int batch_size, bool derivative) : m_derivative(derivative)
+max_reduce::max_reduce(bool derivative) : m_derivative(derivative)
 {
     m_future = std::async(&max_reduce::initVulkanThing, &*this, 3);
-    m_param.y_size = in_channels * batch_size;
 }
 
 void max_reduce::forward(tensor& y, tensor& col, tensor& max_idx)
 {
     if (m_pipeline == nullptr)
     {
+        m_param.y_size = y.getShape()[0];
         m_param.channel_offset = col.getShape()[1];
         m_param.out_size = y.getShape()[1];
         m_group_x = static_cast<int>(alignSize(m_param.y_size, 4)) / 4;

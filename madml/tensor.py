@@ -15,7 +15,6 @@ import vknn
 global TENSOR_EXECUTOR
 TENSOR_EXECUTOR = ThreadPoolExecutor(max_workers=os.cpu_count() - 1)
 
-
 # from .nn.module import module_cache, execution_order
 
 def _convert_to_np_dtype(type):
@@ -113,7 +112,7 @@ class tensor(object):
         if not isinstance(data, np.ndarray):
             data = np.array(data)
         else:
-            shape = data.shape   
+            shape = data.shape
         self.shape = [int(s) for s in shape]
         self._host_memory = data.astype(_convert_to_np_dtype(dtype)).reshape(self.shape)
         self._device_memory = gpu_tensor(self._host_memory)
@@ -142,7 +141,6 @@ class tensor(object):
         self.device_id = device_id
         self._grad = None
 
-
     def __copy__(self):
         new = tensor(self._host_memory, self._init_shape, requires_grad=False)
         new._grad = self._grad
@@ -152,7 +150,9 @@ class tensor(object):
         return self.shape[0]
 
     def __str__(self):
-        self.download()
+        if self.gpu_access:
+            self.download()
+            self.gpu_access = False
         return np.array2string(self._host_memory, formatter={'float_kind':lambda x: "%.4f" % x})
 
     def T(self):
@@ -201,7 +201,7 @@ class tensor(object):
         else:
             _ = self._future.result()
             self._future = value
-        
+
     @property
     def gradient(self):
         if self._grad is None and self.requires_grad:
@@ -233,7 +233,7 @@ class tensor(object):
     @host_data.setter
     def host_data(self, value: np.ndarray) -> None:
         assert (value.size == self._host_memory.size)
-        self.shape = list(value.shape)
+        self.shape = [int(s) for s in value.shape]
         self._host_memory = value.astype(self._host_memory.dtype)
         self.cpu_access = True
 
@@ -318,4 +318,3 @@ class tensor(object):
     def to(idx:int):
         self.device_id = idx
         return self
-

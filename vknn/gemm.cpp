@@ -18,8 +18,6 @@ void gemm::forward(tensor& y, tensor& x, tensor& w, tensor& b)
 {
     if (m_pipeline == nullptr)
     {
-        //TODO nneds to switch modes based on relationship to y
-
         int stage = 0;
         auto out_shape = y.getShape(); // 32 x 38336
         auto in_shape_1 = x.getShape(); // 9 x 38336

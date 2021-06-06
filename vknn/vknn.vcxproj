@@ -239,15 +239,19 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\shaders\adagrad.comp" />
+    <None Include="..\shaders\adam.comp" />
     <None Include="..\shaders\col2vol.comp" />
     <None Include="..\shaders\d_max_reduce.comp" />
     <None Include="..\shaders\d_relu.comp" />
     <None Include="..\shaders\gemm.comp" />
-    <None Include="..\shaders\max_reduce.comp">
+    <Text Include="..\shaders\max_reduce.comp">
       <FileType>Discomap</FileType>
-    </None>
+    </Text>
     <None Include="..\shaders\mse.comp" />
     <None Include="..\shaders\relu.comp" />
+    <None Include="..\shaders\rmsprop.comp" />
+    <None Include="..\shaders\sgd.comp" />
     <None Include="..\shaders\transpose.comp" />
     <None Include="..\shaders\vol2col.comp" />
     <None Include="..\shaders\wt_gemm.comp" />

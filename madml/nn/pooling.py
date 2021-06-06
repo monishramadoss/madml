@@ -14,7 +14,6 @@ from .transform import vol2col
 
 MAX_DIMS = 3
 
-
 def _dim_fix(arr, arg_arr, pi):
     def parse(x):
         return [x for _ in range(pi)] if isinstance(x, int) else [x[t] for t in range(pi)]
@@ -26,7 +25,6 @@ def _dim_fix(arr, arg_arr, pi):
         arr[i] = arg_arr[j]
         j += 1
     return arr
-
 
 class _MaxPoolNd(Module):
     __constants__ = ['kernel_size', 'stride', 'padding', 'dilation', 'return_indices', 'ceil_mode']
@@ -53,7 +51,7 @@ class _MaxPoolNd(Module):
         self.in_channels = 0
         self.col = None
         self.vol_col = None
-        self.pool_kernel = None
+        self.pool_kernel_y = None
         self.pool_kernel_dcol = None
         self.max_idx = None
         self.output_shape = []
@@ -76,22 +74,25 @@ class _MaxPoolNd(Module):
             out_size = np.prod(self.output_shape)
             max_idx_size = self.in_channels * self.batch_size * out_size
             self.max_idx = tensor([0 for _ in range(max_idx_size)], [self.in_channels * self.batch_size, out_size], dtype=int)
-            self.pool_kernel = self.register_kernel(vknn.max_reduce, self.in_channels, self.batch_size, False)
-            self.pool_kernel_dcol = self.register_kernel(vknn.max_reduce, self.in_channels, self.batch_size, True)
+            self.pool_kernel_y = self.register_kernel(vknn.max_reduce,  False)
+            self.pool_kernel_dcol = self.register_kernel(vknn.max_reduce, True)
+
             self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col,
                                                 self.kernel_size, self.stride, self.padding, self.dilation)
         self.col = self.vol_col.forward(x)
+        self.col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
+        self.y.reshape([self.in_channels * self.batch_size, -1])
+
         self.register_forward_arg('x', x)
         self.register_backward_arg('x', x)
         self.register_backward_arg('y', self.y)
-        self.register_backward_arg('col', self.col)
+
         super(_MaxPoolNd, self).forward(x)
+        self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
         return self.y
 
     def _forward_cpu(self, x: tensor) -> tensor:
-        self.col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
-        y = self.y.host_data
-        y = y.reshape([self.in_channels * self.batch_size, -1])
+        y = self.y.host_data      
         for i in range(self.in_channels * self.batch_size):
             tmp = self.col.host_data[i]
             m_idx = np.argmax(tmp, axis=0)
@@ -99,19 +100,17 @@ class _MaxPoolNd(Module):
             tmp = self.col.host_data[i][m_idx, range(m_idx.size)]
             y[i] = tmp
         self.y.host_data = y
-        self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
         return self.y
 
     def _forward_gpu(self, x: tensor) -> tensor:
-        self.col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
-        self.y.reshape([self.in_channels * self.batch_size, -1])
-        self.pool_kernel.forward(self.y.device_data, self.col.device_data, self.max_idx.device_data)
-        self.pool_kernel.run()
-        self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])
+        np_col = self.col.host_data
+        self.pool_kernel_y.forward(self.y.device_data, self.col.device_data, self.max_idx.device_data)
+        self.pool_kernel_y.run()
         return self.y
 
-    def _backward_cpu(self, x: tensor, y: tensor, col: tensor) -> tensor:
-        dx, dy, dcol = x.gradient, y.gradient, col.gradient
+    def _backward_cpu(self, x: tensor, y: tensor) -> tensor:
+        dx, dy = x.gradient, y.gradient
+        dcol = self.col.gradient
         dcol.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
         dy_col = dy.host_data
         dy_col = dy_col.reshape([self.in_channels * self.batch_size, -1])
@@ -123,23 +122,15 @@ class _MaxPoolNd(Module):
         _dx = self.vol_col.backward()
         return dx
 
-    def _backward_gpu(self, x: tensor, y: tensor, col: tensor) -> tensor:
-        dx, dy, dcol = x.gradient, y.gradient, self.col.gradient
+    def _backward_gpu(self, x: tensor, y: tensor) -> tensor:
+        dx, dy = x.gradient, y.gradient
+        dcol = self.col.gradient
         dcol.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
         dy.reshape([self.in_channels * self.batch_size, -1])
         self.pool_kernel_dcol.forward(dy.device_data, dcol.device_data, self.max_idx.device_data)
         self.pool_kernel_dcol.run()
         _dx = self.vol_col.backward()
         return dx
-
-    def print_l(self) -> None:
-        x, y, _ = self.cache
-        super(_MaxPoolNd, self).print_l()
-        print('\tmax input:', x.host_data.max(), 'g', x.gradient.host_data.max(),
-              ' output:', y.host_data.max(), 'g', y.gradient.host_data.max())
-        print('\tmin input:', x.host_data.min(), 'g', x.gradient.host_data.min(),
-              ' output:', y.host_data.min(), 'g', y.gradient.host_data.min())
-
 
 class maxpool1d(_MaxPoolNd):
     kernel_size: int
@@ -152,7 +143,6 @@ class maxpool1d(_MaxPoolNd):
                  return_indices: bool = False, ceil_mode: bool = False) -> None:
         super(maxpool1d, self).__init__(1, kernel_size, stride, padding, dilation, return_indices, ceil_mode)
 
-
 class maxpool2d(_MaxPoolNd):
     kernel_size: Union[int, List[int]]
     stride: Union[int, List[int]]
@@ -163,7 +153,6 @@ class maxpool2d(_MaxPoolNd):
                  padding: Union[int, List[int]] = 0, dilation: Union[int, List[int]] = 1,
                  return_indices: bool = False, ceil_mode: bool = False) -> None:
         super(maxpool2d, self).__init__(2, kernel_size, stride, padding, dilation, return_indices, ceil_mode)
-
 
 class maxpool3d(_MaxPoolNd):
     kernel_size: Union[int, List[int]]

@@ -10,27 +10,22 @@ import numpy as np
 from madml import tensor
 from .module import Module
 
-
 def _size(shape: List[int]) -> int:
     size = 1
     for s in shape:
         size *= s
     return size
 
-
 def softmax_util_cpu(x: tensor, y: tensor) -> tensor:
     eX = np.exp((x.host_data.T - np.max(x.host_data, axis=1)).T)
     y.host_data = (eX.T / eX.sum(axis=1)).T
     return y
 
-
 def l1_reg(w: tensor, lam: float = 1e-3) -> float:
     return lam * np.sum(np.abs(w.host_data))
 
-
 def l2_reg(w: tensor, lam: float = 1e-3) -> float:
     return .5 * lam * np.sum(w.host_data * w.host_data)
-
 
 class _Loss(Module):
     reduction: Optional[str]
@@ -65,12 +60,10 @@ class _Loss(Module):
     def accuracy(self):
         raise NotImplementedError
 
-
 class _WeightedLoss(_Loss):
     def __init__(self, weight=None, size_average=None, reduce=None, reduction: str = 'mean') -> None:
         super(_WeightedLoss, self).__init__(size_average, reduce, reduction)
-        self.weight = weight
-
+        self.w = weight
 
 class crossentropyloss(_WeightedLoss):
     __constants__ = ['ignore_index', 'reduction']
@@ -81,51 +74,54 @@ class crossentropyloss(_WeightedLoss):
         super(crossentropyloss, self).__init__(weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.with_logit = with_logit
-        self.batchsize = 1
+        self.batchsize = 1.0
         self.p = None
 
     def forward(self, logit: tensor, target: tensor) -> tensor:
-        sefl.register_output_shape([1])
+        self.batchsize = logit.shape[0]
+        self.register_output_shape([1])
+        self.register_forward_arg('logit', logit)
+        if not self.with_logit:
+            C = logit.shape[1]
+            target = target.onehot(label_count=C)
+        self.register_forward_arg('target', target)
         self.register_backward_arg('x', logit)
         self.register_backward_arg('t', target)
-        self.register_backward_arg('dx', logit.gradient)
-
+        super(crossentropyloss, self).forward(logit, target)
         return self.y
 
     def _forward_cpu(self, logit: tensor, target: tensor) -> tensor:
         assert (len(logit.shape) != 1)
-        self.batchsize = logit.shape[0]
+        N = logit.shape[0]
         C = logit.shape[1]
         x = logit.host_data
-        if not self.with_logit:
-            target = target.onehot(label_count=C)
+        t = target.host_data
 
         max_x = np.max(x, axis=1, keepdims=True)
         exp_x = np.exp(x - max_x)
         self.p = exp_x / np.sum(exp_x, axis=1, keepdims=True)
         inp = self.p
 
-        # gather_weight = None
-        # if self.weight is not None:
-        #     gather_weight = np.take(self.weight, t, mode='clip')
-        #     if self.ignore_index is not None:
-        #         gather_weight = np.where(t == self.ignore_index, 0,
-        #         gather_weight).astype(dtype=np.float32)
-        # elif self.ignore_index is not None:
-        #     gather_weight = np.where(t == self.ignore_index, 0,
-        #     1).astype(dtype=np.float32)
+        gather_weight = None
+        
+        if self.w is not None:
+            gather_weight = np.take(self.w, t, mode='clip')
+            if self.ignore_index is not None:
+                gather_weight = np.where(t == self.ignore_index, 0,
+                gather_weight).astype(dtype=np.float32)
+        elif self.ignore_index is not None:
+            gather_weight = np.where(t == self.ignore_index, 0, 1).astype(dtype=np.float32)
 
-        # if len(inp.shape) != 3:
-        #     inp = inp.reshape([N, C, -1])
-        #     t = t.reshape([N, C, -1])
-        # D = inp.shape[2]
-        #
-        # neg_gather_element_input = np.zeros((N, D), dtype=np.float32)
-        # for i in range(N):
-        #     for d in range(D):
-        #         if d != self.ignore_index:
-        #             idx = int(t[i][d])
-        #             neg_gather_element_input[i][d] = -inp[i][idx][d]
+        if len(inp.shape) != 3:
+            inp = inp.reshape([N, C, -1])
+            t = t.reshape([N, C, -1])
+        D = inp.shape[2]
+        neg_gather_element_input = np.zeros((N, D), dtype=np.float32)
+        for i in range(N):
+            for d in range(D):
+                if d != self.ignore_index:
+                    idx = int(t[i][d])
+                    neg_gather_element_input[i][d] = -inp[i][idx][d]
 
         loss = inp
         if self.reduction == 'mean':
@@ -138,15 +134,19 @@ class crossentropyloss(_WeightedLoss):
         self.losses.append((loss, reg))
         return self.y
 
-    def _backward_cpu(self, x: tensor, t: tensor, dx: tensor) -> tensor:
-        dx.host_data = (self.p - t.host_data) / self.batchsize
+    def _backward_cpu(self, x: tensor, t: tensor) -> tensor:
+        dx = x.gradient
+        max_x = np.max(x.host_data, axis=1, keepdims=True)
+        exp_x = np.exp(x.host_data - max_x)
+        p = exp_x / np.sum(exp_x, axis=1, keepdims=True)
+        dx_hat = p - t.host_data
+        dx.host_data = dx_hat / self.batchsize
         return dx
 
     def accuracy(self):
         x, t, p = self.backward_args['x'], self.backward_args['t'], self.p
         tmp = np.argmax(x.host_data, axis=1) - np.argmax(t.host_data, axis=1) < 1e-2
         return 1. - np.abs(tmp.mean())
-
 
 class mseloss(_Loss):
     __constants__ = ['reduction']
@@ -167,12 +167,10 @@ class mseloss(_Loss):
 
     def _forward_cpu(self, logit: tensor, target: tensor) -> tensor:
         data_loss = 0.5 * (np.square(logit.host_data - target.host_data)).mean(axis=0)
-
         if self.reduction == 'mean':
             loss = np.mean(data_loss)
         elif self.reduction == 'sum':
             loss = np.sum(data_loss)
-
         reg = self.regularize()
         self.y.host_data = loss + reg
         self.losses.append((loss, reg))

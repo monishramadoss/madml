@@ -21,10 +21,6 @@ bool isAvailable();
 size_t number_devices();
 size_t avalible_memory(int device_id);
 
-//TODO need work on deallocations
-//TODO work on static members
-//TODO worker threads for first hand latency
-
 #include "tensor.h"
 #include "buffer.h"
 #include "layer.h"

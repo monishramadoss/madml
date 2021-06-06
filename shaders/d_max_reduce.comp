@@ -17,7 +17,7 @@ void main(){
 			for (uint j = 0; j < channel_offset; ++j)
 				dcol[tid * channel_offset * out_size + j * out_size + i] = 0.0f;
 			int idx = max_idx[tid * out_size + i];
-			dcol[tid * channel_offset * out_size + idx * out_size + i] = dy[tid * out_size + i];				
+			dcol[tid * channel_offset * out_size + idx * out_size + i] = dy[tid * out_size + i];
 		}
 	}
 }

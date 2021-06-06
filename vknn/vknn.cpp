@@ -29,19 +29,30 @@ PYBIND11_MODULE(vknn, m)
         .def("run", &transpose::runCommandBuffer);
 
     py::class_<max_reduce>(m, "max_reduce")
-        .def(py::init<int&, int&, bool&>())
+        .def(py::init< bool&>())
         .def("forward", &max_reduce::forward)
         .def("run", &max_reduce::runCommandBuffer);
 
+    //OPTIMIZERS
     py::class_<sgd>(m, "sgd")
         .def(py::init<float&, float&, float&, float&, bool&>())
         .def("forward", &sgd::forward)
         .def("run", &sgd::runCommandBuffer);
-    
+
     py::class_<adam>(m, "adam")
         .def(py::init<float&, float&, float&, float&, float&, bool&>())
         .def("forward", &adam::forward)
         .def("run", &adam::runCommandBuffer);
+
+    py::class_<adagrad>(m, "adagrad")
+        .def(py::init<float&, float&, float&, float&>())
+        .def("forward", &adagrad::forward)
+        .def("run", &adagrad::runCommandBuffer);
+
+    py::class_<rmsprop>(m, "rmsprop")
+        .def(py::init<float&, float&, float&, float&, float&, bool&>())
+        .def("forward", &rmsprop::forward)
+        .def("run", &rmsprop::runCommandBuffer);
 
     py::class_<tensor>(m, "tensor")
         .def(py::init<std::vector<float>&, const std::vector<int>&>())
@@ -52,6 +63,9 @@ PYBIND11_MODULE(vknn, m)
         .def("copy", &tensor::copyTo)
         .def("toHost", &tensor::toHost)
         .def("toDevice", &tensor::toDevice);
+
+    m.def("cpu_vol2col", &cpu_vol2col);
+    m.def("cpu_col2vol", &cpu_col2vol);
 
     m.def("number_physcial_devices", &number_devices);
     m.def("avalible_memory", &avalible_memory);

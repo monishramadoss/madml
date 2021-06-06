@@ -14,7 +14,6 @@ import vknn
 from madml import tensor
 from .module import Module
 
-
 class vol2col(Module):
     def __init__(self,
                  batch_size: int,
@@ -44,10 +43,9 @@ class vol2col(Module):
             self.output_length *= c
             self.index_length *= c
             self._c *= c
-        self.vol_col = self.register_kernel(vknn.vol2col, [batch_size, in_channels, *kernel_size, *padding, *stride,
-                                                           *dilation, *_col, *_vol, ])
-        self.col_vol = self.register_kernel(vknn.col2vol, [batch_size, in_channels, *kernel_size, *padding, *stride,
-                                                           *dilation, *_col, *_vol, ])
+        self.params = [batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol]
+        self.vol_col = self.register_kernel(vknn.vol2col, self.params)
+        self.col_vol = self.register_kernel(vknn.col2vol,  self.params)
 
     def forward(self, x: tensor) -> tensor:
         self.register_output_shape([self.n_output_plane, self.output_length])
@@ -58,9 +56,7 @@ class vol2col(Module):
         return self.y
 
     def _forward_cpu(self, x: tensor) -> tensor:
-        _vol2col(x.host_data.ravel(), self.y.host_data.ravel(), self.batch_size, self.in_channels,
-                 self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
-                 nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
+        vknn.cpu_vol2col(x.host_data, self.y.host_data, self.n_output_plane, self.output_length, self.params)
         return self.y
 
     def _forward_gpu(self, x: tensor) -> tensor:
@@ -68,20 +64,14 @@ class vol2col(Module):
         self.vol_col.run()
         return self.y
 
-    def _backward_cpu(self, x: tensor, y: tensor):
-        dx = x.gradient
-        npdx = x.gradient.host_data.ravel()
-        dcol = y.gradient.host_data.ravel()
-        _col2vol(npdx, dcol, self.batch_size, self.in_channels,
-                 self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
-                 nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
-        dx.host_data = npdx.reshape(x.shape)
+    def _backward_cpu(self, x: tensor, y: tensor) -> tensor:
+        dx, dy = x.gradient, y.gradient
+        vknn.cpu_col2vol(dx.host_data, dy.host_data, self.n_output_plane, self.output_length, self.params)
         return dx
 
-    def _backward_gpu(self, x: tensor, y: tensor):
-        dx = x.gradient
-        dcol = y.gradient
-        self.col_vol.forward(dx.device_data, dcol.device_data)
+    def _backward_gpu(self, x: tensor, y: tensor) -> tensor:
+        dx, dy = x.gradient, y.gradient
+        self.col_vol.forward(dx.device_data, dy.device_data)
         self.col_vol.run()
         return dx
 
@@ -93,8 +83,7 @@ class vol2col(Module):
         print('\tmin input:', x.host_data.min(), 'g', x.gradient.host_data.min(),
               ' output:', y.host_data.min(), 'g', y.gradient.host_data.min())
 
-
-class col2vol(vol2col):
+class col2vol(Module):
     def __init__(self,
                  batch_size: int,
                  in_channels: int,
@@ -104,12 +93,41 @@ class col2vol(vol2col):
                  stride: List,
                  padding: List,
                  dilation: List):
-        super(col2vol, self).__init__(batch_size, in_channels, _vol, _col, kernel_size, stride, padding, dilation)
+        super(col2vol, self).__init__()
+        self.batch_size = batch_size
+        self.in_channels = in_channels
+        self._vol = _vol
+        self._col = _col
+        self.kernel_size = kernel_size
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.n_output_plane = self.in_channels
+        self.output_length = self.batch_size
+        self.index_length = self.in_channels
+        self._c = 1
+        for k in self.kernel_size:
+            self.n_output_plane *= k
+        for c in self._col:
+            self.output_length *= c
+            self.index_length *= c
+            self._c *= c
+
+        self.params = [batch_size, in_channels, *kernel_size, *padding, *stride, *dilation, *_col, *_vol, ]
+        self.vol_col = self.register_kernel(vknn.vol2col, self.params)
+        self.col_vol = self.register_kernel(vknn.col2vol, self.params)
+
+    def forward(self, x: tensor) -> tensor:
+        self.register_output_shape([self.n_output_plane, self.output_length])
+        self.register_forward_arg('x', x)
+        self.register_backward_arg('x', x)
+        self.register_backward_arg('y', self.y)
+        super(col2vol, self).forward(x)
+        return self.y
 
     def _forward_cpu(self, x: tensor) -> tensor:
-        _col2vol(x.host_data.ravel(), self.y.host_data.ravel(), self.batch_size, self.in_channels,
-                 self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
-                 nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
+        vknn.cpu_col2vol(x.host_data, self.y.host_data, self.in_channels, self.n_output_plane, self.output_length, self.params)
+        return self.y
 
     def _forward_gpu(self, x: tensor) -> tensor:
         self.col_vol.forward(self.y.device_data, x.device_data)
@@ -117,22 +135,15 @@ class col2vol(vol2col):
         return self.y
 
     def _backward_cpu(self, x: tensor, y: tensor) -> tensor:
-        dx = x.gradient
-        npdx = x.gradient.host_data.ravel()
-        dcol = y.gradient.host_data.ravel()
-        _vol2col(npdx, dcol, self.batch_size, self.in_channels,
-                 self.n_output_plane, self.index_length, nbt.List(self._vol), nbt.List(self._col),
-                 nbt.List(self.kernel_size), nbt.List(self.stride), nbt.List(self.padding), nbt.List(self.dilation))
-        dx.host_data = npdx.reshape(x.shape)
+        dx, dy = x.gradient, y.gradient
+        vknn.cpu_vol2col(dx.host_data, dy.host_data, self.in_channels, self.n_output_plane, self.output_length, self.params)
         return dx
 
     def _backward_gpu(self, x: tensor, y: tensor) -> tensor:
-        dx = x.gradient
-        dvol = y.gradient
-        self.vol_col.forward(dx.device_data, dvol.device_data)
+        dx, dy = x.gradient, y.gradient
+        self.vol_col.forward(dx.device_data, dy.device_data)
         self.vol_col.run()
         return dx
-
 
 class transpose(Module):
     __constants__ = ['axes']
@@ -193,7 +204,6 @@ class transpose(Module):
             self.stride[dims * 2 + i] = self.stride[dims * 2 + i + 1] * shape_before[i + 1]
             self.stride[dims + i] = self.stride[dims + i + 1] * shape_after[i + 1]
 
-
 class flatten(Module):
     def __init__(self) -> None:
         super(flatten, self).__init__()
@@ -223,13 +233,11 @@ class flatten(Module):
         dx.reshape(self.old_shape)
         return dx
 
-
-@njit(parallel=True)
+#@njit(parallel=True)
 def _vol2col(vol: np.ndarray, col: np.ndarray, batch_size: int, in_channels: int, n_output_plane: int,
-             index_length: int,
-             _vol: nbt.List, _col: nbt.List, kernel_size: nbt.List, stride: nbt.List, padding: nbt.List,
-             dilation: nbt.List):
-    for elt in prange(batch_size):
+             index_length: int, _vol: nbt.List, _col: nbt.List, kernel_size: nbt.List, stride: nbt.List,
+             padding: nbt.List, dilation: nbt.List):
+    for elt in range(batch_size):
         data_vol = elt * in_channels * _vol[0] * _vol[1] * _vol[2]
         data_col = elt * n_output_plane * _col[0] * _col[1] * _col[2]
         for c_col in range(index_length):
@@ -253,13 +261,11 @@ def _vol2col(vol: np.ndarray, col: np.ndarray, batch_size: int, in_channels: int
                             if data_col_idx < col.size and data_vol_idx < vol.size:
                                 col[data_col_idx] = vol[data_vol_idx]
 
-
-@njit(parallel=True)
+#@njit(parallel=True)
 def _col2vol(vol: np.ndarray, col: np.ndarray, batch_size: int, in_channels: int, n_output_plane: int,
-             index_length: int,
-             _vol: nbt.List, _col: nbt.List, kernel_size: nbt.List, stride: nbt.List, padding: nbt.List,
-             dilation: nbt.List):
-    for elt in prange(batch_size):
+             index_length: int, _vol: nbt.List, _col: nbt.List, kernel_size: nbt.List, stride: nbt.List,
+             padding: nbt.List, dilation: nbt.List):
+    for elt in range(batch_size):
         data_vol = elt * in_channels * _vol[0] * _vol[1] * _vol[2]
         data_col = elt * n_output_plane * _col[0] * _col[1] * _col[2]
         for c_col in range(index_length):

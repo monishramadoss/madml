@@ -10,7 +10,7 @@ from .optimizer import SGD, adam, Adagrad, RMSprop
 def test_import_vknn():
     try:
         import vknn
-        m1 = vknn.gemm(1.0, 1.0, False)
+        m1 = vknn.gemm(1.0, 1.0, False, False, False)
         return isinstance(m1, vknn.gemm)
     except Exception as e:
         print(e)
@@ -48,7 +48,6 @@ def print_graph_next(obj):
         print_graph_next(ne)
     print()
 
-
 def print_graph_prev(obj):
     if isinstance(obj, tensor):
         print(type(obj),obj.m_type, obj.shape)
@@ -62,12 +61,9 @@ def print_graph_prev(obj):
         print_graph_prev(prev)
     print()
 
-   
-
 def transpose(x: tensor, axis:list):
     layer = nn.transpose(axis)
     return layer(x)
-
 
 def flatten(x: tensor):
     layer = nn.flatten()

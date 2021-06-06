@@ -39,7 +39,7 @@ def exp_running_avg(running, new, gamma=.9):
 
 def _optimizer_step_wrapper(fn, *args, **kwargs):
     fn(*args, **kwargs)
-    
+
 class Optimizer(object):
     _use_velocity : bool
 
@@ -94,7 +94,7 @@ class SGD(Optimizer):
         if len(self._kernels) <= i:
             self._kernels.append(vknn.sgd(self.defaults['lr'], self.defaults['momentum'], self.defaults['dampening'], self.defaults['weight_decay'], self.defaults['nestrov']))
         self._kernels[i].forward(p.device_data, p.gradient.device_data, p.optimizer_stuff[0].device_data)
-
+        self._kernels[i].run()
 
     def step_cpu(self, i: int,  p: Parameter, closure=None) -> None:
         p.reset_shape()
@@ -136,14 +136,14 @@ class adam(Optimizer):
         for p in self.params:
             p.optimizer_stuff = [tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=True),
                                  tensor([0.0 for _ in range(p.size)], p.shape, requires_grad=True)]
-    
+
     def step_gpu(self, i: int, p: Parameter, closure=None) -> None:
         if len(self._kernels) <= i:
             self._kernels.append(vknn.adam(self.defaults['lr'], self.defaults['betas'][0], self.defaults['betas'][1],
                                            self.defaults['eps'], self.defaults['weight_decay'], self.defaults['asmgrad']))
         self._kernels[i].forward(p.device_data, p.gradient.device_data, p.optimizer_stuff[0].device_data, p.optimizer_stuff[1].device_data,
                               p.optimizer_stuff[0].gradient.device_data, p.optimizer_stuff[1].gradient.device_data)
-
+        self._kernels[i].run()
 
     def step_cpu(self, i: int, p: Parameter, closure=None) -> None:
         p.reset_shape()
@@ -206,6 +206,12 @@ class Adagrad(Optimizer):
         if DEBUG:
             print_p(p)
 
+    def step_gpu(self, i: int, p: Parameter, closure=None) -> None:
+        if len(self._kernels) <= i:
+            self._kernels.append(vknn.adagrad(self.defaults['lr'], self.defaults['eps'], self.defaults['lr_decay'], self.defaults['weight_decay']))
+        self._kernels[i].forward(self.counter, p.device_data, p.gradient.device_data, p.optimizer_stuff[0].device_data)
+        self._kernels[i].run()
+
 class RMSprop(Optimizer):
     def __init__(self, params: List[Parameter], lr: float=1e-2, alpha: float=0.99, eps: float=1e-8,
                  weight_decay: float=0, momentum: int=0, centered: bool=False) -> None:
@@ -241,3 +247,9 @@ class RMSprop(Optimizer):
 
         if DEBUG:
             print_p(p)
+
+    def step_gpu(self, i: int, p:Parameter, closure=None) -> None:
+        if len(self._kernels) <= i:
+            self._kernels.append(vknn.rmsprop(self.defaults['lr'], self.defaults['alpha'], self.defaults['eps'], self.defaults['weight_decay'], self.defaults['centered']))
+        self._kernels[i].forward(p.device_data, p.gradient.device_data, p.optimizer_stuff[0].device_data)
+        self._kernels[i].run()

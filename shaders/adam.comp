@@ -11,8 +11,6 @@ layout(push_constant) uniform pushBlock {
     int counter;
 };
 
-
-
 layout(local_size_x = 1024, local_size_y = 1, local_size_z = 1) in;
 layout(binding = 0) buffer buf1 { float P[]; };
 layout(binding = 1) buffer bufa { float DP[];};
@@ -46,7 +44,7 @@ void adam(){
         else {
             R_K_HAT[i] = R[i] / (1.0 - pow(beta_b, counter));
             P[i] -= lr * M_K_HAT[i] / (sqrt(R_K_HAT[i]) + eps);
-        }    
+        }
     }
 }
 

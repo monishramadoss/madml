@@ -3,7 +3,8 @@
 #include "optimizer.h"
 #include <future>
 
-sgd::sgd(float lr, float momentum, float dampening, float weight_decay, bool nestrov){
+sgd::sgd(float lr, float momentum, float dampening, float weight_decay, bool nestrov)
+{
     m_future = std::async(&sgd::initVulkanThing, &*this, 3);
     m_param.lr = lr;
     m_param.momentum = momentum;
@@ -12,9 +13,10 @@ sgd::sgd(float lr, float momentum, float dampening, float weight_decay, bool nes
     m_param.nestrov = nestrov;
 }
 
-
-void sgd::forward(tensor& p, tensor& dp, tensor& v){
-    if(m_pipeline == nullptr){
+void sgd::forward(tensor& p, tensor& dp, tensor& v)
+{
+    if (m_pipeline == nullptr)
+    {
         m_param.total = p.count();
         m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
         if (m_group_x > max_compute_work_group_count)
@@ -31,7 +33,6 @@ void sgd::forward(tensor& p, tensor& dp, tensor& v){
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(sgd_param));
 }
 
-
 adam::adam(float lr, float beta_a, float beta_b, float eps, float weight_decay, bool amsgrad)
 {
     m_future = std::async(&adam::initVulkanThing, &*this, 6);
@@ -43,14 +44,16 @@ adam::adam(float lr, float beta_a, float beta_b, float eps, float weight_decay, 
     m_param.amsgrad = amsgrad;
 }
 
-void adam::forward(int counter, tensor& p, tensor& dp, tensor& m, tensor& r, tensor& m_k_hat, tensor& r_k_hat){
-    if(m_pipeline == nullptr){
-        m_param.total = p.count();    
+void adam::forward(int counter, tensor& p, tensor& dp, tensor& m, tensor& r, tensor& m_k_hat, tensor& r_k_hat)
+{
+    if (m_pipeline == nullptr)
+    {
+        m_param.total = p.count();
         m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
-        if(m_group_x > max_compute_work_group_count)
+        if (m_group_x > max_compute_work_group_count)
             m_group_x = max_compute_work_group_count - 1;
         m_future.wait();
-        createShaderModule(adam_spv, sizeof(adam_spv));  
+        createShaderModule(adam_spv, sizeof(adam_spv));
         createPipeline(sizeof(adam_param));
     }
     m_param.counter = counter;
@@ -73,25 +76,25 @@ adagrad::adagrad(float lr, float eps, float lr_decay, float weight_decay)
     m_param.weight_decay = weight_decay;
 }
 
-void adagrad::forward(int counter, tensor& p, tensor& dp, tensor& v) 
+void adagrad::forward(int counter, tensor& p, tensor& dp, tensor& v)
 {
-    if(m_pipeline == nullptr){
+    if (m_pipeline == nullptr)
+    {
         m_param.total = p.count();
         m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
-        if(m_group_x > max_compute_work_group_count)
+        if (m_group_x > max_compute_work_group_count)
             m_group_x = max_compute_work_group_count - 1;
         m_future.wait();
+
         //createShaderModule(adagrad_spv, sizeof(adagrad_spv));
         createPipeline(sizeof(adagrad_param));
-    }    
+    }
     m_param.counter = counter;
     bindtensor(p, 0);
     bindtensor(dp, 1);
     bindtensor(v, 2);
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(adagrad_param));
 }
-
-
 
 rmsprop::rmsprop(float lr, float alpha, float eps, float weight_decay, float momentum, bool centered)
 {
@@ -104,21 +107,22 @@ rmsprop::rmsprop(float lr, float alpha, float eps, float weight_decay, float mom
     m_param.centered = centered;
 }
 
-void rmsprop::forward(tensor& p, tensor& dp, tensor& v){
-    if(m_pipeline == nullptr){
+void rmsprop::forward(tensor& p, tensor& dp, tensor& v)
+{
+    if (m_pipeline == nullptr)
+    {
         m_param.total = p.count();
         m_group_x = static_cast<int>(alignSize(m_param.total, 1024)) / 1024;
-        if(m_group_x > max_compute_work_group_count)
+        if (m_group_x > max_compute_work_group_count)
             m_group_x = max_compute_work_group_count - 1;
         m_future.wait();
+
         //createShaderModule(rmsprop_spv, sizeof(rmsprop_spv));
         createPipeline(sizeof(rmsprop_param));
     }
-    
+
     bindtensor(p, 0);
     bindtensor(dp, 1);
     bindtensor(v, 2);
     recordCommandBuffer(static_cast<void*>(&m_param), sizeof(rmsprop_param));
 }
-
-

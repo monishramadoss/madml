@@ -19,14 +19,11 @@ MODULE_EXECUTOR = ThreadPoolExecutor(max_workers=4)
 
 insert_dict = lambda d, name, obj: (d.update({name: obj}))
 
-
 def register_arg(executor, d, name, obj):
     return executor.submit(insert_dict, d, name, obj)
 
-
 def run_sys(executor, kernel, *args, **kwargs):
     return executor.submit(kernel, *args, **kwargs)
-
 
 class Parameter(tensor):
     optimizer_stuff: Optional[List[tensor]]
@@ -43,7 +40,6 @@ class Parameter(tensor):
         for i in range(self.size):
             self.grad_data[i] = 0
         self.gradient.upload()
-
 
 class Module(object):
     def __init__(self, device_id: int = -1):
@@ -68,18 +64,19 @@ class Module(object):
 
         self.input_registry = []
         self.output_registry = []
-        self.weight_registry = []
+        self.w_registry = []
         self.kernel_registry = []
         self.module_registry = []
 
     def forward(self, *args, **kwargs) -> tensor:
         if self.device_id == -1:
-            self._forward_cpu(**self.forward_args)
+            y = self._forward_cpu(**self.forward_args)
         else:
-            self._forward_gpu(**self.forward_args)
+            y = self._forward_gpu(**self.forward_args)
         if self.use_bias:
             self.bias_call()
-        return self.y
+            return self.y
+        return y
 
     def backward(self) -> tensor:
         if self.use_bias:
@@ -146,8 +143,8 @@ class Module(object):
 
     def register_weight(self, init_fn, shape: List[int], shared_devices: bool = False):
         self.parameter_cache.append(Parameter(init_fn, shape, shared_devices, False))
-        if self.parameter_cache[-1] not in self.weight_registry:
-            self.weight_registry += tuple([self.parameter_cache[-1]])
+        if self.parameter_cache[-1] not in self.w_registry:
+            self.w_registry += tuple([self.parameter_cache[-1]])
         return self.parameter_cache[-1]
 
     def register_bias(self, bias, init_fn, shape: List[int], shared_devices: bool = False):
@@ -182,10 +179,10 @@ class Module(object):
                 self.input_registry[idx] = x
 
     def register_backward_arg(self, name: str, value: tensor):
-        self.backward_arg_futures.append(register_arg(MODULE_EXECUTOR, self.backward_args, name, value))
+        insert_dict(self.backward_args, name, value)
 
     def register_forward_arg(self, name: str, value: tensor):
-        self.forward_arg_futures.append(register_arg(MODULE_EXECUTOR, self.forward_args, name, value))
+        insert_dict(self.forward_args, name, value)
 
     def register_kernel(self, kernel, *args, **kwargs):
         self.kernel_registry += [kernel(*args, **kwargs)]
@@ -193,6 +190,7 @@ class Module(object):
 
     def register_module(self, module, *args, **kwargs):
         self.module_registry += [module(*args, **kwargs)]
+        self.module_registry[-1].to(self.device_id)
         return self.module_registry[-1]
 
     def print_l(self):

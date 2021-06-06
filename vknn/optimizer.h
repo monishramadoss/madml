@@ -3,14 +3,14 @@
 #include "vknn.h"
 #include "../engine/layer.h"
 
-
-struct sgd_param{
+struct sgd_param
+{
     int total;
     float lr;
     float momentum;
     float dampening;
     float weight_decay;
-    bool nestrov;    
+    bool nestrov;
 };
 
 class sgd : public layer
@@ -32,7 +32,6 @@ struct adam_param
     bool amsgrad;
     int counter;
 };
-
 
 class adam : public layer
 {
@@ -78,6 +77,3 @@ public:
     rmsprop(float lr, float alpha, float eps, float weight_decay, float momentum, bool centered);
     void forward(tensor& p, tensor& dp, tensor& v);
 };
-
-
-

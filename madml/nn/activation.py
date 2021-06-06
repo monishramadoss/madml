@@ -10,7 +10,6 @@ from madml import tensor
 from .module import Module
 from .testing import relu_forward, relu_backward, dropout_forward, dropout_backward
 
-
 class relu(Module):
     __constants__ = ['inplace']
     inplace: bool
@@ -59,8 +58,7 @@ class relu(Module):
         dx.host_data = arr.reshape(dx.shape)
         return dx
 
-    def _backward_gpu(self, x: tensor, y: tensor) -> tensor:
-        dx, dy = x.gradient, y.gradient
+    def _backward_gpu(self, dx: tensor, dy: tensor) -> tensor:
         self.kernel_dx.forward(dx.device_data, dy.device_data, self.tmp)
         self.kernel_dx.run()
         return dx
@@ -71,7 +69,6 @@ class relu(Module):
         _dx = relu_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
-
 
 class dropout(Module):
     __constants__ = ['prob']
@@ -112,7 +109,6 @@ class dropout(Module):
         _dx = dropout_backward(y.gradient.host_data, c)
         assert ((y.host_data == _y).all())
         assert ((_dx == x.gradient.host_data).all())
-
 
 class softmax(Module):
     __constants__ = ['axis']

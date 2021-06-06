@@ -5,6 +5,5 @@
 
 #include <iostream>
 
-// TODO: Reference additional headers your program requires here.
 #include <vulkan/vulkan.h>
 #include <pybind11/pybind11.h>

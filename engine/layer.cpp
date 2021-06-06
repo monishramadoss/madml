@@ -158,7 +158,8 @@ void layer::recordCommandBuffer(void* push_constants, uint32_t push_constants_si
 {
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT; 
+    beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
     //VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     //VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM
     kContextMtx.lock();

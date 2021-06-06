@@ -43,3 +43,10 @@ public:
     explicit col2vol(std::vector<int>& params);
     void forward(tensor& vol, tensor& col);
 };
+
+void cpu_vol2col(py::array_t<float, py::array::c_style | py::array::forcecast> vol,
+    py::array_t<float, py::array::c_style | py::array::forcecast> col,
+    int n_output_plane, int index_length, std::vector<int>& params);
+void cpu_col2vol(py::array_t<float, py::array::c_style | py::array::forcecast> vol,
+    py::array_t<float, py::array::c_style | py::array::forcecast> col,
+    int n_output_plane, int index_length, std::vector<int>& params);
