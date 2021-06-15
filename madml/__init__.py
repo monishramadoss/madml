@@ -7,6 +7,7 @@ from .tensor import tensor
 from .init import zeros, zeros_like, ones, full_like, fill
 from .optimizer import SGD, adam, Adagrad, RMSprop
 
+
 def test_import_vknn():
     try:
         import vknn

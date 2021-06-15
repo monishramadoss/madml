@@ -13,7 +13,7 @@
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId>Global|VisualStudio|madml_testing</InterpreterId>
     <TestFramework>unittest</TestFramework>
-    <EnableNativeCodeDebugging>True</EnableNativeCodeDebugging>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <Name>python</Name>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
@@ -62,6 +62,9 @@
   <ItemGroup>
     <Compile Include="madml\data.py" />
     <Compile Include="madml\init.py" />
+    <Compile Include="madml\manager.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="madml\nn\activation.py" />
     <Compile Include="madml\nn\convolution.py" />
     <Compile Include="madml\nn\linear.py" />

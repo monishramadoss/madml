@@ -28,16 +28,12 @@ class relu(Module):
 
     def forward(self, x: tensor) -> tensor:
         if self.tmp is None:
-            self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool)) if self.device_id != -1 else np.zeros(
-                x.shape).astype(bool)
+            self.tmp = vknn.init_bool(np.zeros(x.shape).astype(bool)) if self.device_id != -1 else np.zeros(x.shape).astype(bool)
         if self.y is None:
             if self.inplace:
-                self.y = x
+                self.y = self.register_output(x)
             else:
-                self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('y', self.y)
+                self.y = self.register_output_shape(x.shape)
         super(relu, self).forward(x)
         return self.y
 
@@ -82,11 +78,8 @@ class dropout(Module):
         self.mask = None
 
     def forward(self, x: tensor) -> tensor:
-        self.register_output_shape(x.shape)
+        self.y = self.register_output_shape(x.shape)
         self.mask = tensor(np.random.rand(*x.shape), x.shape)
-        self.register_forward_arg('x', x)
-        self.register_backward_arg('dx', x.gradient)
-        self.register_backward_arg('dy', self.y.gradient)
         super(dropout, self).forward(x)
         return self.y
 
@@ -120,7 +113,7 @@ class softmax(Module):
 
     def forward(self, x: tensor) -> tensor:
         self.register_forward_arg('x', x)
-        self.register_output_shape(x.shape)
+        self.y = self.register_output_shape(x.shape)
         super(softmax, self).forward(x)
         return self.y
 

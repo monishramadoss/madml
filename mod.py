@@ -63,24 +63,10 @@ def test_maxpool():
     print(t1, '\n----------------------\n')
 
     module = nn.maxpool2d(kernel_shape, stride, padding, dilation)
-    module.to(0)
     t3 = module(t1)
-    t3_data = t3.host_data
-    t3.gradient.host_data = t3_data
-
-    dx = module.backward()
     y_hat = t3.host_data
-    dx_hat = dx.host_data
-    print(y_hat, '\n\n', dx_hat, '\n\n')
+    print(y_hat, '\n\n')#, dx_hat, '\n\n')
     print('---------------------')
-
-    module.to(-1)
-    t2 = module(t1)
-    y = t2.host_data
-    t2.gradient.host_data = y
-    dx = module.backward()
-    dx = dx.host_data
-    print(y, '\n\n', dx, '\n\n')
 
     input()
 

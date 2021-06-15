@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+
 from concurrent.futures import ThreadPoolExecutor
 from typing import List, Optional
 
@@ -11,6 +12,7 @@ import numpy as np
 
 import vknn
 from madml import tensor, zeros
+from ..manager import Manager
 
 DEBUG = False
 
@@ -24,6 +26,11 @@ def register_arg(executor, d, name, obj):
 
 def run_sys(executor, kernel, *args, **kwargs):
     return executor.submit(kernel, *args, **kwargs)
+
+
+manager = Manager()
+
+
 
 class Parameter(tensor):
     optimizer_stuff: Optional[List[tensor]]
@@ -49,72 +56,41 @@ class Module(object):
         self.use_bias = False
         self._empty_gpu_tensor_obj = vknn.tensor([0.], [1])
         self.m_type = type(self).__name__
-        self.previous = []
-        self.next = []
+        self.name = ''
         self.parameter_cache = []
         self.device_id = device_id
 
+        self.outputs = {}
         self.y = None
 
-        self.forward_args = {}
-        self.backward_args = {}
-
-        self.forward_arg_futures = []
-        self.backward_arg_futures = []
-
-        self.input_registry = []
-        self.output_registry = []
         self.w_registry = []
         self.kernel_registry = []
         self.module_registry = []
-
+        manager.register_module(self)        
+          
     def forward(self, *args, **kwargs) -> tensor:
-        if self.device_id == -1:
-            y = self._forward_cpu(**self.forward_args)
-        else:
-            y = self._forward_gpu(**self.forward_args)
-        if self.use_bias:
-            self.bias_call()
-            return self.y
-        return y
+        manager.register_input(self, args, kwargs)
+        manager.register_output(self, 'y', self.y)
+        return self.y
 
-    def backward(self) -> tensor:
-        if self.use_bias:
-            self.d_bias_call()
-
-        if self.device_id != -1:
-            dx = self._backward_gpu(**self.backward_args)
-        else:
-            dx = self._backward_cpu(**self.backward_args)
-
-        self.forward_arg_futures = []
-        self.backward_arg_futures = []
-        for x in self.previous:
-            x.backward()
-        return dx
+    def backward(self) -> tensor: # try and traverse the graph
+        
+        return self._empty_gpu_tensor_obj
 
     def _forward_cpu(self, *args, **kwargs) -> tensor:
         return self._empty_gpu_tensor_obj
 
-    def _backward_cpu(self, *args, **kwargs) -> tensor:
+    def _backward_cpu(self) -> tensor:
         return self._empty_gpu_tensor_obj
 
     def _forward_gpu(self, *args, **kwargs) -> tensor:
         return self._empty_gpu_tensor_obj
 
-    def _backward_gpu(self, *args, **kwargs) -> tensor:
+    def _backward_gpu(self) -> tensor:
         return self._empty_gpu_tensor_obj
 
-    def __call__(self, *args, **kwargs) -> tensor:
-        for i, x in enumerate(args):
-            self.register_input(x, i)
-
-        self.y = self.forward(*args, **kwargs)
-
-        if not self.registered:
-            self.register_output(self.y, 0)
-        self.registered = True
-        return self.y
+    def __call__(self, *args, **kwargs) -> tensor:       
+        return self.forward(*args, **kwargs)
 
     def bias_call(self):
         for i in range(self.y.shape[0]):
@@ -155,34 +131,9 @@ class Module(object):
         self.use_bias = bias
         return self.parameter_cache[-1]
 
-    def register_output_shape(self, shape: list) -> tensor:
-        if self.y is None:
-            self.y = zeros(shape)
-        return self.y
-
-    def register_output(self, y: tensor, idx: int):
-        if y not in self.output_registry:
-            y.previous += [self]
-            self.next = [y]
-            if idx >= len(self.output_registry):
-                self.output_registry += [input]
-            else:
-                self.output_registry[idx] = y
-
-    def register_input(self, x: tensor, idx: int):
-        if x not in self.input_registry:
-            x.next += [self]
-            self.previous = [x]
-            if idx >= len(self.input_registry):
-                self.input_registry += [x]
-            else:
-                self.input_registry[idx] = x
-
-    def register_backward_arg(self, name: str, value: tensor):
-        insert_dict(self.backward_args, name, value)
-
-    def register_forward_arg(self, name: str, value: tensor):
-        insert_dict(self.forward_args, name, value)
+    def register_output_shape(self, shape: list, name: str='y') -> tensor:
+        self.outputs[name] = zeros(shape)
+        return self.outputs[name]
 
     def register_kernel(self, kernel, *args, **kwargs):
         self.kernel_registry += [kernel(*args, **kwargs)]

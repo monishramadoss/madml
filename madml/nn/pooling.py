@@ -69,11 +69,12 @@ class _MaxPoolNd(Module):
                 self._vol[-i] = x.shape[-i]
                 self.channel_offset *= self.kernel_size[i]
             self.output_shape = [self._col[i] for i in range(-1, -(self.dims + 1), -1)]
-            self.register_output_shape([self.batch_size, self.in_channels, *self.output_shape])
+            self.y = self.register_output_shape([self.batch_size, self.in_channels, *self.output_shape])
 
             out_size = np.prod(self.output_shape)
             max_idx_size = self.in_channels * self.batch_size * out_size
             self.max_idx = tensor([0 for _ in range(max_idx_size)], [self.in_channels * self.batch_size, out_size], dtype=int)
+  
             self.pool_kernel_y = self.register_kernel(vknn.max_reduce,  False)
             self.pool_kernel_dcol = self.register_kernel(vknn.max_reduce, True)
 
@@ -82,10 +83,6 @@ class _MaxPoolNd(Module):
         self.col = self.vol_col.forward(x)
         self.col.reshape([self.in_channels * self.batch_size, self.channel_offset, -1])
         self.y.reshape([self.in_channels * self.batch_size, -1])
-
-        self.register_forward_arg('x', x)
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('y', self.y)
 
         super(_MaxPoolNd, self).forward(x)
         self.y.reshape([self.batch_size, self.in_channels, *self.output_shape])

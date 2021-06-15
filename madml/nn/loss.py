@@ -79,7 +79,7 @@ class crossentropyloss(_WeightedLoss):
 
     def forward(self, logit: tensor, target: tensor) -> tensor:
         self.batchsize = logit.shape[0]
-        self.register_output_shape([1])
+        self.y = self.register_output_shape([1])
         self.register_forward_arg('logit', logit)
         if not self.with_logit:
             C = logit.shape[1]

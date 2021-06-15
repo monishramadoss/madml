@@ -112,19 +112,14 @@ class ConvNd(Module):
                 self._vol[-i] = x.shape[-i]
             self.output_shape = [self._col[i] for i in range(-1, -(self.dims + 1), -1)]
             self.bias = self.register_bias(self.use_bias, zeros, [self.out_channels, *self.output_shape])
-            self.register_output_shape([self.batch_size, self.out_channels, *self.output_shape])
+            self.y = self.register_output_shape([self.batch_size, self.out_channels, *self.output_shape])
             self.vol_col = self.register_module(vol2col, self.batch_size, self.in_channels, self._vol, self._col,
                                                     self.kernel_size, self.stride, self.padding, self.dilation)
         self.w.reshape([w.shape[0], -1])
         self.y.reshape([self.w.shape[0], -1])
         
         self.col = self.vol_col.forward(x)
-        self.register_forward_arg('x', x)
-        self.register_forward_arg('w', self.w)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', self.w)
-        self.register_backward_arg('y', self.y)
+      
         super(ConvNd, self).forward(x, self.w)
         _ = self.transpose_y.forward(self.y)
         self.y.reshape([self.out_channels, self.batch_size, *self.output_shape])

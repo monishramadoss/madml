@@ -12,11 +12,7 @@ class sigmoid(Module):
         super(sigmoid, self).__init__()
 
     def forward(self, x: tensor) -> tensor:
-        self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('y', self.y)
+        self.y = self.register_output_shape(x.shape)      
         super(sigmoid, self).forward(x)
         return self.y
 
@@ -34,14 +30,7 @@ class add(Module):
         super(add, self).__init__()
 
     def forward(self, x: tensor, w: tensor) -> tensor:
-        self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-        self.register_forward_arg('w', w)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
-
+        self.y = self.register_output_shape(x.shape)
         super(add, self).forward(x, w)
         return self.y
 
@@ -60,14 +49,7 @@ class sub(Module):
         super(sub, self).__init__()
 
     def forward(self, x: tensor, w: tensor) -> tensor:
-        self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-        self.register_forward_arg('w', w)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
-
+        self.y = self.register_output_shape(x.shape)      
         super(add, self).forward(x, w)
         return self.y
 
@@ -86,13 +68,7 @@ class mul(Module):
         super(mul, self).__init__()
 
     def forward(self, x: tensor, w: tensor) -> tensor:
-        self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-        self.register_forward_arg('w', w)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
+        self.y = self.register_output_shape(x.shape)     
         super(mul, self).forward(x, w)
         return self.y
 
@@ -111,14 +87,7 @@ class div(Module):
         super(div, self).__init__()
 
     def forward(self, x: tensor, w: tensor) -> tensor:
-        self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-        self.register_forward_arg('w', w)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', w)
-        self.register_backward_arg('y', self.y)
-
+        self.y = self.register_output_shape(x.shape)      
         super(div, self).forward(x, w)
         return self.y
 

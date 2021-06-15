@@ -29,23 +29,17 @@ class linear(Module):
         self.kernel_dx = self.register_kernel(vknn.gemm, 1., 1., False, False, True)
 
     def forward(self, x: tensor) -> tensor:
-        self.register_output_shape([x.shape[0], self.out_features])
-        self.register_forward_arg('x', x)
-        self.register_forward_arg('w', self.w)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('w', self.w)
-        self.register_backward_arg('y', self.y)
-        super(linear, self).forward(x, self.w)
+        self.y = self.register_output_shape([x.shape[0], self.out_features])
+        super(linear, self).forward(x)
         return self.y
 
-    def _forward_cpu(self, x: tensor, w: tensor) -> tensor:
+    def _forward_cpu(self, x: tensor) -> tensor:
         for i in range(x.shape[0]):
-            self.y.host_data[i] = np.matmul(x.host_data[i], w.host_data)
+            self.y.host_data[i] = np.matmul(x.host_data[i], self.w.host_data)
         return self.y
 
-    def _forward_gpu(self, x: tensor, w: tensor) -> tensor:
-        self.kernel_y.forward(self.y.device_data, x.device_data, w.device_data, self.bias.device_data)
+    def _forward_gpu(self, x: tensor) -> tensor:
+        self.kernel_y.forward(self.y.device_data, x.device_data, self.w.device_data, self.bias.device_data)
         self.kernel_y.run()
         return self.y
 

@@ -65,10 +65,7 @@ class BatchNorm(_NormBase):
         super(BatchNorm, self).__init__(num_features, eps, momentum, affine, track_running_stat)
 
     def forward(self, x: tensor) -> tensor:
-        self.register_output_shape(x.shape)
-        self.register_forward_arg('x', x)
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('y', self.y)
+        self.y = self.register_output_shape(x.shape)      
         super(BatchNorm, self).forward(x)
         return self.y
 

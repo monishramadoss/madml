@@ -56,7 +56,7 @@ class rnnbase(Module):
                 layer_input_size = input_size if layer == 0 else hidden_size
                 gates = []
                 for gate in self.gate_size:
-                    w_ih = self.register_module(linear, layer_intput_size, hidden_size, self.bias)
+                    w_ih = self.register_module(linear, layer_input_size, hidden_size, self.bias)
                     w_hh = self.register_module(linear, hidden_size, hidden_size, self.bias)
                     a_ih_hh = self.register_module(linear, add)
                     gates.append([w_ih, w_hh, a_ih_hh])
@@ -73,22 +73,11 @@ class rnnbase(Module):
     def forward(self, x: tensor, h: tensor=None, c: tensor=None):
         max_batch_size = x.shape[0] if self.batch_first else x.shape[1]
 
-        self.register_output_shape([self.num_layers * self.num_directions, max_batch_size, self.hidden_siz])
-        self.register_forward_arg('x', x)
-
+        self.y = self.register_output_shape([self.num_layers * self.num_directions, max_batch_size, self.hidden_siz])
         if h is None:
             h = zeros([self.num_layers * self.num_directions, max_batch_size, self.hidden_size])
-        self.register_forward_arg('h', h)
-
         if c is None and self.mode == 'LSTM':
             c = zeros([self.num_layers * self.num_directions, max_batch_size, self.hidden_size])
-        self.register_forward_arg('c', c)
-
-        self.register_backward_arg('x', x)
-        self.register_backward_arg('h', h)
-        self.register_backward_arg('c', c)
-        self.register_backward_arg('y', self.y)
-
         return super(rnnbase, self).forward(x, h, c)
 
     def _forward_cpu(self, x: tensor, hx: tensor, cx: tensor):
@@ -114,8 +103,8 @@ class rnnbase(Module):
                     hg = tha
                     c = hf * c + hi * hg
                     h = ho * self.activation2(c)
-                    hx.host_data[layer * num_direction + direction] = h
-                    cx.host_data[layer * num_direction + direction] = c
+                    hx.host_data[layer * self.num_direction + direction] = h
+                    cx.host_data[layer * self.num_direction + direction] = c
                 elif self.mode == 'GRU':
                     hr = gates[0].host_data
                     hz = gates[1].host_data
@@ -136,7 +125,7 @@ class rnnbase(Module):
             return self.y, hx, cx
         return self.y, hx
     def _backward_cpu(self, x: tensor, h: tensor, c: tensor, y: tensor) -> tensor:
-        dx, dh, dc, dy = x.gradient, dh.gradient, h.gradient, y.gradient
+        dx, dh, dc, dy = x.gradient, h.gradient, c.gradient, y.gradient
         for layer in range(self.num_layers):
             for direction in range(self.num_directions):
                 gates = []
@@ -145,7 +134,7 @@ class rnnbase(Module):
 
         return dx
 
-class RNN(RNNBase):
+class rnn(rnnbase):
     def __init__(self, input_size: int, hidden_size: int,
                  num_layers: int=1, bias: bool=True, batch_first: bool=False,
                  dropout: float=0., bidirectional: bool=False, nonlinearity: str='tanh'):
@@ -156,16 +145,16 @@ class RNN(RNNBase):
             mode = 'RNN_RELU'
         else:
             raise ValueError("Unknown nonlinearity '{}'".format(self.nonlinearity))
-        super(RNN, self).__init__(mode, input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
+        super(rnn, self).__init__(mode, input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
 
-class LSTM(RNNBase):
+class lstm(rnnbase):
      def __init__(self, input_size: int, hidden_size: int,
                  num_layers: int=1, bias: bool=True, batch_first: bool=False,
                  dropout: float=0., bidirectional: bool=False):
-        super(LSTM, self).__init__('LSTM', input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
+        super(lstm, self).__init__('LSTM', input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
 
-class GRU(RNNBase):
+class gru(rnnbase):
     def __init__(self, input_size: int, hidden_size: int,
                  num_layers: int=1, bias: bool=True, batch_first: bool=False,
                  dropout: float=0., bidirectional: bool=False):
-        super(GRU, self).__init__('GRU', input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
+        super(gru, self).__init__('GRU', input_size, hidden_size, num_layers, bias, batch_first, dropout, bidirectional)
